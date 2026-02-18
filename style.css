@@ -38,9 +38,6 @@ table{width:100%; border-collapse:collapse; font-family:var(--mono); font-size:1
 th, td{border-bottom:1px solid var(--line); padding:8px; white-space:nowrap; vertical-align:top}
 th{text-align:left; color:var(--muted); position:sticky; top:0; background:var(--card)}
 
-.same{color:var(--ok); font-weight:700}
-.diff{color:var(--bad); font-weight:700}
-
 .fileList{display:grid; gap:8px}
 .fileItem{
   display:flex; gap:10px; align-items:center; justify-content:space-between;
@@ -51,7 +48,37 @@ th{text-align:left; color:var(--muted); position:sticky; top:0; background:var(-
 .fileItem .meta{font-size:12px; color:var(--muted)}
 .fileItem button{padding:6px 10px}
 
-/* CUSTOM */
+/* Vergleiche */
+.same{color:var(--ok); font-weight:700}
+.diff{color:var(--bad); font-weight:700}
+
+.posCell{color:var(--muted)}
+
+/* Klickbare Cells (wie Buttons) */
+.pickable{
+  cursor:pointer;
+  user-select:none;
+}
+.pickable:hover{
+  outline:2px solid #35507a;
+  outline-offset:-2px;
+  border-radius:6px;
+}
+
+/* Ausgewählte Gold-Zelle */
+.picked{
+  outline:3px solid #ffffff;
+  outline-offset:-3px;
+  border-radius:6px;
+}
+
+/* Wenn Custom aktiv ist, sollen Datei-Zellen “deaktiviert” wirken */
+.disabledPick{
+  opacity:.45;
+  cursor:not-allowed;
+}
+
+/* Custom */
 .customCell{display:flex; gap:6px; align-items:center}
 .customCell input, .customCell select{
   font-family:var(--mono);
@@ -61,7 +88,5 @@ th{text-align:left; color:var(--muted); position:sticky; top:0; background:var(-
 .customHead{width:80px}
 .customRelSelect{width:180px}
 
-/* Gold Auswahl */
-.goldPick{font-family:var(--mono); padding:6px 8px; border-radius:8px}
-.posCell{color:var(--muted)}
+/* GOLD Anzeige */
 .goldCell{font-weight:800}

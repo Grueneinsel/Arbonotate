@@ -1,8 +1,6 @@
 // CoNLL-U Vergleich (v1)
-// - beliebig viele Dateien nachladen / löschen / reset
-// - UPOS/XPOS Spalten
-// - Goldstandard pro Zeile wählbar (pro Token-ID)
-// - Regel: Wenn Custom (HEAD oder DEPREL) befüllt ist -> Gold = Custom (automatisch)
+// Gold pro Token-Zeile per Klick auf Zellinhalt (wie Buttons).
+// Wenn Custom (HEAD oder DEPREL) befüllt ist -> Custom ist automatisch Gold.
 
 const DEFAULT_LABELS = {
   "Core arguments": ["nsubj","obj","iobj","csubj","ccomp","xcomp"],
@@ -19,11 +17,11 @@ let DEPREL_OPTIONS_HTML = "";
 let DEPREL_VALUE_SET = new Set();
 
 const state = {
-  docs: [],          // [{key, name, sentences:[{text, tokens:[] }]}]
+  docs: [],
   currentSent: 0,
   maxSents: 0,
-  custom: {},        // custom[sentIndex][tokId] = {head:number|null, deprel:string|null}
-  goldPick: {},      // goldPick[sentIndex][tokId] = docIdx (number)  (Custom wird NICHT gespeichert -> override)
+  custom: {},     // custom[sent][tokId] = {head, deprel}
+  goldPick: {},   // goldPick[sent][tokId] = docIdx
 };
 
 const fileInput = document.getElementById("fileInput");
@@ -62,7 +60,7 @@ nextBtn.addEventListener("click", () => {
 customInitBtn.addEventListener("click", initCustomFromDoc0);
 customClearBtn.addEventListener("click", clearCustomForSentence);
 
-// Delegation für Inputs/Selects
+// --- Delegation: Custom Inputs ---
 cmpTable.addEventListener("input", (e) => {
   const el = e.target;
   if(el instanceof HTMLInputElement && el.dataset.field && el.dataset.id){
@@ -71,10 +69,28 @@ cmpTable.addEventListener("input", (e) => {
 });
 cmpTable.addEventListener("change", (e) => {
   const el = e.target;
-  if(el instanceof HTMLSelectElement){
-    if(el.classList.contains("goldPick")) onGoldPickChange(el);
-    if(el.classList.contains("customRelSelect")) onCustomFieldChange(el);
+  if(el instanceof HTMLSelectElement && el.classList.contains("customRelSelect")){
+    onCustomFieldChange(el);
   }
+});
+
+// --- Delegation: Klick auf Datei-Zelle -> Gold wählen ---
+cmpTable.addEventListener("click", (e) => {
+  const td = e.target.closest?.("td[data-col^='doc']");
+  if(!td) return;
+
+  const tr = td.closest("tr[data-id]");
+  if(!tr) return;
+
+  const tokId = parseInt(tr.dataset.id, 10);
+  const docIdx = parseInt(td.dataset.docIdx, 10);
+
+  // Wenn Custom befüllt ist -> Custom ist Gold, Klick ignorieren
+  const ce = getCustomEntry(state.currentSent, tokId);
+  if(ce) return;
+
+  setDocChoice(state.currentSent, tokId, docIdx);
+  updateRow(tokId);
 });
 
 // ---------- Labels laden ----------
@@ -86,10 +102,9 @@ cmpTable.addEventListener("change", (e) => {
       if(data && typeof data === "object") LABELS = data;
     }
   }catch(_){
-    // fallback bleibt DEFAULT_LABELS
+    // fallback DEFAULT_LABELS
   }finally{
     buildDeprelOptionsCache();
-    // falls Tabelle schon existiert
     renderSentence();
   }
 })();
@@ -141,8 +156,7 @@ function parseConllu(text){
   for(const line0 of lines){
     const line = line0.trimEnd();
     if(line.trim() === ""){
-      push();
-      continue;
+      push(); continue;
     }
     if(line.startsWith("#")){
       const m = line.match(/^#\s*text\s*=\s*(.*)$/i);
@@ -166,7 +180,6 @@ function parseConllu(text){
 
     tokens.push({ id, form, upos, xpos, head, deprel });
   }
-
   push();
   return { sentences };
 }
@@ -201,15 +214,14 @@ async function onFilesChosen(){
 function removeDoc(index){
   state.docs.splice(index, 1);
 
-  // goldPick indices verschieben
-  for(const sentKey of Object.keys(state.goldPick)){
-    const m = state.goldPick[sentKey];
-    for(const tokKey of Object.keys(m)){
-      const v = m[tokKey];
-      if(typeof v === "number"){
-        if(v === index) m[tokKey] = 0;        // wenn genau gelöscht -> fallback doc0
-        else if(v > index) m[tokKey] = v - 1; // shift
-      }
+  // goldPick indices shiften
+  for(const sKey of Object.keys(state.goldPick)){
+    const m = state.goldPick[sKey];
+    for(const tKey of Object.keys(m)){
+      const v = m[tKey];
+      if(typeof v !== "number") continue;
+      if(v === index) m[tKey] = 0;
+      else if(v > index) m[tKey] = v - 1;
     }
   }
 
@@ -237,7 +249,7 @@ function recomputeMaxSents(){
   state.maxSents = Math.max(0, ...state.docs.map(d => d.sentences.length), 0);
 }
 
-// ---------- Gold / Custom helpers ----------
+// ---------- State helpers ----------
 function ensureCustomSent(sentIndex){
   if(!state.custom[sentIndex]) state.custom[sentIndex] = {};
   return state.custom[sentIndex];
@@ -262,7 +274,6 @@ function setCustomField(sentIndex, tokId, field, value){
   if(field === "head") sent[tokId].head = value;
   if(field === "deprel") sent[tokId].deprel = value;
 
-  // wenn beide leer -> löschen
   const e = getCustomEntry(sentIndex, tokId);
   if(!e){
     delete sent[tokId];
@@ -274,12 +285,10 @@ function getDocChoice(sentIndex, tokId){
   const m = ensureGoldSent(sentIndex);
   const v = m[tokId];
   if(typeof v === "number" && v >= 0 && v < state.docs.length) return v;
-  return 0; // default doc1
+  return 0;
 }
-
 function setDocChoice(sentIndex, tokId, docIdx){
-  const m = ensureGoldSent(sentIndex);
-  m[tokId] = docIdx;
+  ensureGoldSent(sentIndex)[tokId] = docIdx;
 }
 
 function valueFromToken(t){
@@ -375,17 +384,18 @@ function renderSentence(){
     return m;
   });
 
-  // Union IDs (Docs + Custom)
+  // Union IDs
   const ids = new Set();
   for(const m of maps) for(const id of m.keys()) ids.add(id);
   const customSent = state.custom[state.currentSent] || {};
   for(const idStr of Object.keys(customSent)) ids.add(parseInt(idStr, 10));
+
   const idList = Array.from(ids).sort((a,b)=>a-b);
 
-  // Header: ID | FORM | UPOS | XPOS | Gold-Quelle | GOLD | [docs...] | CUSTOM
+  // Header: ID | FORM | UPOS | XPOS | GOLD | docs... | CUSTOM
   let html = "<thead><tr>";
   html += "<th>ID</th><th>FORM</th><th>UPOS</th><th>XPOS</th>";
-  html += "<th>Gold-Quelle</th><th>GOLD</th>";
+  html += "<th>GOLD</th>";
   for(const d of state.docs){
     html += `<th>${escapeHtml(d.name)}</th>`;
   }
@@ -393,7 +403,6 @@ function renderSentence(){
   html += "</tr></thead><tbody>";
 
   for(const id of idList){
-    // token info: first available
     let form="—", upos="_", xpos="_";
     for(const m of maps){
       const t = m.get(id);
@@ -401,53 +410,37 @@ function renderSentence(){
     }
 
     const docVals = maps.map(m => valueFromToken(m.get(id)));
-
     const ce = getCustomEntry(state.currentSent, id);
     const customExists = !!ce;
     const customVal = valueFromCustom(ce);
 
-    // gold source:
-    // - if custom exists: gold = custom
-    // - else gold = chosen doc
     const chosenDoc = getDocChoice(state.currentSent, id);
     const goldVal = customExists ? customVal : docVals[chosenDoc];
 
-    // options for gold pick
-    let pickOptions = "";
-    for(let i=0;i<state.docs.length;i++){
-      pickOptions += `<option value="${i}">Datei ${i+1}</option>`;
-    }
-    // Custom option: nur sinnvoll wenn Custom existiert
-    pickOptions += `<option value="custom"${customExists ? "" : " disabled"}>CUSTOM</option>`;
-
-    const pickValue = customExists ? "custom" : String(chosenDoc);
-    const pickDisabled = customExists ? "disabled" : "";
-
-    // build row
     html += `<tr data-id="${id}">`;
     html += `<td>${id}</td>`;
     html += `<td>${escapeHtml(form)}</td>`;
     html += `<td class="posCell">${escapeHtml(upos)}</td>`;
     html += `<td class="posCell">${escapeHtml(xpos)}</td>`;
+    html += `<td data-col="gold" class="goldCell">${escapeHtml(goldVal ?? "—")}</td>`;
 
-    html += `
-      <td>
-        <select class="goldPick" data-id="${id}" ${pickDisabled}>
-          ${pickOptions}
-        </select>
-      </td>
-      <td data-col="gold" class="goldCell">${escapeHtml(goldVal ?? "—")}</td>
-    `;
-
-    // doc cells: compare each to GOLD
+    // doc cells (klickbar)
     for(let i=0;i<docVals.length;i++){
       const v = docVals[i];
-      const cls = (goldVal && v) ? (v === goldVal ? "same" : "diff") : "";
-      html += `<td data-col="doc${i}" class="${cls}">${escapeHtml(v ?? "—")}</td>`;
+      const clsCompare = (goldVal && v) ? (v === goldVal ? "same" : "diff") : "";
+      const clsPickable = "pickable";
+      const clsDisabled = customExists ? "disabledPick" : "";
+      const clsPicked = (!customExists && i === chosenDoc) ? "picked" : "";
+      html += `
+        <td data-col="doc${i}" data-doc-idx="${i}"
+            class="${clsPickable} ${clsCompare} ${clsDisabled} ${clsPicked}">
+          ${escapeHtml(v ?? "—")}
+        </td>`;
     }
 
-    // custom cell + compare to GOLD
-    const customCls = (goldVal && customVal) ? (customVal === goldVal ? "same" : "diff") : "";
+    // custom cell (wenn customExists -> als picked markieren)
+    const customClsCompare = (goldVal && customVal) ? (customVal === goldVal ? "same" : "diff") : "";
+    const customPicked = customExists ? "picked" : "";
     const headVal = ce?.head ?? "";
     const relVal  = ce?.deprel ?? "";
 
@@ -457,12 +450,12 @@ function renderSentence(){
     }
 
     html += `
-      <td data-col="custom" class="${customCls}">
+      <td data-col="custom" class="${customClsCompare} ${customPicked}">
         <div class="customCell">
           <input class="customHead" type="number" min="0" step="1"
-                 data-id="${id}" data-field="head" value="${escapeHtml(headVal)}" placeholder="head">
-          <select class="customRelSelect"
-                  data-id="${id}" data-field="deprel">
+                 data-id="${id}" data-field="head"
+                 value="${escapeHtml(headVal)}" placeholder="head">
+          <select class="customRelSelect" data-id="${id}" data-field="deprel">
             ${extraOpt}
             ${DEPREL_OPTIONS_HTML}
           </select>
@@ -476,37 +469,11 @@ function renderSentence(){
   html += "</tbody>";
   cmpTable.innerHTML = html;
 
-  // Set selected values
+  // Custom-Selects auf richtigen Wert setzen
   cmpTable.querySelectorAll("select.customRelSelect").forEach(sel => {
     const tokId = parseInt(sel.dataset.id, 10);
     sel.value = getCustomEntry(state.currentSent, tokId)?.deprel ?? "";
   });
-
-  cmpTable.querySelectorAll("select.goldPick").forEach(sel => {
-    const tokId = parseInt(sel.dataset.id, 10);
-    const ce = getCustomEntry(state.currentSent, tokId);
-    sel.value = ce ? "custom" : String(getDocChoice(state.currentSent, tokId));
-  });
-}
-
-function onGoldPickChange(sel){
-  const tokId = parseInt(sel.dataset.id, 10);
-  const v = sel.value;
-
-  // Wenn custom existiert, ist select disabled -> kommt hier i.d.R. nicht an
-  if(v === "custom"){
-    // Custom soll nur Gold sein, wenn etwas eingetragen ist. Falls leer, zurück auf doc0.
-    const ce = getCustomEntry(state.currentSent, tokId);
-    if(!ce){
-      sel.value = "0";
-      setDocChoice(state.currentSent, tokId, 0);
-    }
-  } else {
-    const docIdx = parseInt(v, 10);
-    if(!Number.isNaN(docIdx)) setDocChoice(state.currentSent, tokId, docIdx);
-  }
-
-  updateRow(tokId);
 }
 
 function onCustomFieldChange(el){
@@ -523,7 +490,7 @@ function onCustomFieldChange(el){
     setCustomField(state.currentSent, tokId, "deprel", val);
   }
 
-  // Custom befüllt? -> Gold automatisch Custom (Select deaktivieren)
+  // Custom kann Gold override -> row update
   updateRow(tokId);
 }
 
@@ -531,6 +498,7 @@ function updateRow(tokId){
   const row = cmpTable.querySelector(`tr[data-id="${tokId}"]`);
   if(!row) return;
 
+  // maps für aktuellen Satz
   const maps = state.docs.map(d => {
     const s = d.sentences[state.currentSent];
     const m = new Map();
@@ -543,43 +511,44 @@ function updateRow(tokId){
   const customExists = !!ce;
   const customVal = valueFromCustom(ce);
 
-  const pickSel = row.querySelector("select.goldPick");
   const chosenDoc = getDocChoice(state.currentSent, tokId);
   const goldVal = customExists ? customVal : docVals[chosenDoc];
 
-  // Gold cell
-  const goldTd = row.querySelector(`td[data-col="gold"]`);
+  // gold cell
+  const goldTd = row.querySelector("td[data-col='gold']");
   if(goldTd) goldTd.textContent = goldVal ?? "—";
 
-  // Gold pick UI
-  if(pickSel){
-    pickSel.disabled = customExists;
-    pickSel.value = customExists ? "custom" : String(chosenDoc);
+  // remove old picked
+  row.querySelectorAll("td.picked").forEach(td => td.classList.remove("picked"));
 
-    // custom option enable/disable
-    const optCustom = Array.from(pickSel.options).find(o => o.value === "custom");
-    if(optCustom) optCustom.disabled = !customExists;
-  }
-
-  // doc cells compared to gold
+  // update doc cells
   for(let i=0;i<docVals.length;i++){
-    const td = row.querySelector(`td[data-col="doc${i}"]`);
+    const td = row.querySelector(`td[data-col='doc${i}']`);
     if(!td) continue;
-    td.classList.remove("same","diff");
-    const v = docVals[i];
-    td.textContent = v ?? "—";
-    if(goldVal && v){
-      td.classList.add(v === goldVal ? "same" : "diff");
+
+    td.textContent = docVals[i] ?? "—";
+    td.classList.remove("same","diff","disabledPick");
+
+    // disabled if custom exists
+    if(customExists) td.classList.add("disabledPick");
+
+    if(goldVal && docVals[i]){
+      td.classList.add(docVals[i] === goldVal ? "same" : "diff");
+    }
+
+    if(!customExists && i === chosenDoc){
+      td.classList.add("picked");
     }
   }
 
-  // custom cell compared to gold
-  const tdC = row.querySelector(`td[data-col="custom"]`);
+  // custom cell compare + picked if custom exists
+  const tdC = row.querySelector("td[data-col='custom']");
   if(tdC){
     tdC.classList.remove("same","diff");
     if(goldVal && customVal){
       tdC.classList.add(customVal === goldVal ? "same" : "diff");
     }
+    if(customExists) tdC.classList.add("picked");
   }
 }
 
