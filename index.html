@@ -9,14 +9,16 @@
 <body>
   <header class="bar">
     <h1>CoNLL-U Vergleich (v1)</h1>
-    <p class="muted">Dateien nachladen, löschen oder komplett resetten. Vergleich satzweise.</p>
+    <p class="muted">
+      Dateien nachladen/löschen/resetten. Vergleich satzweise. Goldstandard pro Zeile wählbar.
+      Wenn Custom befüllt ist → Custom ist Gold.
+    </p>
   </header>
 
   <main class="wrap">
     <section class="card">
       <h2>1) Dateien</h2>
 
-      <!-- versteckter File-Input (wird über Button geöffnet) -->
       <input id="fileInput" type="file" accept=".conllu,.conll,.txt" multiple hidden />
 
       <div class="row">
@@ -26,10 +28,6 @@
       </div>
 
       <div id="fileList" class="fileList" style="margin-top:10px"></div>
-
-      <p class="muted small" style="margin-top:10px">
-        Tipp: Du kannst mehrfach „Dateien hinzufügen“ klicken, um nachzuladen.
-      </p>
     </section>
 
     <section class="card">
@@ -45,12 +43,18 @@
 
     <section class="card">
       <h2>3) Vergleich</h2>
+
+      <div class="row" style="margin-bottom:10px">
+        <button id="customInitBtn" disabled>Custom aus Datei 1</button>
+        <button id="customClearBtn" class="danger" disabled>Custom Satz löschen</button>
+        <span class="muted small">
+          Gold pro Zeile: Dropdown „Gold-Quelle“. Bei Custom-Eingabe → Gold=Custom.
+        </span>
+      </div>
+
       <div class="tableWrap">
         <table id="cmpTable"></table>
       </div>
-      <p class="muted small" style="margin-top:10px">
-        Hinweis: Multi-Word-Tokens (IDs mit „-” oder „.”) werden ignoriert.
-      </p>
     </section>
   </main>
 

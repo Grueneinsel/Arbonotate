@@ -1,4 +1,3 @@
-/* bewusst minimal gehalten */
 :root{
   --bg:#0b0f14;
   --card:#111826;
@@ -20,7 +19,8 @@ h2{margin:0 0 10px 0; font-size:14px}
 .muted{color:var(--muted)}
 .small{font-size:12px}
 .row{display:flex; gap:8px; align-items:center; flex-wrap:wrap}
-button, select{
+
+button, select, input{
   border:1px solid var(--line);
   background:#0f1521;
   color:var(--text);
@@ -30,13 +30,16 @@ button, select{
 }
 button:disabled, select:disabled{opacity:.5; cursor:not-allowed}
 button.danger{border-color:#5a2a2a; background:#1a0f12}
+
 .sentText{margin-top:10px; padding:10px; border:1px solid var(--line); border-radius:10px; background:#0f1521}
+
 .tableWrap{overflow:auto; border:1px solid var(--line); border-radius:12px}
 table{width:100%; border-collapse:collapse; font-family:var(--mono); font-size:12px}
 th, td{border-bottom:1px solid var(--line); padding:8px; white-space:nowrap; vertical-align:top}
 th{text-align:left; color:var(--muted); position:sticky; top:0; background:var(--card)}
-.diff{color:var(--bad); font-weight:700}
+
 .same{color:var(--ok); font-weight:700}
+.diff{color:var(--bad); font-weight:700}
 
 .fileList{display:grid; gap:8px}
 .fileItem{
@@ -47,3 +50,18 @@ th{text-align:left; color:var(--muted); position:sticky; top:0; background:var(-
 .fileItem .name{font-weight:700}
 .fileItem .meta{font-size:12px; color:var(--muted)}
 .fileItem button{padding:6px 10px}
+
+/* CUSTOM */
+.customCell{display:flex; gap:6px; align-items:center}
+.customCell input, .customCell select{
+  font-family:var(--mono);
+  padding:6px 8px;
+  border-radius:8px;
+}
+.customHead{width:80px}
+.customRelSelect{width:180px}
+
+/* Gold Auswahl */
+.goldPick{font-family:var(--mono); padding:6px 8px; border-radius:8px}
+.posCell{color:var(--muted)}
+.goldCell{font-weight:800}

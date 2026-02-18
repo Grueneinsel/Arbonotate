@@ -1,0 +1,9 @@
+{
+  "Core arguments": ["nsubj", "obj", "iobj", "csubj", "ccomp", "xcomp"],
+  "Non-core dependents": ["obl", "vocative", "expl", "dislocated"],
+  "Modifier words": ["advcl", "advmod*", "discourse"],
+  "Function Words": ["aux", "cop", "mark"],
+  "Nominal dependents": ["nmod", "appos", "nummod", "acl", "amod", "det", "clf", "case"],
+  "Coordination": ["conj", "cc"],
+  "Other": ["fixed", "flat", "list", "parataxis", "compound", "orphan", "goeswith", "reparandum", "punct", "root", "dep"]
+}
