@@ -3,57 +3,76 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>CoNLL-U Vergleich (v1)</title>
+  <title>CoNLL-U Vergleich</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <header class="bar">
-    <h1>CoNLL-U Vergleich (v1)</h1>
+    <h1>CoNLL-U Vergleich</h1>
     <p class="muted">
-      Gold pro Zeile durch Klick auf eine Zelle. Wenn Custom befüllt ist → Custom ist Gold.
+      Gold pro Zeile durch Klick auf eine Datei-Zelle. Wenn Custom befüllt ist → Custom ist Gold.
+      Satz wählen zeigt gleichzeitig Vorschau (UPOS/XPOS + Trees).
     </p>
   </header>
 
   <main class="wrap">
     <section class="card">
       <h2>1) Dateien</h2>
-
       <input id="fileInput" type="file" accept=".conllu,.conll,.txt" multiple hidden />
-
       <div class="row">
         <button id="addBtn">Dateien hinzufügen</button>
         <button id="resetBtn" class="danger">Reset</button>
         <span id="fileMeta" class="muted"></span>
       </div>
-
       <div id="fileList" class="fileList" style="margin-top:10px"></div>
     </section>
 
     <section class="card">
-      <h2>2) Satz wählen</h2>
+      <h2>2) Satz wählen + Vorschau</h2>
       <div class="row">
         <button id="prevBtn" disabled>←</button>
         <select id="sentSelect" disabled></select>
         <button id="nextBtn" disabled>→</button>
         <span id="sentMeta" class="muted"></span>
       </div>
+
       <div id="sentText" class="sentText"></div>
+
+      <div class="previewGrid">
+        <div class="previewBlock">
+          <div class="previewTitle">Tokens (UPOS/XPOS)</div>
+          <div class="tableWrap">
+            <table id="tokTable"></table>
+          </div>
+        </div>
+
+        <div class="previewBlock">
+          <div class="previewTitle">Trees</div>
+          <div id="treeGrid" class="treeGrid"></div>
+          <div class="muted small" style="margin-top:8px">
+            Legende: ✅ gleich | ⚠️ Label-Diff | 🅶 nur GOLD | 🅵 nur Datei
+          </div>
+        </div>
+      </div>
     </section>
 
     <section class="card">
       <h2>3) Vergleich</h2>
-
       <div class="row" style="margin-bottom:10px">
         <button id="customInitBtn" disabled>Custom aus Datei 1</button>
         <button id="customClearBtn" class="danger" disabled>Custom Satz löschen</button>
         <span class="muted small">
-          Klick auf eine Datei-Zelle → Gold. Custom befüllt → Gold=Custom automatisch.
+          Klick auf Datei-Zelle → Gold. Custom befüllt → Gold=Custom automatisch.
         </span>
       </div>
 
       <div class="tableWrap">
         <table id="cmpTable"></table>
       </div>
+
+      <p class="muted small" style="margin-top:10px">
+        Hinweis: Multi-Word-Tokens (IDs mit „-” oder „.”) werden ignoriert.
+      </p>
     </section>
   </main>
 

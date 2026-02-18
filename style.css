@@ -13,11 +13,14 @@
 body{margin:0; font-family:var(--sans); background:var(--bg); color:var(--text)}
 .bar{padding:16px; border-bottom:1px solid var(--line)}
 .bar h1{margin:0; font-size:18px}
-.wrap{max-width:1200px; margin:0 auto; padding:16px; display:grid; gap:12px}
+
+.wrap{max-width:1300px; margin:0 auto; padding:16px; display:grid; gap:12px}
 .card{background:var(--card); border:1px solid var(--line); border-radius:12px; padding:12px}
+
 h2{margin:0 0 10px 0; font-size:14px}
 .muted{color:var(--muted)}
 .small{font-size:12px}
+
 .row{display:flex; gap:8px; align-items:center; flex-wrap:wrap}
 
 button, select, input{
@@ -31,13 +34,25 @@ button, select, input{
 button:disabled, select:disabled{opacity:.5; cursor:not-allowed}
 button.danger{border-color:#5a2a2a; background:#1a0f12}
 
-.sentText{margin-top:10px; padding:10px; border:1px solid var(--line); border-radius:10px; background:#0f1521}
+.sentText{
+  margin-top:10px;
+  padding:10px;
+  border:1px solid var(--line);
+  border-radius:10px;
+  background:#0f1521;
+}
 
+/* Tables */
 .tableWrap{overflow:auto; border:1px solid var(--line); border-radius:12px}
 table{width:100%; border-collapse:collapse; font-family:var(--mono); font-size:12px}
 th, td{border-bottom:1px solid var(--line); padding:8px; white-space:nowrap; vertical-align:top}
 th{text-align:left; color:var(--muted); position:sticky; top:0; background:var(--card)}
 
+.same{color:var(--ok); font-weight:700}
+.diff{color:var(--bad); font-weight:700}
+.posCell{color:var(--muted)}
+
+/* File list */
 .fileList{display:grid; gap:8px}
 .fileItem{
   display:flex; gap:10px; align-items:center; justify-content:space-between;
@@ -48,11 +63,56 @@ th{text-align:left; color:var(--muted); position:sticky; top:0; background:var(-
 .fileItem .meta{font-size:12px; color:var(--muted)}
 .fileItem button{padding:6px 10px}
 
-/* Vergleiche */
-.same{color:var(--ok); font-weight:700}
-.diff{color:var(--bad); font-weight:700}
+/* Vorschau Layout */
+.previewGrid{
+  margin-top:12px;
+  display:grid;
+  gap:10px;
+  grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+}
+.previewBlock{
+  border:1px solid var(--line);
+  border-radius:12px;
+  padding:10px;
+  background:#0f1521;
+}
+.previewTitle{
+  font-size:12px;
+  color:var(--muted);
+  font-weight:800;
+  margin-bottom:8px;
+}
 
-.posCell{color:var(--muted)}
+/* Tree blocks */
+.treeGrid{
+  display:grid;
+  gap:10px;
+  grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+}
+.treeBlock{
+  border:1px solid var(--line);
+  border-radius:12px;
+  background:#111826;
+  overflow:hidden;
+}
+.treeHead{
+  padding:8px 10px;
+  border-bottom:1px solid var(--line);
+  display:flex;
+  gap:8px;
+  align-items:center;
+  justify-content:space-between;
+}
+.treeHead .title{font-weight:800; font-size:12px}
+.treeHead .sub{color:var(--muted); font-size:12px}
+.treePre{
+  margin:0;
+  padding:10px;
+  font-family:var(--mono);
+  font-size:12px;
+  white-space:pre;
+  overflow:auto;
+}
 
 /* Klickbare Cells (wie Buttons) */
 .pickable{
@@ -64,15 +124,11 @@ th{text-align:left; color:var(--muted); position:sticky; top:0; background:var(-
   outline-offset:-2px;
   border-radius:6px;
 }
-
-/* Ausgewählte Gold-Zelle */
 .picked{
   outline:3px solid #ffffff;
   outline-offset:-3px;
   border-radius:6px;
 }
-
-/* Wenn Custom aktiv ist, sollen Datei-Zellen “deaktiviert” wirken */
 .disabledPick{
   opacity:.45;
   cursor:not-allowed;
@@ -87,6 +143,4 @@ th{text-align:left; color:var(--muted); position:sticky; top:0; background:var(-
 }
 .customHead{width:80px}
 .customRelSelect{width:180px}
-
-/* GOLD Anzeige */
 .goldCell{font-weight:800}
