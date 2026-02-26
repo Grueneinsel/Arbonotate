@@ -147,14 +147,36 @@ function renderSentSelect(){
   customClearBtn.disabled = !ok;
   sentSelect.innerHTML = "";
   if(!ok){ sentStats.textContent = ""; return; }
+  renderSentSelectOptions();
+  updateExportButtons();
+}
+
+function renderSentSelectOptions(){
+  if(state.docs.length < 2 || state.maxSents === 0) return;
+  const cur = sentSelect.value;
+  sentSelect.innerHTML = "";
   for(let i=0;i<state.maxSents;i++){
+    const docMaps = state.docs.map(d => {
+      const s = d.sentences[i];
+      const m = new Map();
+      if(s) for(const t of s.tokens) m.set(t.id, t);
+      return m;
+    });
+    const ids = new Set();
+    for(const m of docMaps) for(const id of m.keys()) ids.add(id);
+    const customSent = state.custom[i] || {};
+    for(const idStr of Object.keys(customSent)) ids.add(parseInt(idStr, 10));
+    const idList = Array.from(ids).sort((a,b) => a - b);
+    const goldMap = buildGoldTokenMap(i, idList, docMaps);
+    const stats = computeStats(i, idList, docMaps, goldMap);
+
     const opt = document.createElement("option");
     opt.value = String(i);
-    opt.textContent = `Satz ${i+1}`;
+    const diffPart = stats.diffCount > 0 ? ` · ${stats.diffCount} Diff${stats.diffCount !== 1 ? 's' : ''}` : ' · ✓';
+    opt.textContent = `Satz ${i+1}  (${stats.totalTokens} Tok${diffPart})`;
     sentSelect.appendChild(opt);
   }
   sentSelect.value = String(state.currentSent);
-  updateExportButtons();
 }
 
 // ---------- UI: Column toggle ----------
@@ -212,7 +234,6 @@ function renderSentence(){
   }
 
   state.currentSent = Math.max(0, Math.min(state.currentSent, state.maxSents - 1));
-  sentSelect.value = String(state.currentSent);
 
   const s0 = state.docs[0].sentences[state.currentSent];
   sentText.textContent = s0 ? s0.text : "(Satz fehlt in Datei 1)";
@@ -220,6 +241,7 @@ function renderSentence(){
 
   renderColToggleBar();
   renderCompareTable();
+  renderSentSelectOptions();
   renderPreview();
 }
 
