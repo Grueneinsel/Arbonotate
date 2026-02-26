@@ -385,5 +385,16 @@ cmpTable.addEventListener("change", (e) => {
   const raw = el.value.trim();
   const val = (raw === "" || raw === "_") ? null : raw;
   setCustomField(state.currentSent, tokId, field, val);
+  el.blur();
   renderSentence();
+});
+
+// Escape on inline pos elements → blur (return keyboard focus to document)
+cmpTable.addEventListener("keydown", (e) => {
+  if(e.key !== "Escape") return;
+  const el = e.target;
+  if(el.classList.contains("posInlineSelect") || el.classList.contains("posInlineInput")){
+    e.stopPropagation();
+    el.blur();
+  }
 });

@@ -127,16 +127,25 @@ tr:last-child td{ border-bottom:none }
 .posCell{ color:var(--muted) }
 
 /* Inline UPOS/XPOS select / input inside table cells */
-.posInlineSelect, .posInlineInput{
-  border:none; background:transparent; color:inherit;
-  font-family:var(--mono); font-size:12px;
-  padding:0; margin:0; width:100%; cursor:pointer;
-  appearance:auto;
+td select.posInlineSelect, td input.posInlineInput{
+  border:none !important;
+  background:transparent !important;
+  color:inherit !important;
+  font-family:var(--mono) !important;
+  font-size:12px !important;
+  padding:0 !important;
+  margin:0 !important;
+  border-radius:0 !important;
+  width:100%;
+  min-width:0;
+  cursor:pointer;
+  box-shadow:none;
 }
-.posInlineSelect:focus, .posInlineInput:focus{
-  outline:1px solid var(--accent); border-radius:3px;
+td select.posInlineSelect:focus, td input.posInlineInput:focus{
+  outline:1px solid var(--accent) !important;
+  border-radius:3px !important;
 }
-.posInlineInput{ cursor:text; }
+td input.posInlineInput{ cursor:text !important; }
 .rowDiff td:first-child{ border-left:3px solid #ff5f5f44 }
 .goldCell{ font-weight:700; color:var(--text) }
 /* Gold cell — editable (click to open popup) */
@@ -386,13 +395,13 @@ tr.keyFocus > td:first-child{ border-left:2px solid var(--accent) }
   background:rgba(9,13,18,.88);
   backdrop-filter:blur(5px);
   align-items:flex-start; justify-content:center;
-  padding:32px 16px;
+  padding:32px 12px;
   animation:overlayIn .15s ease-out;
 }
 .helpModal.active{ display:flex; }
 .helpModalBox{
   position:relative;
-  width:min(800px,100%);
+  width:calc(100% - 24px);
   min-width:0;
   max-height:calc(100vh - 64px);
   overflow-x:hidden;

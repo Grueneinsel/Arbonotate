@@ -18,7 +18,10 @@ function getTableRows(){
 
 document.addEventListener("keydown", (e) => {
   const active = document.activeElement;
-  const inInput = active &&
+  // posInlineSelect/posInlineInput are inline table editors — don't block shortcuts
+  const isInlinePos = active?.classList.contains("posInlineSelect") ||
+                      active?.classList.contains("posInlineInput");
+  const inInput = !isInlinePos && active &&
     (active.tagName === "INPUT" || active.tagName === "SELECT" || active.tagName === "TEXTAREA");
 
   // ? → Help modal (immer, auch in Inputs)
