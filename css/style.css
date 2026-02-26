@@ -29,6 +29,17 @@ body{ margin:0; font-family:var(--sans); background:var(--bg); color:var(--text)
 }
 .bar h1{ margin:0; font-size:17px; font-weight:800; letter-spacing:-.3px }
 .bar p { margin:0; font-size:12px; color:var(--muted) }
+
+/* Language switcher */
+.langBar{ display:flex; gap:4px; margin-left:auto; }
+.langBtn{
+  width:28px; height:28px; padding:0;
+  border-radius:6px; font-size:16px;
+  border-color:transparent; background:transparent;
+  opacity:.55; transition:opacity .15s, border-color .15s;
+}
+.langBtn:hover:not(:disabled){ opacity:1; border-color:var(--line2); background:#0f1a2a; }
+.langBtnActive{ opacity:1 !important; border-color:var(--accent) !important; background:#0d1e33 !important; }
 kbd{ display:inline-block; padding:1px 5px; border-radius:4px; border:1px solid var(--line2); background:#0f1a2a; font-family:var(--mono); font-size:10px; color:var(--text) }
 
 /* Layout */

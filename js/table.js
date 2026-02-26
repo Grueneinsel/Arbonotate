@@ -55,8 +55,8 @@ function renderCompareTable(){
   `;
 
   let html = "<thead><tr>";
-  html += "<th>ID</th><th>FORM</th><th>UPOS</th><th>XPOS</th>";
-  html += "<th>GOLD</th>";
+  html += `<th>${t('col.id')}</th><th>${t('col.form')}</th><th>${t('col.upos')}</th><th>${t('col.xpos')}</th>`;
+  html += `<th>${t('col.gold')}</th>`;
   for(let i=0; i<state.docs.length; i++){
     if(state.hiddenCols.has(i)) continue;
     html += `<th>${escapeHtml(state.docs[i].name)}</th>`;
@@ -114,7 +114,7 @@ function renderCompareTable(){
     // GOLD column — HEAD/DEPREL + UPOS·XPOS
     const goldSrc = customExists ? '<span class="srcTag srcCustom">C</span>' :
       `<span class="srcTag srcDoc">D${getDocChoice(sentIndex,id)+1}</span>`;
-    html += `<td data-col="gold" class="goldCell goldEditable" title="Klicken zum Bearbeiten">${goldSrc} ${escapeHtml(goldVal)}` +
+    html += `<td data-col="gold" class="goldCell goldEditable" title="${escapeHtml(t('popup.editTitle'))}">${goldSrc} ${escapeHtml(goldVal)}` +
       `<div class="posLine">${escapeHtml(goldUpos)}·${escapeHtml(goldXpos)}</div></td>`;
 
     // Per-file columns — HEAD/DEPREL + UPOS·XPOS with per-field diff coloring
@@ -163,6 +163,9 @@ function renderCompareTable(){
 // ── Gold-cell popup ──────────────────────────────────────────────────────
 let _popup      = null;
 let _popupTokId = null;
+
+// Called by i18n.js setLang() to force popup recreation with new language
+function _resetPopup(){ _popup?.remove(); _popup = null; }
 let _lastIdList  = [];
 let _lastDocMaps = [];
 
@@ -180,12 +183,12 @@ function _ensurePopup(){
 
   _popup.innerHTML = `
     <div class="gpTitle">Token <b id="gpNum"></b>: <span id="gpForm"></span></div>
-    <div class="gpRow"><label>HEAD</label><select id="gpHead"></select></div>
-    <div class="gpRow"><label>DEPREL</label><select id="gpDeprel">${DEPREL_OPTIONS_HTML}</select></div>
-    <div class="gpRow"><label>UPOS</label>${uposField}</div>
-    <div class="gpRow"><label>XPOS</label>${xposField}</div>
-    <div class="gpActions"><button id="gpClear" class="danger" title="Shortcut: r">Zurücksetzen</button></div>
-    <div class="gpHint">Tab/Shift+Tab · Enter schließt · r zurücksetzen</div>
+    <div class="gpRow"><label>${t('popup.head')}</label><select id="gpHead"></select></div>
+    <div class="gpRow"><label>${t('popup.deprel')}</label><select id="gpDeprel">${DEPREL_OPTIONS_HTML}</select></div>
+    <div class="gpRow"><label>${t('popup.upos')}</label>${uposField}</div>
+    <div class="gpRow"><label>${t('popup.xpos')}</label>${xposField}</div>
+    <div class="gpActions"><button id="gpClear" class="danger" title="Shortcut: r">${t('popup.reset')}</button></div>
+    <div class="gpHint">${t('popup.hint')}</div>
   `;
   document.body.appendChild(_popup);
 
@@ -305,7 +308,7 @@ function _populatePopup(tokId){
 
   // Build HEAD dropdown from current sentence tokens
   const headSel = document.getElementById("gpHead");
-  headSel.innerHTML = `<option value="0">0 — (root)</option>`;
+  headSel.innerHTML = `<option value="0">0 — ${t('popup.root')}</option>`;
   for(const id of _lastIdList){
     let f = "?";
     for(const m of _lastDocMaps){ const t = m.get(id); if(t){ f = t.form; break; } }

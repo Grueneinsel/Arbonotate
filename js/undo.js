@@ -45,8 +45,8 @@ function _syncUndoBtns(){
   const r = document.getElementById("redoBtn");
   if(u) u.disabled = _undoStack.length === 0;
   if(r) r.disabled = _redoStack.length === 0;
-  if(u) u.title = `Rückgängig (Ctrl+Z)  —  ${_undoStack.length} Schritt${_undoStack.length !== 1 ? 'e' : ''}`;
-  if(r) r.title = `Wiederholen (Ctrl+Y)  —  ${_redoStack.length} Schritt${_redoStack.length !== 1 ? 'e' : ''}`;
+  if(u) u.title = t('undo.title', { n: _undoStack.length, s: tpSuffix(_undoStack.length, 'undo') });
+  if(r) r.title = t('redo.title', { n: _redoStack.length, s: tpSuffix(_redoStack.length, 'undo') });
 }
 
 // ---------- Session serialisation helpers ----------

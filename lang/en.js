@@ -1,0 +1,99 @@
+window.LANG_EN = {
+  // Sections
+  'sec.files':   '1) Files',
+  'sec.select':  '2) Select Sentence',
+  'sec.tree':    '3) Tree View',
+  'sec.compare': '4) Comparison',
+  'sec.export':  '5) Export',
+
+  // File section
+  'files.add':          'Add files',
+  'files.reset':        'Reset',
+  'files.none':         'No files loaded',
+  'files.loaded':       '{n} file(s) loaded',
+  'files.drop':         'Drop files here or use the button · .conllu / .conll / .txt',
+  'files.demo':         'Load demo (3 example files)',
+  'files.delete':       'Remove',
+  'files.sentences':    '{n} sentences',
+  'files.warnBadge':    'Different text!',
+  'files.warnBanner':   '⚠️ Different texts loaded — comparison may be inaccurate.',
+  'files.resetConfirm': 'Really reset everything?',
+
+  // Sentence select
+  'sent.confirm':      '✓ Confirm',
+  'sent.confirmed':    '✓ Confirmed',
+  'sent.missing':      '(Sentence missing in file 1)',
+  'sent.label':        'S{cur} / {max}',
+  'sent.optOk':        '· ✓',
+  'sent.optDiff':      '· {n} diff',
+  'sent.optDiffs':     '· {n} diffs',
+  'sent.dotTitle':     'Sentence {n}: {toks} tokens, {diffs} diffs',
+  'sent.dotTitleConf': 'Sentence {n}: {toks} tokens, {diffs} diffs (confirmed)',
+  'sent.clearConfirm': 'Really delete custom annotations for this sentence?',
+
+  // Columns toggle
+  'cols.label': 'Columns: ',
+
+  // Custom
+  'custom.initBtn': 'Custom from "{name}"',
+  'custom.clear':   'Clear custom sentence',
+
+  // Legend
+  'legend.label': 'Legend:',
+  'legend.ok':    '✅ identical',
+  'legend.warn':  '⚠️ label difference',
+  'legend.gold':  '🅶 gold only',
+  'legend.file':  '🅵 this file only',
+  'legend.root':  '🌱 subtree root',
+  'legend.click': 'Click row → jump to table row',
+
+  // Stats
+  'stats.tokens': '{n} tokens',
+  'stats.diff':   '{n} diff',
+  'stats.diffs':  '{n} diffs',
+
+  // Undo / Redo
+  'undo.btn':   '↩ Undo',
+  'redo.btn':   '↪ Redo',
+  'undo.title': 'Undo (Ctrl+Z)  —  {n} step{s}',
+  'redo.title': 'Redo (Ctrl+Y)  —  {n} step{s}',
+  'undo.step':  '',
+  'undo.steps': 's',
+
+  // Table columns
+  'col.id':   'ID',
+  'col.form': 'FORM',
+  'col.upos': 'UPOS',
+  'col.xpos': 'XPOS',
+  'col.gold': 'GOLD',
+
+  // Gold popup
+  'popup.editTitle': 'Click to edit',
+  'popup.head':      'HEAD',
+  'popup.deprel':    'DEPREL',
+  'popup.upos':      'UPOS',
+  'popup.xpos':      'XPOS',
+  'popup.reset':     'Reset',
+  'popup.hint':      'Tab/Shift+Tab · Enter closes · r reset',
+  'popup.root':      '(root)',
+
+  // Export
+  'export.conllu':     'Download Gold CoNLL-U',
+  'export.trees':      'Download tree view (all sentences)',
+  'export.conlluDesc': 'Gold CoNLL-U contains all sentences with current Gold annotations (HEAD, DEPREL, UPOS, XPOS). LEMMA / FEATS / DEPS / MISC are taken from the source file.',
+  'export.mwtNote':    'Note: Multi-word tokens (IDs with "-" or ".") are ignored.',
+
+  // Session
+  'session.save':      '💾 Save session',
+  'session.load':      '📂 Load session',
+  'session.desc':      'Session saves all loaded files, annotations, and the complete undo/redo history as JSON.',
+  'session.exported':  'Exported: {n} file(s), {u} undo steps',
+  'session.loaded':    'Loaded: {n} file(s) · {s} sentences · {u} undo steps',
+  'session.errJson':   'Invalid JSON file.',
+  'session.errFormat': 'Unknown session format (version ≠ 1).',
+  'session.errNoDocs': 'Session contains no files.',
+
+  // Help
+  'help.unavailable': 'Help not available.',
+  'help.runScript':   'Please run python make_readme_js.py and reload the page.',
+};

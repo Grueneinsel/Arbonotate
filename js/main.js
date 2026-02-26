@@ -74,8 +74,8 @@ function getWarnedDocIndices(){
     const other = state.docs[d];
     if(ref.sentences.length !== other.sentences.length){ warned.add(d); continue; }
     for(let s = 0; s < ref.sentences.length; s++){
-      const formsA = ref.sentences[s].tokens.map(t => t.form).join(" ");
-      const formsB = other.sentences[s].tokens.map(t => t.form).join(" ");
+      const formsA = ref.sentences[s].tokens.map(tk => tk.form).join(" ");
+      const formsB = other.sentences[s].tokens.map(tk => tk.form).join(" ");
       if(formsA !== formsB){ warned.add(d); break; }
     }
   }
@@ -85,11 +85,13 @@ function getWarnedDocIndices(){
 // ---------- UI: Files ----------
 function renderFiles(){
   fileList.innerHTML = "";
-  fileMeta.textContent = state.docs.length ? `${state.docs.length} Datei(en) geladen` : "Keine Dateien geladen";
+  fileMeta.textContent = state.docs.length
+    ? t('files.loaded', { n: state.docs.length })
+    : t('files.none');
   if(state.docs.length === 0){
-    fileList.innerHTML = `<div class="muted small">Dateien hier ablegen oder Schaltfläche nutzen · .conllu / .conll / .txt</div>`;
+    fileList.innerHTML = `<div class="muted small">${escapeHtml(t('files.drop'))}</div>`;
     const demoBtn = document.createElement("button");
-    demoBtn.textContent = "Demo laden (3 Beispieldateien)";
+    demoBtn.textContent = t('files.demo');
     demoBtn.style.marginTop = "8px";
     demoBtn.addEventListener("click", loadExamples);
     fileList.appendChild(demoBtn);
@@ -100,20 +102,20 @@ function renderFiles(){
     const div = document.createElement("div");
     div.className = "fileItem";
     const warnBadge = warnedIndices.has(idx)
-      ? ` <span class="fileWarnIcon" title="Unterschiedlicher Text!">⚠️</span>` : "";
+      ? ` <span class="fileWarnIcon" title="${escapeHtml(t('files.warnBadge'))}">⚠️</span>` : "";
     div.innerHTML = `
       <div class="left">
         <div class="name">${escapeHtml(d.name)}${warnBadge}</div>
-        <div class="meta">${d.sentences.length} Sätze</div>
+        <div class="meta">${escapeHtml(t('files.sentences', { n: d.sentences.length }))}</div>
       </div>
-      <button class="danger">Löschen</button>
+      <button class="danger">${escapeHtml(t('files.delete'))}</button>
     `;
     div.querySelector("button").addEventListener("click", () => removeDoc(idx));
     fileList.appendChild(div);
   });
 
   textWarn.innerHTML = warnedIndices.size > 0
-    ? `<div class="textWarnBanner">⚠️ Unterschiedliche Texte geladen — Vergleich möglicherweise fehlerhaft.</div>`
+    ? `<div class="textWarnBanner">${escapeHtml(t('files.warnBanner'))}</div>`
     : "";
 }
 
@@ -161,7 +163,7 @@ function renderSentSelect(){
   if(ok){
     state.docs.forEach((d, idx) => {
       const btn = document.createElement("button");
-      btn.textContent = `Custom aus "${d.name}"`;
+      btn.textContent = t('custom.initBtn', { name: d.name });
       btn.addEventListener("click", () => initCustomFromDoc(idx));
       customInitBtns.appendChild(btn);
     });
@@ -174,12 +176,12 @@ function renderSentSelect(){
   updateExportButtons();
 }
 
-// Berechnet Stats für einen Satz und gibt {stats, diffCount} zurück (wiederverwendbar)
+// Berechnet Stats für einen Satz (wiederverwendbar)
 function _sentStats(i){
   const docMaps = state.docs.map(d => {
     const s = d.sentences[i];
     const m = new Map();
-    if(s) for(const t of s.tokens) m.set(t.id, t);
+    if(s) for(const tk of s.tokens) m.set(tk.id, tk);
     return m;
   });
   const ids = new Set();
@@ -204,7 +206,7 @@ function toggleConfirm(){
 function updateConfirmBtn(){
   if(!confirmBtn) return;
   const isConfirmed = state.confirmed.has(state.currentSent);
-  confirmBtn.textContent  = isConfirmed ? "✓ Bestätigt" : "✓ Bestätigen";
+  confirmBtn.textContent  = isConfirmed ? t('sent.confirmed') : t('sent.confirm');
   confirmBtn.classList.toggle("confirmBtnActive", isConfirmed);
 }
 
@@ -217,9 +219,10 @@ function renderSentSelectOptions(){
     const confirmed = state.confirmed.has(i);
     const opt = document.createElement("option");
     opt.value = String(i);
-    const diffPart = hasDiff ? ` · ${stats.diffCount} Diff${stats.diffCount !== 1 ? 's' : ''}` : ' · ✓';
-    const confMark = confirmed ? ' ★' : '';
-    opt.textContent = `Satz ${i+1}${confMark}  (${stats.totalTokens} Tok${diffPart})`;
+    const diffPart = hasDiff
+      ? ` ${t(stats.diffCount !== 1 ? 'sent.optDiffs' : 'sent.optDiff', { n: stats.diffCount })}`
+      : ` ${t('sent.optOk')}`;
+    opt.textContent = `Satz ${i+1}${confirmed ? ' ★' : ''}  (${stats.totalTokens} Tok${diffPart})`;
     if(confirmed){
       opt.style.background = '#1a1000';
       opt.style.color = '#ffb347';
@@ -251,13 +254,14 @@ function renderSentMap(){
     const isCurrent = i === state.currentSent;
     const dot = document.createElement("button");
     let cls = "sentDot ";
-    if(confirmed)   cls += "sentDotConfirmed";
+    if(confirmed)    cls += "sentDotConfirmed";
     else if(hasDiff) cls += "sentDotDiff";
     else             cls += "sentDotOk";
-    if(isCurrent)   cls += " sentDotCurrent";
+    if(isCurrent)    cls += " sentDotCurrent";
     dot.className = cls;
-    const confLabel = confirmed ? ' (bestätigt)' : '';
-    dot.title = `Satz ${i+1}: ${stats.totalTokens} Tokens, ${stats.diffCount} Diffs${confLabel}`;
+    dot.title = t(confirmed ? 'sent.dotTitleConf' : 'sent.dotTitle', {
+      n: i + 1, toks: stats.totalTokens, diffs: stats.diffCount
+    });
     dot.addEventListener("click", () => {
       state.currentSent = i;
       renderSentence();
@@ -272,14 +276,13 @@ function renderColToggleBar(){
   if(state.docs.length < 2){ return; }
   const label = document.createElement("span");
   label.className = "muted small";
-  label.textContent = "Spalten: ";
+  label.textContent = t('cols.label');
   colToggleBar.appendChild(label);
 
   state.docs.forEach((d, idx) => {
     const btn = document.createElement("button");
     btn.className = "colToggle" + (state.hiddenCols.has(idx) ? " colHidden" : " colVisible");
     btn.textContent = d.name;
-    btn.title = state.hiddenCols.has(idx) ? "Spalte einblenden" : "Spalte ausblenden";
     btn.addEventListener("click", () => {
       if(state.hiddenCols.has(idx)) state.hiddenCols.delete(idx);
       else state.hiddenCols.add(idx);
@@ -296,14 +299,14 @@ function initCustomFromDoc(docIdx){
   if(!s) return;
   pushUndo();
   const sent = ensureCustomSent(state.currentSent);
-  for(const t of s.tokens){
-    sent[t.id] = { head: t.head ?? null, deprel: t.deprel ?? null, upos: t.upos ?? null, xpos: t.xpos ?? null };
+  for(const tk of s.tokens){
+    sent[tk.id] = { head: tk.head ?? null, deprel: tk.deprel ?? null, upos: tk.upos ?? null, xpos: tk.xpos ?? null };
   }
   renderSentence();
 }
 
 function clearCustomForSentence(){
-  if(!confirm("Custom für diesen Satz wirklich löschen?")) return;
+  if(!confirm(t('sent.clearConfirm'))) return;
   pushUndo();
   delete state.custom[state.currentSent];
   renderSentence();
@@ -327,12 +330,12 @@ function renderSentence(){
   const s0 = state.docs[0].sentences[state.currentSent];
   if(s0){
     sentText.innerHTML = s0.tokens
-      .map(t => `<span class="sentToken" data-id="${t.id}">${escapeHtml(t.form)}</span>`)
+      .map(tk => `<span class="sentToken" data-id="${tk.id}">${escapeHtml(tk.form)}</span>`)
       .join(' ');
   } else {
-    sentText.textContent = "(Satz fehlt in Datei 1)";
+    sentText.textContent = t('sent.missing');
   }
-  sentMeta.textContent = `S${state.currentSent+1} / ${state.maxSents}`;
+  sentMeta.textContent = t('sent.label', { cur: state.currentSent + 1, max: state.maxSents });
   sentText.classList.toggle("sentTextConfirmed", state.confirmed.has(state.currentSent));
 
   renderColToggleBar();

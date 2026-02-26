@@ -109,7 +109,7 @@ function removeDoc(index){
 }
 
 function resetAll(){
-  if(!confirm("Wirklich alles zurücksetzen?")) return;
+  if(!confirm(t('files.resetConfirm'))) return;
   state.docs = [];
   state.custom = {};
   state.goldPick = {};

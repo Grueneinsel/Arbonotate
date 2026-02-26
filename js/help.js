@@ -26,8 +26,9 @@ function openHelp(){
     helpLoaded = true;
   } else {
     helpContent.innerHTML =
-      `<p class="muted">Hilfe nicht verfügbar.<br>
-       Bitte <code>python make_readme_js.py</code> ausführen und die Seite neu laden.</p>`;
+      `<p class="muted">${escapeHtml(t('help.unavailable'))}<br>
+       <code>python make_readme_js.py</code><br>
+       ${escapeHtml(t('help.runScript'))}</p>`;
   }
 }
 

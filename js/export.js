@@ -112,19 +112,19 @@ function exportSession(){
   };
   const ts = new Date().toISOString().slice(0, 19).replace(/[:T]/g, "-");
   downloadText(JSON.stringify(session, null, 2), `session_${ts}.json`);
-  _showSessionMeta(`Exportiert: ${session.docs.length} Datei(en), ${session.undo.length} Undo-Schritte`);
+  _showSessionMeta(t('session.exported', { n: session.docs.length, u: session.undo.length }));
 }
 
 // ---------- Session Import ----------
 function importSession(jsonText){
   let data;
   try { data = JSON.parse(jsonText); }
-  catch { alert("Ungültige JSON-Datei."); return; }
+  catch { alert(t('session.errJson')); return; }
   if(data.version !== 1 || !Array.isArray(data.docs)){
-    alert("Unbekanntes Session-Format (version ≠ 1)."); return;
+    alert(t('session.errFormat')); return;
   }
   if(!data.docs.length){
-    alert("Session enthält keine Dateien."); return;
+    alert(t('session.errNoDocs')); return;
   }
 
   // Labels wiederherstellen (vor buildDeprelOptionsCache)
@@ -154,7 +154,7 @@ function importSession(jsonText){
   renderFiles();
   renderSentSelect();
   renderSentence();
-  _showSessionMeta(`Geladen: ${state.docs.length} Datei(en) · ${state.maxSents} Sätze · ${data.undo?.length || 0} Undo-Schritte`);
+  _showSessionMeta(t('session.loaded', { n: state.docs.length, s: state.maxSents, u: data.undo?.length || 0 }));
 }
 
 function _showSessionMeta(msg){
