@@ -13,6 +13,7 @@
       Gold pro Zeile durch Klick auf eine Datei-Zelle. Custom befüllt → Custom ist Gold automatisch.
       &nbsp;|&nbsp; Tastatur: <kbd>←</kbd><kbd>→</kbd> Satz &nbsp; <kbd>↑</kbd><kbd>↓</kbd> Zeile &nbsp; <kbd>1</kbd>–<kbd>9</kbd> Doc wählen &nbsp; <kbd>Esc</kbd> Fokus
     </p>
+    <button id="helpBtn" class="helpBtn" title="Hilfe / README anzeigen">?</button>
   </header>
 
   <main class="wrap">
@@ -87,6 +88,13 @@
     </div>
   </div>
 
+  <div id="helpModal" class="helpModal">
+    <div class="helpModalBox">
+      <button id="helpCloseBtn" title="Schließen">✕</button>
+      <div id="helpContent" class="helpContent"></div>
+    </div>
+  </div>
+
 <script src="js/state.js"></script>
   <script src="labels.js"></script>
   <script src="examples.js"></script>
@@ -96,5 +104,6 @@
   <script src="js/main.js"></script>
   <script src="js/export.js"></script>
   <script src="js/keyboard.js"></script>
+  <script src="js/help.js"></script>
 </body>
 </html>

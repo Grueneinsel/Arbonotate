@@ -301,6 +301,78 @@ tr.keyFocus > td:first-child{ border-left:2px solid var(--accent) }
   background: #0f1a28;
 }
 
+/* ── Help-Button im Header ── */
+.helpBtn{
+  width:30px; height:30px;
+  border-radius:50%;
+  padding:0;
+  font-size:15px; font-weight:800;
+  flex-shrink:0;
+  margin-left:auto;
+}
+
+/* ── Help-Modal ── */
+.helpModal{
+  display:none;
+  position:fixed; inset:0; z-index:10000;
+  background:rgba(9,13,18,.88);
+  backdrop-filter:blur(5px);
+  align-items:flex-start; justify-content:center;
+  padding:32px 16px;
+  animation:overlayIn .15s ease-out;
+}
+.helpModal.active{ display:flex; }
+.helpModalBox{
+  position:relative;
+  width:min(800px,100%);
+  min-width:0;
+  max-height:calc(100vh - 64px);
+  overflow-x:hidden;
+  overflow-y:auto;
+  background:var(--card);
+  border:1px solid var(--line2);
+  border-radius:16px;
+  padding:28px 32px 36px;
+  scrollbar-gutter:stable;
+}
+#helpCloseBtn{
+  position:absolute; top:14px; right:16px;
+  width:28px; height:28px;
+  padding:0; border-radius:50%; font-size:13px;
+}
+
+/* ── Gerendertes Markdown ── */
+.helpContent{ line-height:1.6; overflow-wrap:break-word; word-break:break-word; }
+.helpContent .helpH{ margin:0 0 8px; }
+.helpContent h1.helpH{ font-size:20px; font-weight:800; color:var(--text); padding-right:40px; }
+.helpContent h2.helpH{ font-size:12px; font-weight:700; color:var(--accent); margin-top:26px; text-transform:uppercase; letter-spacing:.4px; }
+.helpContent h3.helpH{ font-size:12px; font-weight:700; color:var(--muted); margin-top:16px; }
+.helpContent .helpHr{ border:none; border-top:1px solid var(--line); margin:16px 0; }
+.helpContent .helpP{ margin:4px 0 8px; }
+.helpContent .helpUl, .helpContent .helpOl{ padding-left:20px; margin:4px 0 10px; }
+.helpContent li{ margin:3px 0; }
+.helpContent .helpCode{
+  margin:8px 0; padding:12px 14px;
+  background:#060e18; border:1px solid var(--line); border-radius:8px;
+  overflow-x:auto; font-family:var(--mono); font-size:11px; line-height:1.6; white-space:pre;
+}
+.helpContent .helpInlineCode{
+  font-family:var(--mono); font-size:11px;
+  background:#1a2535; padding:1px 5px; border-radius:4px;
+}
+.helpContent .helpTable{
+  display:block; overflow-x:auto;
+  width:100%; max-width:100%;
+  border-collapse:collapse; margin:8px 0 14px; font-size:12px;
+}
+.helpContent .helpTable th{
+  background:#0d1a2a; color:var(--muted); font-size:11px; letter-spacing:.3px;
+}
+.helpContent .helpTable th,
+.helpContent .helpTable td{ border:1px solid var(--line); padding:6px 10px; text-align:left; }
+.helpContent .helpTable tr:nth-child(even) td{ background:#0a1218; }
+.helpContent strong{ color:var(--text); font-weight:700; }
+
 /* POS edit cells */
 .posEditCell { padding: 4px 6px !important; }
 .posSelect {
