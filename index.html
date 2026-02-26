@@ -24,6 +24,7 @@
         <span id="fileMeta" class="muted"></span>
       </div>
       <div id="fileList" class="fileList" style="margin-top:10px"></div>
+      <div id="textWarn"></div>
     </section>
 
     <section class="card">
@@ -68,6 +69,19 @@
 
   <div id="dropOverlay" class="dropOverlay">
     <div class="dropOverlayInner">
+    </div>
+  </div>
+
+  <div id="warnModal" class="warnModal" hidden>
+    <div class="warnModalCard">
+      <div class="warnModalHead">
+        <span>⚠️ Unterschiedliche Texte erkannt</span>
+        <button id="warnModalClose" class="warnModalCloseBtn">✕</button>
+      </div>
+      <div id="warnModalBody" class="warnModalBody"></div>
+      <div class="warnModalFoot">
+        <button id="warnModalOk">Verstanden</button>
+      </div>
     </div>
   </div>
 

@@ -15,9 +15,17 @@ const treeGrid    = document.getElementById("treeGrid");
 const cmpTable    = document.getElementById("cmpTable");
 const colToggleBar = document.getElementById("colToggleBar");
 
-const customInitBtns = document.getElementById("customInitBtns");
-const customClearBtn = document.getElementById("customClearBtn");
-const dropOverlay    = document.getElementById("dropOverlay");
+const customInitBtns  = document.getElementById("customInitBtns");
+const customClearBtn  = document.getElementById("customClearBtn");
+const dropOverlay     = document.getElementById("dropOverlay");
+const textWarn        = document.getElementById("textWarn");
+const warnModal       = document.getElementById("warnModal");
+const warnModalBody   = document.getElementById("warnModalBody");
+const warnModalClose  = document.getElementById("warnModalClose");
+const warnModalOk     = document.getElementById("warnModalOk");
+
+warnModalClose.addEventListener("click", () => { warnModal.hidden = true; });
+warnModalOk.addEventListener("click",    () => { warnModal.hidden = true; });
 
 // ---------- Events ----------
 fileInput.addEventListener("change", onFilesChosen);
@@ -80,6 +88,45 @@ cmpTable.addEventListener("click", (e) => {
   }
 })();
 
+// ---------- Text compatibility check ----------
+function getTextWarnings(){
+  if(state.docs.length < 2) return [];
+  const ref = state.docs[0];
+  const warns = [];
+  for(let d = 1; d < state.docs.length; d++){
+    const other = state.docs[d];
+    if(ref.sentences.length !== other.sentences.length){
+      warns.push(`"${other.name}" hat ${other.sentences.length} Sätze, "${ref.name}" hat ${ref.sentences.length} — unterschiedliche Texte?`);
+      continue;
+    }
+    for(let s = 0; s < ref.sentences.length; s++){
+      const formsA = ref.sentences[s].tokens.map(t => t.form).join(" ");
+      const formsB = other.sentences[s].tokens.map(t => t.form).join(" ");
+      if(formsA !== formsB){
+        warns.push(`"${other.name}" vs. "${ref.name}": Satz ${s+1} hat unterschiedliche Token (z.B. „${formsB.slice(0,40)}…" ≠ „${formsA.slice(0,40)}…").`);
+        break;
+      }
+    }
+  }
+  return warns;
+}
+
+function getWarnedDocIndices(){
+  const warned = new Set();
+  if(state.docs.length < 2) return warned;
+  const ref = state.docs[0];
+  for(let d = 1; d < state.docs.length; d++){
+    const other = state.docs[d];
+    if(ref.sentences.length !== other.sentences.length){ warned.add(d); continue; }
+    for(let s = 0; s < ref.sentences.length; s++){
+      const formsA = ref.sentences[s].tokens.map(t => t.form).join(" ");
+      const formsB = other.sentences[s].tokens.map(t => t.form).join(" ");
+      if(formsA !== formsB){ warned.add(d); break; }
+    }
+  }
+  return warned;
+}
+
 // ---------- UI: Files ----------
 function renderFiles(){
   fileList.innerHTML = "";
@@ -88,12 +135,15 @@ function renderFiles(){
     fileList.innerHTML = `<div class="muted small">Dateien hier ablegen oder Schaltfläche nutzen · .conllu / .conll / .txt</div>`;
     return;
   }
+  const warnedIndices = getWarnedDocIndices();
   state.docs.forEach((d, idx) => {
     const div = document.createElement("div");
     div.className = "fileItem";
+    const warnBadge = warnedIndices.has(idx)
+      ? ` <span class="fileWarnIcon" title="Unterschiedlicher Text!">⚠️</span>` : "";
     div.innerHTML = `
       <div class="left">
-        <div class="name">${escapeHtml(d.name)}</div>
+        <div class="name">${escapeHtml(d.name)}${warnBadge}</div>
         <div class="meta">${d.sentences.length} Sätze</div>
       </div>
       <button class="danger">Löschen</button>
@@ -101,6 +151,15 @@ function renderFiles(){
     div.querySelector("button").addEventListener("click", () => removeDoc(idx));
     fileList.appendChild(div);
   });
+
+  const warns = getTextWarnings();
+  if(warns.length > 0){
+    warnModalBody.innerHTML = warns.map(w => `<p>${escapeHtml(w)}</p>`).join("");
+    warnModal.hidden = false;
+    textWarn.innerHTML = `<div class="textWarnBanner">⚠️ Unterschiedliche Texte geladen — Vergleich möglicherweise fehlerhaft.</div>`;
+  } else {
+    textWarn.innerHTML = "";
+  }
 }
 
 // ---------- Drag & Drop (ganze Seite) ----------
