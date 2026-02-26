@@ -67,28 +67,6 @@ cmpTable.addEventListener("click", (e) => {
 });
 
 // ---------- Text compatibility check ----------
-function getTextWarnings(){
-  if(state.docs.length < 2) return [];
-  const ref = state.docs[0];
-  const warns = [];
-  for(let d = 1; d < state.docs.length; d++){
-    const other = state.docs[d];
-    if(ref.sentences.length !== other.sentences.length){
-      warns.push(`"${other.name}" hat ${other.sentences.length} Sätze, "${ref.name}" hat ${ref.sentences.length} — unterschiedliche Texte?`);
-      continue;
-    }
-    for(let s = 0; s < ref.sentences.length; s++){
-      const formsA = ref.sentences[s].tokens.map(t => t.form).join(" ");
-      const formsB = other.sentences[s].tokens.map(t => t.form).join(" ");
-      if(formsA !== formsB){
-        warns.push(`"${other.name}" vs. "${ref.name}": Satz ${s+1} hat unterschiedliche Token (z.B. „${formsB.slice(0,40)}…" ≠ „${formsA.slice(0,40)}…").`);
-        break;
-      }
-    }
-  }
-  return warns;
-}
-
 function getWarnedDocIndices(){
   const warned = new Set();
   if(state.docs.length < 2) return warned;
@@ -130,12 +108,9 @@ function renderFiles(){
     fileList.appendChild(div);
   });
 
-  const warns = getTextWarnings();
-  if(warns.length > 0){
-    textWarn.innerHTML = `<div class="textWarnBanner">⚠️ Unterschiedliche Texte geladen — Vergleich möglicherweise fehlerhaft.</div>`;
-  } else {
-    textWarn.innerHTML = "";
-  }
+  textWarn.innerHTML = warnedIndices.size > 0
+    ? `<div class="textWarnBanner">⚠️ Unterschiedliche Texte geladen — Vergleich möglicherweise fehlerhaft.</div>`
+    : "";
 }
 
 // ---------- Drag & Drop (ganze Seite) ----------

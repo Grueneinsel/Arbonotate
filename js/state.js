@@ -1,15 +1,5 @@
-// ---------- Labels ----------
-const DEFAULT_LABELS = {
-  "Core arguments": ["nsubj","obj","iobj","csubj","ccomp","xcomp"],
-  "Non-core dependents": ["obl","vocative","expl","dislocated"],
-  "Modifier words": ["advcl","advmod*","discourse"],
-  "Function Words": ["aux","cop","mark"],
-  "Nominal dependents": ["nmod","appos","nummod","acl","amod","det","clf","case"],
-  "Coordination": ["conj","cc"],
-  "Other": ["fixed","flat","list","parataxis","compound","orphan","goeswith","reparandum","punct","root","dep"]
-};
-
-let LABELS = DEFAULT_LABELS;
+// Set by labels.js before main.js runs
+let LABELS = {};
 let DEPREL_OPTIONS_HTML = "";
 let DEPREL_VALUE_SET = new Set();
 let UPOS_OPTIONS_HTML = "";
@@ -67,13 +57,15 @@ function buildDeprelOptionsCache(){
 function ensureCustomSent(sentIndex){ if(!state.custom[sentIndex]) state.custom[sentIndex] = {}; return state.custom[sentIndex]; }
 function ensureGoldSent(sentIndex){ if(!state.goldPick[sentIndex]) state.goldPick[sentIndex] = {}; return state.goldPick[sentIndex]; }
 
+function nullIfEmpty(v){ return (v === null || v === undefined || v === "") ? null : v; }
+
 function getCustomEntry(sentIndex, tokId){
   const e = state.custom[sentIndex]?.[tokId];
   if(!e) return null;
-  const head   = (e.head   === null || e.head   === undefined || e.head   === "") ? null : e.head;
-  const deprel = (e.deprel === null || e.deprel === undefined || e.deprel === "") ? null : e.deprel;
-  const upos   = (e.upos   === null || e.upos   === undefined || e.upos   === "") ? null : e.upos;
-  const xpos   = (e.xpos   === null || e.xpos   === undefined || e.xpos   === "") ? null : e.xpos;
+  const head   = nullIfEmpty(e.head);
+  const deprel = nullIfEmpty(e.deprel);
+  const upos   = nullIfEmpty(e.upos);
+  const xpos   = nullIfEmpty(e.xpos);
   if(head === null && deprel === null && upos === null && xpos === null) return null;
   return { head, deprel, upos, xpos };
 }
