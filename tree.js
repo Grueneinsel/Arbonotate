@@ -135,15 +135,35 @@ function scrollToToken(tokId){
   }
 }
 
-function buildTreeSection(title, sub, text){
+function getSubtreeIds(rootId, tokMap){
+  const children = new Map();
+  for(const [id, t] of tokMap.entries()){
+    const h = (typeof t.head === "number") ? t.head : null;
+    if(h === null) continue;
+    if(!children.has(h)) children.set(h, []);
+    children.get(h).push(id);
+  }
+  const ids = new Set();
+  const stack = [rootId];
+  while(stack.length){
+    const id = stack.pop();
+    ids.add(id);
+    for(const c of (children.get(id) || [])) stack.push(c);
+  }
+  return ids;
+}
+
+function buildTreeSection(title, sub, text, onAdoptSubtree){
   const section = document.createElement("div");
   section.className = "treeSection";
 
   const head = document.createElement("div");
   head.className = "treeHead";
   head.innerHTML = `
-    <div class="title">${escapeHtml(title)}</div>
-    ${sub ? `<div class="sub">${escapeHtml(sub)}</div>` : ""}
+    <div style="display:flex;gap:8px;align-items:center">
+      <div class="title">${escapeHtml(title)}</div>
+      ${sub ? `<div class="sub">${escapeHtml(sub)}</div>` : ""}
+    </div>
   `;
   section.appendChild(head);
 
@@ -152,8 +172,27 @@ function buildTreeSection(title, sub, text){
 
   const lines = text.split("\n");
   for(const line of lines){
-    const tokMatch = line.match(/→\s*(\d+):/);
-    if(tokMatch){
+    const rootMatch = onAdoptSubtree && line.match(/^🌱\s*(\d+):/);
+    const tokMatch  = line.match(/→\s*(\d+):/);
+
+    if(rootMatch){
+      const rootId = parseInt(rootMatch[1], 10);
+      const wrapper = document.createElement("span");
+      wrapper.className = "treeLine treeLineRoot";
+
+      const txt = document.createElement("span");
+      txt.textContent = line;
+      wrapper.appendChild(txt);
+
+      const btn = document.createElement("button");
+      btn.textContent = "→ Gold";
+      btn.className = "treeSubtreeBtn";
+      btn.title = `Teilbaum ab Token ${rootId} als Gold/Custom übernehmen`;
+      btn.addEventListener("click", (e) => { e.stopPropagation(); onAdoptSubtree(rootId); });
+      wrapper.appendChild(btn);
+
+      pre.appendChild(wrapper);
+    } else if(tokMatch){
       const tokId = parseInt(tokMatch[1], 10);
       const span = document.createElement("span");
       span.className = "treeLine treeLineClickable";
@@ -190,10 +229,28 @@ function renderPreview(){
   wrap.appendChild(goldSection);
 
   for(let i=0; i<state.docs.length; i++){
-    const name = state.docs[i]?.name ?? `Datei ${i+1}`;
+    const name   = state.docs[i]?.name ?? `Datei ${i+1}`;
     const otherMap = docMaps[i];
-    const diff = renderTreeDiff(sentIndex, goldMap, otherMap, sentenceText);
-    const section = buildTreeSection(name, "vs Gold", diff);
+    const diff   = renderTreeDiff(sentIndex, goldMap, otherMap, sentenceText);
+    const docIdx = i;
+    const section = buildTreeSection(name, "vs Gold", diff, (rootId) => {
+      const subIds = new Set([
+        ...getSubtreeIds(rootId, goldMap),
+        ...getSubtreeIds(rootId, otherMap),
+      ]);
+      for(const id of subIds){
+        const e = state.custom[sentIndex]?.[id];
+        if(e){
+          e.head   = null;
+          e.deprel = null;
+          if(!getCustomEntry(sentIndex, id)) delete state.custom[sentIndex][id];
+        }
+        setDocChoice(sentIndex, id, docIdx);
+      }
+      if(state.custom[sentIndex] && !Object.keys(state.custom[sentIndex]).length)
+        delete state.custom[sentIndex];
+      renderSentence();
+    });
     wrap.appendChild(section);
   }
 

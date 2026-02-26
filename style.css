@@ -271,6 +271,13 @@ tr:last-child td{ border-bottom:none }
 }
 .treeHead .title{ font-weight:800; font-size:12px }
 .treeHead .sub{ color:var(--muted); font-size:11px }
+.treeLineRoot{ display:flex; align-items:center; gap:8px; white-space:pre }
+.treeSubtreeBtn{
+  padding:2px 8px; font-size:10px; font-family:var(--sans);
+  border-color:#1a3a5c; color:var(--accent); background:#0a1a2e;
+  border-radius:6px; flex-shrink:0;
+}
+.treeSubtreeBtn:hover{ border-color:var(--accent); background:#0d2040 }
 .treePre{
   margin:0; padding:10px 12px;
   font-family:var(--mono); font-size:12px;
