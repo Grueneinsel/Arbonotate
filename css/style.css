@@ -125,6 +125,18 @@ tr:last-child td{ border-bottom:none }
 /* UPOS or XPOS column cell when files disagree */
 .posDiff{ outline:1px solid #ff79c6; outline-offset:-2px; border-radius:4px }
 .posCell{ color:var(--muted) }
+
+/* Inline UPOS/XPOS select / input inside table cells */
+.posInlineSelect, .posInlineInput{
+  border:none; background:transparent; color:inherit;
+  font-family:var(--mono); font-size:12px;
+  padding:0; margin:0; width:100%; cursor:pointer;
+  appearance:auto;
+}
+.posInlineSelect:focus, .posInlineInput:focus{
+  outline:1px solid var(--accent); border-radius:3px;
+}
+.posInlineInput{ cursor:text; }
 .rowDiff td:first-child{ border-left:3px solid #ff5f5f44 }
 .goldCell{ font-weight:700; color:var(--text) }
 /* Gold cell — editable (click to open popup) */
