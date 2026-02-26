@@ -51,6 +51,7 @@ cmpTable.addEventListener("click", (e) => {
   const tokId = parseInt(tr.dataset.id, 10);
   const docIdx = parseInt(td.dataset.docIdx, 10);
   if(getCustomEntry(state.currentSent, tokId)) return;
+  pushUndo();
   setDocChoice(state.currentSent, tokId, docIdx);
   renderSentence();
 });
@@ -174,6 +175,7 @@ function _sentStats(i){
 
 function toggleConfirm(){
   if(state.docs.length < 2) return;
+  pushUndo();
   const i = state.currentSent;
   if(state.confirmed.has(i)) state.confirmed.delete(i);
   else state.confirmed.add(i);
@@ -274,6 +276,7 @@ function renderColToggleBar(){
 function initCustomFromDoc(docIdx){
   const s = state.docs[docIdx]?.sentences?.[state.currentSent];
   if(!s) return;
+  pushUndo();
   const sent = ensureCustomSent(state.currentSent);
   for(const t of s.tokens){
     sent[t.id] = { head: t.head ?? null, deprel: t.deprel ?? null, upos: t.upos ?? null, xpos: t.xpos ?? null };
@@ -283,6 +286,7 @@ function initCustomFromDoc(docIdx){
 
 function clearCustomForSentence(){
   if(!confirm("Custom für diesen Satz wirklich löschen?")) return;
+  pushUndo();
   delete state.custom[state.currentSent];
   renderSentence();
 }

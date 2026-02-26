@@ -321,6 +321,7 @@ function _populatePopup(tokId){
 }
 
 function _openPopup(tokId, cellEl){
+  pushUndo();
   _popupTokId = tokId;
   _populatePopup(tokId);
   _positionPopup(cellEl);
@@ -384,6 +385,7 @@ cmpTable.addEventListener("change", (e) => {
   const tokId = parseInt(tr.dataset.id, 10);
   const raw = el.value.trim();
   const val = (raw === "" || raw === "_") ? null : raw;
+  pushUndo();
   setCustomField(state.currentSent, tokId, field, val);
   el.blur();
   renderSentence();

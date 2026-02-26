@@ -24,6 +24,18 @@ document.addEventListener("keydown", (e) => {
   const inInput = !isInlinePos && active &&
     (active.tagName === "INPUT" || active.tagName === "SELECT" || active.tagName === "TEXTAREA");
 
+  // Ctrl+Z → Undo, Ctrl+Y / Ctrl+Shift+Z → Redo (immer, auch in Inputs)
+  if((e.ctrlKey || e.metaKey) && e.key === "z"){
+    e.preventDefault();
+    undo();
+    return;
+  }
+  if((e.ctrlKey || e.metaKey) && (e.key === "y" || (e.key === "Z" && e.shiftKey))){
+    e.preventDefault();
+    redo();
+    return;
+  }
+
   // ? → Help modal (immer, auch in Inputs)
   if(e.key === "?" && !inInput){
     e.preventDefault();

@@ -16,6 +16,8 @@
       <kbd>Enter</kbd> Gold-Popup &nbsp;|&nbsp;
       <kbd>1</kbd>–<kbd>9</kbd> Doc wählen &nbsp;
       <kbd>Ctrl+1</kbd>–<kbd>9</kbd> Custom laden &nbsp;|&nbsp;
+      <kbd>Ctrl+Z</kbd> Undo &nbsp;
+      <kbd>Ctrl+Y</kbd> Redo &nbsp;
       <kbd>Space</kbd> Bestätigen &nbsp;
       <kbd>Del</kbd> Custom löschen &nbsp;
       <kbd>e</kbd> Export CoNLL-U &nbsp;
@@ -72,6 +74,8 @@
       <div class="row" style="margin-bottom:8px">
         <div id="customInitBtns"></div>
         <button id="customClearBtn" class="danger" disabled>Custom Satz löschen</button>
+        <button id="undoBtn" disabled title="Rückgängig (Ctrl+Z)">↩ Undo</button>
+        <button id="redoBtn" disabled title="Wiederholen (Ctrl+Y)">↪ Redo</button>
       </div>
       <div id="colToggleBar" class="colToggleBar"></div>
       <div class="tableWrap" style="margin-top:8px">
@@ -111,6 +115,7 @@
   <script src="labels.js"></script>
   <script src="examples.js"></script>
   <script src="js/parser.js"></script>
+  <script src="js/undo.js"></script>
   <script src="js/table.js"></script>
   <script src="js/tree.js"></script>
   <script src="js/main.js"></script>
