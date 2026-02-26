@@ -84,7 +84,10 @@ button.danger:hover:not(:disabled){ border-color:#ff5f5f; background:#1e0e0e }
 }
 
 /* Sentence map */
-.sentMap{ display:flex; flex-wrap:wrap; gap:4px; margin-top:10px; }
+.sentMap{ display:flex; flex-wrap:wrap; gap:4px; margin-top:10px; max-height:96px; overflow-y:auto; padding-right:4px; }
+
+/* Progress indicator */
+.progressMeta{ margin-left:auto; font-size:.75rem; opacity:.7; }
 .sentDot{
   width:14px; height:14px; border-radius:3px; padding:0; border:2px solid transparent;
   cursor:pointer; transition:transform .1s, border-color .1s;

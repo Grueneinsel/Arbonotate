@@ -16,14 +16,26 @@ document.addEventListener("keydown", e => {
   }
 }, true);
 
-let helpLoaded = false;
+let _helpLoadedLang = null;
+
+function _readmeContent(){
+  const lang = (typeof getLang === 'function') ? getLang() : 'de';
+  const w = /** @type {any} */ (window);
+  if(lang === 'en' && typeof w.README_CONTENT_EN !== 'undefined') return w.README_CONTENT_EN;
+  if(typeof w.README_CONTENT_DE !== 'undefined') return w.README_CONTENT_DE;
+  // legacy fallback for old single-language bundle
+  if(typeof w.README_CONTENT    !== 'undefined') return w.README_CONTENT;
+  return null;
+}
 
 function openHelp(){
+  const lang = (typeof getLang === 'function') ? getLang() : 'de';
   helpModal.classList.add("active");
-  if(helpLoaded) return;
-  if(typeof window.README_CONTENT !== "undefined"){
-    helpContent.innerHTML = mdToHtml(window.README_CONTENT);
-    helpLoaded = true;
+  if(_helpLoadedLang === lang) return;
+  const content = _readmeContent();
+  if(content){
+    helpContent.innerHTML = mdToHtml(content);
+    _helpLoadedLang = lang;
   } else {
     helpContent.innerHTML =
       `<p class="muted">${escapeHtml(t('help.unavailable'))}<br>

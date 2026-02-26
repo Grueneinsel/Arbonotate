@@ -212,9 +212,9 @@ function buildTreeSection(title, sub, text, onAdoptSubtree, subtreeDiffCheck){
 
       if(!subtreeDiffCheck || subtreeDiffCheck(rootId)){
         const btn = document.createElement("button");
-        btn.textContent = "→ Gold";
+        btn.textContent = t('tree.toGold');
         btn.className = "treeSubtreeBtn";
-        btn.title = `Teilbaum ab Token ${rootId} als Gold übernehmen`;
+        btn.title = t('tree.toGoldTitle', { id: rootId });
         btn.addEventListener("click", (e) => { e.stopPropagation(); onAdoptSubtree(rootId); });
         wrapper.appendChild(btn);
       }
@@ -236,7 +236,7 @@ function buildTreeSection(title, sub, text, onAdoptSubtree, subtreeDiffCheck){
       else if(hasF && !hasG)             colorClass = "treeLineFileOnly";
       span.className = `treeLine treeLineClickable${colorClass ? " "+colorClass : ""}`;
       span.textContent = line + "\n";
-      span.title = `Zur Zeile springen: Token ${tokId}`;
+      span.title = t('tree.jumpTitle', { id: tokId });
       span.addEventListener("click", () => scrollToToken(tokId));
       pre.appendChild(span);
     } else {
@@ -268,11 +268,11 @@ function renderPreview(){
   wrap.appendChild(goldSection);
 
   for(let i=0; i<state.docs.length; i++){
-    const name   = state.docs[i]?.name ?? `Datei ${i+1}`;
+    const name   = state.docs[i]?.name ?? t('tree.fileDefault', { n: i+1 });
     const otherMap = docMaps[i];
     const diff   = renderTreeDiff(sentIndex, goldMap, otherMap, sentenceText);
     const docIdx = i;
-    const section = buildTreeSection(name, "vs Gold", diff, (rootId) => {
+    const section = buildTreeSection(name, t('tree.vsGold'), diff, (rootId) => {
       const subIds = new Set([
         ...getSubtreeIds(rootId, goldMap),
         ...getSubtreeIds(rootId, otherMap),

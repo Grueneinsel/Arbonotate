@@ -12,6 +12,8 @@ window.LANG_DE = {
   'files.none':         'Keine Dateien geladen',
   'files.loaded':       '{n} Datei(en) geladen',
   'files.drop':         'Dateien hier ablegen oder Schaltfläche nutzen · .conllu / .conll / .txt',
+  'files.dropOverlay':  'Dateien hier ablegen',
+  'help.btnTitle':      'Hilfe / README anzeigen',
   'files.demo':         'Demo laden (3 Beispieldateien)',
   'files.delete':       'Löschen',
   'files.sentences':    '{n} Sätze',
@@ -20,6 +22,8 @@ window.LANG_DE = {
   'files.resetConfirm': 'Wirklich alles zurücksetzen?',
 
   // Satz-Auswahl
+  'sent.optLabel':     'Satz {n}',
+  'sent.progress':     '{done} / {total} bestätigt',
   'sent.confirm':      '✓ Bestätigen',
   'sent.confirmed':    '✓ Bestätigt',
   'sent.missing':      '(Satz fehlt in Datei 1)',
@@ -48,6 +52,7 @@ window.LANG_DE = {
   'legend.click': 'Klick auf Zeile → springt zur Tabellenzeile',
 
   // Statistiken
+  'stats.token':  '{n} Token',
   'stats.tokens': '{n} Tokens',
   'stats.diff':   '{n} Diff',
   'stats.diffs':  '{n} Diffs',
@@ -92,6 +97,38 @@ window.LANG_DE = {
   'session.errJson':   'Ungültige JSON-Datei.',
   'session.errFormat': 'Unbekanntes Session-Format (version ≠ 1).',
   'session.errNoDocs': 'Session enthält keine Dateien.',
+
+  // Tastaturkürzel-Legende (Header)
+  'kbd.nextDiff':     'Nächster Diff',
+  'kbd.prevDiff':     'Vorheriger Diff',
+  'kbd.sent':         'Satz',
+  'kbd.firstLast':    'Erster/Letzter',
+  'kbd.row':          'Zeile',
+  'kbd.popup':        'Gold-Popup',
+  'kbd.chooseDoc':    'Doc wählen',
+  'kbd.loadCustom':   'Custom laden',
+  'kbd.confirm':      'Bestätigen',
+  'kbd.delCustom':    'Custom löschen',
+  'kbd.exportConllu': 'Export CoNLL-U',
+  'kbd.exportTrees':  'Export Bäume',
+  'kbd.help':         'Hilfe',
+  'kbd.close':        'Schließen',
+
+  // Dropdown-Leerauswahl
+  'label.empty': '(leer)',
+
+  // Baumansicht
+  'tree.toGold':      '→ Gold',
+  'tree.toGoldTitle': 'Teilbaum ab Token {id} als Gold übernehmen',
+  'tree.jumpTitle':   'Zur Zeile springen: Token {id}',
+  'tree.fileDefault': 'Datei {n}',
+  'tree.vsGold':      'vs Gold',
+  'tree.noTree':      '(keine Bäume für diesen Satz)',
+
+  // Export – Baumtext
+  'export.treeGold':  '=== GOLD ===',
+  'export.treeVsGold':'--- {name} vs Gold ---',
+  'export.treeNoTree':'(keine Bäume für diesen Satz)',
 
   // Hilfe
   'help.unavailable': 'Hilfe nicht verfügbar.',

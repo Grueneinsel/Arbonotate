@@ -12,6 +12,8 @@ window.LANG_EN = {
   'files.none':         'No files loaded',
   'files.loaded':       '{n} file(s) loaded',
   'files.drop':         'Drop files here or use the button · .conllu / .conll / .txt',
+  'files.dropOverlay':  'Drop files here',
+  'help.btnTitle':      'Help / show README',
   'files.demo':         'Load demo (3 example files)',
   'files.delete':       'Remove',
   'files.sentences':    '{n} sentences',
@@ -20,6 +22,8 @@ window.LANG_EN = {
   'files.resetConfirm': 'Really reset everything?',
 
   // Sentence select
+  'sent.optLabel':     'Sentence {n}',
+  'sent.progress':     '{done} / {total} confirmed',
   'sent.confirm':      '✓ Confirm',
   'sent.confirmed':    '✓ Confirmed',
   'sent.missing':      '(Sentence missing in file 1)',
@@ -48,6 +52,7 @@ window.LANG_EN = {
   'legend.click': 'Click row → jump to table row',
 
   // Stats
+  'stats.token':  '{n} token',
   'stats.tokens': '{n} tokens',
   'stats.diff':   '{n} diff',
   'stats.diffs':  '{n} diffs',
@@ -92,6 +97,38 @@ window.LANG_EN = {
   'session.errJson':   'Invalid JSON file.',
   'session.errFormat': 'Unknown session format (version ≠ 1).',
   'session.errNoDocs': 'Session contains no files.',
+
+  // Keyboard shortcut legend (header)
+  'kbd.nextDiff':     'Next diff',
+  'kbd.prevDiff':     'Previous diff',
+  'kbd.sent':         'Sentence',
+  'kbd.firstLast':    'First/Last',
+  'kbd.row':          'Row',
+  'kbd.popup':        'Gold popup',
+  'kbd.chooseDoc':    'Choose doc',
+  'kbd.loadCustom':   'Load custom',
+  'kbd.confirm':      'Confirm',
+  'kbd.delCustom':    'Delete custom',
+  'kbd.exportConllu': 'Export CoNLL-U',
+  'kbd.exportTrees':  'Export trees',
+  'kbd.help':         'Help',
+  'kbd.close':        'Close',
+
+  // Dropdown empty option
+  'label.empty': '(empty)',
+
+  // Tree view
+  'tree.toGold':      '→ Gold',
+  'tree.toGoldTitle': 'Adopt subtree from token {id} as Gold',
+  'tree.jumpTitle':   'Jump to row: token {id}',
+  'tree.fileDefault': 'File {n}',
+  'tree.vsGold':      'vs Gold',
+  'tree.noTree':      '(no trees for this sentence)',
+
+  // Export – tree text
+  'export.treeGold':   '=== GOLD ===',
+  'export.treeVsGold': '--- {name} vs Gold ---',
+  'export.treeNoTree': '(no trees for this sentence)',
 
   // Help
   'help.unavailable': 'Help not available.',

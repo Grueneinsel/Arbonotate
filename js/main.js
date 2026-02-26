@@ -18,6 +18,7 @@ const colToggleBar = document.getElementById("colToggleBar");
 const customInitBtns  = document.getElementById("customInitBtns");
 const customClearBtn  = document.getElementById("customClearBtn");
 const confirmBtn      = document.getElementById("confirmBtn");
+const progressMeta    = document.getElementById("progressMeta");
 const dropOverlay     = document.getElementById("dropOverlay");
 const textWarn        = document.getElementById("textWarn");
 const sentMap         = document.getElementById("sentMap");
@@ -171,7 +172,7 @@ function renderSentSelect(){
   customClearBtn.disabled = !ok;
   confirmBtn.disabled = !ok;
   sentSelect.innerHTML = "";
-  if(!ok){ sentStats.textContent = ""; return; }
+  if(!ok){ sentStats.textContent = ""; if(progressMeta) progressMeta.textContent = ""; return; }
   renderSentSelectOptions();
   updateExportButtons();
 }
@@ -222,7 +223,7 @@ function renderSentSelectOptions(){
     const diffPart = hasDiff
       ? ` ${t(stats.diffCount !== 1 ? 'sent.optDiffs' : 'sent.optDiff', { n: stats.diffCount })}`
       : ` ${t('sent.optOk')}`;
-    opt.textContent = `Satz ${i+1}${confirmed ? ' ★' : ''}  (${stats.totalTokens} Tok${diffPart})`;
+    opt.textContent = `${t('sent.optLabel', { n: i+1 })}${confirmed ? ' ★' : ''}  (${stats.totalTokens} Tok${diffPart})`;
     if(confirmed){
       opt.style.background = '#1a1000';
       opt.style.color = '#ffb347';
@@ -241,6 +242,16 @@ function renderSentSelectOptions(){
 
   updateConfirmBtn();
   renderSentMap();
+  _updateProgressMeta();
+}
+
+function _updateProgressMeta(){
+  if(!progressMeta) return;
+  if(state.docs.length < 2 || state.maxSents === 0){ progressMeta.textContent = ""; return; }
+  progressMeta.textContent = t('sent.progress', {
+    done:  state.confirmed.size,
+    total: state.maxSents,
+  });
 }
 
 function renderSentMap(){

@@ -7,11 +7,12 @@ Läuft vollständig lokal ohne Server — einfach `index.html` im Browser öffne
 
 ## Schnellstart
 
-1. `index.html` im Browser öffnen (ggf. über einen lokalen HTTP-Server, z. B. `python -m http.server`)
+1. `index.html` im Browser öffnen
 2. Mindestens zwei `.conllu`-Dateien laden — oder **„Demo laden"** klicken
 3. Satz auswählen → Baumansicht und Vergleichstabelle erscheinen automatisch
 4. Gold-Zellen klicken oder Tastaturkürzel nutzen, um Annotationen zu bearbeiten
-5. Fertigen Satz mit **„✓ Bestätigen"** markieren, am Ende exportieren
+5. Fertigen Satz mit **„✓ Bestätigen"** markieren (oder `Space`)
+6. **💾 Session speichern** — Fortschritt jederzeit als JSON sichern und später fortsetzen
 
 ---
 
@@ -20,7 +21,8 @@ Läuft vollständig lokal ohne Server — einfach `index.html` im Browser öffne
 | Aktion | Beschreibung |
 |--------|-------------|
 | **„Dateien hinzufügen"** | Öffnet den Datei-Dialog; mehrere Dateien gleichzeitig wählbar |
-| **Drag & Drop** | Dateien direkt auf die Seite ziehen |
+| **Drag & Drop** | `.conllu`/`.conll`/`.txt`-Dateien direkt auf die Seite ziehen |
+| **Drag & Drop (Session)** | `.json`-Session-Datei auf die Seite ziehen → wird automatisch importiert |
 | **„Demo laden"** | Drei vorgefertigte Beispieldateien, die alle Vergleichsfälle abdecken |
 | **„Löschen"** | Einzelne Datei aus der Liste entfernen |
 | **„Reset"** | Alle Dateien und Annotationen zurücksetzen |
@@ -53,6 +55,13 @@ Jede Option zeigt:
 | Gold | Satz wurde bestätigt (`★`) |
 
 Der **Rahmen des Dropdowns** spiegelt den Status des aktuellen Satzes wider (grün / rot / gold).
+
+### Satztext
+
+Der Satztext erscheint als klickbare Tokens. Ein Klick auf ein Wort:
+- Springt zur entsprechenden Zeile in der Vergleichstabelle
+- Hebt das Token im Satztext hervor (blauer Rahmen)
+- Funktioniert auch andersrum: Tastaturnavigation (↑/↓) hebt das aktive Wort im Satztext hervor
 
 ### Satz-Map
 
@@ -125,7 +134,7 @@ In den Datei-Spalten werden HEAD/DEPREL und UPOS·XPOS jeweils einzeln hervorgeh
 | Feld | Eingabe |
 |------|---------|
 | HEAD | Dropdown aller Tokens des aktuellen Satzes |
-| DEPREL | Dropdown (aus `labels.json`) |
+| DEPREL | Dropdown (aus `labels.js`) |
 | UPOS | Dropdown oder Freitextfeld |
 | XPOS | Dropdown oder Freitextfeld |
 
@@ -147,10 +156,45 @@ In den Datei-Spalten werden HEAD/DEPREL und UPOS·XPOS jeweils einzeln hervorgeh
 
 ## 5) Export
 
+### CoNLL-U & Baumansicht
+
 | Button | Inhalt |
 |--------|--------|
 | **Gold CoNLL-U herunterladen** | Alle Sätze mit aktuellen Gold-Annotationen (HEAD, DEPREL, UPOS, XPOS); LEMMA/FEATS/DEPS/MISC aus Quelldatei |
 | **Baumansicht herunterladen** | Alle Sätze als Text-Bäume mit Gold-Baum und Diff-Bäumen pro Datei |
+
+Tastaturkürzel: `e` → CoNLL-U · `E` → Baumansicht
+
+### Session Export / Import
+
+Der **Session-Mechanismus** sichert den vollständigen Arbeitsstand:
+
+- Alle geladenen CoNLL-U-Dateien (Inhalt)
+- Custom-Annotationen und Gold-Auswahl
+- Bestätigte Sätze
+- Vollständiger Undo-/Redo-Verlauf
+- Labelkonfiguration (`labels.js`)
+
+| Aktion | Beschreibung |
+|--------|-------------|
+| **💾 Session speichern** | Exportiert alles als `.json`-Datei |
+| **📂 Session laden** | Importiert eine gespeicherte Session-Datei |
+| **Drag & Drop** | `.json`-Datei auf die Seite ziehen → wird automatisch als Session erkannt |
+
+Das Session-Format ist versioniert (`version: 1`) und als JSON lesbar.
+
+---
+
+## 6) Undo / Redo
+
+Alle Annotationsänderungen (Datei-Auswahl, Custom-Popup, Bestätigen, Teilbaum-Übernahme) sind rückgängig machbar.
+
+| Aktion | Beschreibung |
+|--------|-------------|
+| **↩ Undo** / `Ctrl+Z` | Letzte Änderung rückgängig |
+| **↪ Redo** / `Ctrl+Y` | Rückgängige Änderung wiederherstellen |
+
+Der Verlauf wird in der Session mitgespeichert (bis zu 80 Schritte).
 
 ---
 
@@ -160,16 +204,54 @@ In den Datei-Spalten werden HEAD/DEPREL und UPOS·XPOS jeweils einzeln hervorgeh
 |-------|----------|
 | `←` / `→` | Vorheriger / nächster Satz |
 | `Ctrl+←` / `Ctrl+→` | Erster / letzter Satz |
+| `n` / `N` | Nächster / vorheriger Satz mit Diffs |
 | `↑` / `↓` | Tabellenzeile navigieren |
 | `Enter` | Gold-Popup für fokussierte Zeile öffnen |
 | `Space` | Satz bestätigen / Bestätigung aufheben |
 | `1`–`9` | Datei N als Gold-Quelle für fokussierte Zeile wählen |
 | `Ctrl+1`–`9` | Custom aus Datei N laden |
+| `Ctrl+Z` | Undo |
+| `Ctrl+Y` | Redo |
 | `Del` / `Backspace` | Custom des aktuellen Satzes löschen |
 | `e` | Gold CoNLL-U exportieren |
 | `E` (Shift+e) | Baumansicht exportieren |
 | `?` | Hilfe öffnen / schließen |
 | `Esc` | Fokus / Popup / Hilfe schließen |
+
+---
+
+## Mehrsprachigkeit
+
+Die Oberfläche unterstützt **Deutsch** und **Englisch** — umschaltbar über die Flaggen-Buttons oben rechts. Die gewählte Sprache wird im Browser gespeichert (`localStorage`).
+
+### Weitere Sprachen hinzufügen
+
+1. Neue Datei `lang/xx.js` anlegen (nach dem Schema von `lang/de.js`):
+
+```javascript
+window.LANG_XX = {
+  'sec.files':   '...',
+  // alle Schlüssel aus lang/de.js übersetzen
+};
+```
+
+2. In `index.html` einbinden (vor `js/i18n.js`):
+
+```html
+<script src="lang/xx.js"></script>
+```
+
+3. Flaggen-Button hinzufügen:
+
+```html
+<button class="langBtn" data-lang="xx" onclick="setLang('xx')" title="...">🏳️</button>
+```
+
+Oder dynamisch zur Laufzeit:
+
+```javascript
+registerLang('xx', window.LANG_XX);
+```
 
 ---
 
@@ -193,10 +275,26 @@ const LABELS = {
 | `__upos__` | Optionen für das UPOS-Feld (leer → Freitextfeld) |
 | `__xpos__` | Optionen für das XPOS-Feld (leer → Freitextfeld) |
 
+Labels werden mit der Session gespeichert und beim Laden wiederhergestellt.
+
+---
+
+## Hilfe-Modal
+
+Der **`?`-Button** oben rechts (oder Taste `?`) öffnet diese Dokumentation direkt im Browser.
+
+Die Hilfe wird aus `generated/readme_content.js` geladen — einem vorgefertigten JS-Bundle:
+
+```bash
+python make_readme_js.py
+```
+
+Das Skript liest `README.md` und schreibt `generated/readme_content.js`. Nach Änderungen an der README einmal ausführen und die Seite neu laden.
+
 ---
 
 ## Einschränkungen
 
 - **Multi-Word-Tokens** (IDs mit `-` oder `.`) werden ignoriert
 - Mindestens **zwei Dateien** nötig für Vergleich und Baumansicht
-- Alle Daten liegen nur **im Browser-Speicher** — beim Neuladen gehen Custom-Annotationen und Gold-Auswahl verloren
+- Daten liegen nur im **Browser-Speicher** — Session-Export verwenden, um den Stand dauerhaft zu sichern

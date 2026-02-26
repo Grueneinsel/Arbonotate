@@ -48,9 +48,9 @@ function renderCompareTable(){
 
   const stats = computeStats(sentIndex, idList, docMaps, goldMap);
   sentStats.innerHTML = `
-    <span class="statBadge">${stats.totalTokens} Tokens</span>
+    <span class="statBadge">${t(stats.totalTokens !== 1 ? 'stats.tokens' : 'stats.token', { n: stats.totalTokens })}</span>
     <span class="statBadge ${stats.diffCount > 0 ? 'statDiff' : 'statOk'}">
-      ${stats.diffCount} Diff${stats.diffCount !== 1 ? 's' : ''}
+      ${t(stats.diffCount !== 1 ? 'stats.diffs' : 'stats.diff', { n: stats.diffCount })}
     </span>
   `;
 

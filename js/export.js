@@ -188,15 +188,15 @@ function exportTreesTxt(){
 
     let block = `${"=".repeat(60)}\n`;
     block += `📝 S${sentIdx + 1}: ${sentText}\n\n`;
-    block += `=== GOLD ===\n`;
+    block += t('export.treeGold') + "\n";
     const goldBody = stripHeader(renderTreePlain(sentIdx, goldMap, sentText));
-    block += goldBody.trim() ? goldBody + "\n" : "(keine Bäume für diesen Satz)\n";
+    block += goldBody.trim() ? goldBody + "\n" : t('export.treeNoTree') + "\n";
 
     for(let i = 0; i < state.docs.length; i++){
       const diffBody = stripHeader(renderTreeDiff(sentIdx, goldMap, docMaps[i], sentText));
       if(!diffBody.trim()) continue;
-      const name = state.docs[i]?.name ?? `Datei ${i+1}`;
-      block += `\n--- ${name} vs Gold ---\n`;
+      const name = state.docs[i]?.name ?? t('tree.fileDefault', { n: i+1 });
+      block += "\n" + t('export.treeVsGold', { name }) + "\n";
       block += diffBody + "\n";
     }
     parts.push(block);

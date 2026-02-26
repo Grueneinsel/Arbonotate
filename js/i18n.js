@@ -32,11 +32,18 @@ function setLang(code){
   );
   // Reset popup so it is recreated with new language strings
   if(typeof _resetPopup === 'function') _resetPopup();
+  // Rebuild label caches (e.g. "(empty)" label)
+  if(typeof buildDeprelOptionsCache === 'function') buildDeprelOptionsCache();
   // Re-render dynamic UI
   if(typeof renderFiles      === 'function') renderFiles();
   if(typeof renderSentSelect === 'function') renderSentSelect();
   if(typeof renderSentence   === 'function') renderSentence();
   if(typeof _syncUndoBtns    === 'function') _syncUndoBtns();
+  // If help modal is open, reload its content in new language
+  if(typeof openHelp === 'function'){
+    const modal = document.getElementById('helpModal');
+    if(modal?.classList.contains('active')) openHelp();
+  }
 }
 
 // Register additional language at runtime

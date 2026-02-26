@@ -22,7 +22,7 @@ function normalizeLabel(label){
 }
 
 function buildOptionsHtmlFromList(items){
-  let html = `<option value="">(leer)</option>`;
+  let html = `<option value="">${escapeHtml(t('label.empty'))}</option>`;
   for(const raw of items){
     const val = normalizeLabel(raw);
     if(!val) continue;
@@ -33,7 +33,7 @@ function buildOptionsHtmlFromList(items){
 
 function buildDeprelOptionsCache(){
   DEPREL_VALUE_SET = new Set();
-  let html = `<option value="">(leer)</option>`;
+  let html = `<option value="">${escapeHtml(t('label.empty'))}</option>`;
   for(const [section, items] of Object.entries(LABELS)){
     if(section.startsWith("__")) continue;
     html += `<optgroup label="${escapeHtml(section)}">`;

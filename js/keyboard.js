@@ -114,6 +114,30 @@ document.addEventListener("keydown", (e) => {
       toggleConfirm();
       break;
 
+    // ── Nächster / vorheriger Satz mit Diffs ─────────────────────────────────
+    case "n":
+    case "N": {
+      if(state.maxSents === 0) break;
+      e.preventDefault();
+      const forward = e.key === "n";
+      const step    = forward ? 1 : -1;
+      const start   = state.currentSent;
+      let found = false;
+      for(let i = 1; i < state.maxSents; i++){
+        const idx = ((start + step * i) % state.maxSents + state.maxSents) % state.maxSents;
+        const stats = _sentStats(idx);
+        if(stats.diffCount > 0){
+          state.currentSent = idx;
+          keyFocusTokId = null;
+          renderSentence();
+          found = true;
+          break;
+        }
+      }
+      if(!found) break; // kein Satz mit Diffs gefunden
+      break;
+    }
+
     // ── Export ───────────────────────────────────────────────────────────────
     case "e":
       e.preventDefault();
