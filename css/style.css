@@ -559,6 +559,15 @@ tr.keyFocus > td:first-child{ border-left:2px solid var(--accent) }
 }
 .treeTokenChip:hover{ border-color:var(--accent); background:var(--bg-focus-soft); }
 
+/* Arc diagram container (displaCy-style SVG dependency view) */
+.arcDiagramWrap{
+  overflow-x: auto;
+  padding: 10px 14px 6px;
+  border-bottom: 1px solid var(--line);
+  background: rgba(0,0,0,.12);
+}
+html[data-theme="light"] .arcDiagramWrap{ background: rgba(0,0,0,.03); }
+
 /* Single-token adoption button (distinct from subtree button) */
 .treeSingleBtn{
   font-family:var(--sans); font-size:10px;

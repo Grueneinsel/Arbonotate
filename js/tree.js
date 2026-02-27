@@ -189,9 +189,14 @@ function hasSubtreeDiff(rootId, goldMap, otherMap){
  *   opts.subtreeDiffCheck(rootId) — returns true if subtree has diffs (button shown)
  *   opts.onAdoptToken(tokId)     — called when single-token "→" button clicked
  *   opts.tokenList               — [{id, form}] for clickable sentence header
+ *   opts.arcMap                  — full token Map for arc-diagram rendering
+ *   opts.arcOnSetHead(depId, newHeadId) — if provided, arc is editable (drag from token)
+ *   opts.arcOnDeleteArc(depId)         — resets head for that token
+ *   opts.arcOnSetDeprel(depId, deprel) — sets deprel for that token
  */
 function buildTreeSection(title, sub, text, opts = {}){
-  const { onAdoptSubtree, subtreeDiffCheck, onAdoptToken, tokenList } = opts;
+  const { onAdoptSubtree, subtreeDiffCheck, onAdoptToken, tokenList,
+          arcMap, arcOnSetHead, arcOnDeleteArc, arcOnSetDeprel } = opts;
 
   const section = document.createElement("div");
   section.className = "treeSection";
@@ -230,6 +235,17 @@ function buildTreeSection(title, sub, text, opts = {}){
       chipRow.appendChild(chip);
     }
     section.appendChild(chipRow);
+  }
+
+  // ── Arc diagram (SVG, displaCy-style) ─────────────────────────────────────
+  if(arcMap && typeof buildArcDiagram === "function"){
+    const arcWrap = buildArcDiagram(arcMap, {
+      onSetHead:   arcOnSetHead   || null,
+      onDeleteArc: arcOnDeleteArc || null,
+      onSetDeprel: arcOnSetDeprel || null,
+      scrollToTok: scrollToToken,
+    });
+    if(arcWrap) section.appendChild(arcWrap);
   }
 
   const pre = document.createElement("pre");
@@ -344,6 +360,23 @@ function renderPreview(){
 
   const goldSection = buildTreeSection("⭐ GOLD", null, renderTreePlain(sentIndex, goldMap, sentenceText), {
     tokenList,
+    arcMap: goldMap,
+    arcOnSetHead: (depId, newHeadId) => {
+      pushUndo();
+      setCustomField(sentIndex, depId, 'head', newHeadId);
+      renderSentence();
+    },
+    arcOnDeleteArc: (depId) => {
+      pushUndo();
+      setCustomField(sentIndex, depId, 'head',   null);
+      setCustomField(sentIndex, depId, 'deprel', null);
+      renderSentence();
+    },
+    arcOnSetDeprel: (depId, deprel) => {
+      pushUndo();
+      setCustomField(sentIndex, depId, 'deprel', deprel);
+      renderSentence();
+    },
   });
   wrap.appendChild(goldSection);
 
@@ -355,6 +388,7 @@ function renderPreview(){
 
     const section = buildTreeSection(name, t('tree.vsGold'), diff, {
       tokenList,
+      arcMap: otherMap,  // read-only arc diagram for each file
       onAdoptSubtree: (rootId) => {
         pushUndo();
         const subIds = new Set([
