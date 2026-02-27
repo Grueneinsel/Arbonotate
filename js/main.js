@@ -18,14 +18,25 @@ const colToggleBar = document.getElementById("colToggleBar");
 const customInitBtns  = document.getElementById("customInitBtns");
 const customClearBtn  = document.getElementById("customClearBtn");
 const confirmBtn      = document.getElementById("confirmBtn");
+const copyConlluBtn   = document.getElementById("copyConlluBtn");
 const progressMeta    = document.getElementById("progressMeta");
 const dropOverlay     = document.getElementById("dropOverlay");
 const textWarn        = document.getElementById("textWarn");
 const sentMap         = document.getElementById("sentMap");
+const sentNoteRow     = document.getElementById("sentNoteRow");
+const sentNote        = document.getElementById("sentNote");
 
 // ---------- Events ----------
 fileInput.addEventListener("change", onFilesChosen);
 resetBtn.addEventListener("click", resetAll);
+
+if(sentNote){
+  sentNote.addEventListener("input", () => {
+    const val = sentNote.value;
+    if(val.trim()) state.notes[state.currentSent] = val;
+    else           delete state.notes[state.currentSent];
+  });
+}
 
 sentSelect.addEventListener("change", () => {
   state.currentSent = parseInt(sentSelect.value, 10) || 0;
@@ -42,6 +53,7 @@ nextBtn.addEventListener("click", () => {
 
 customClearBtn.addEventListener("click", clearCustomForSentence);
 confirmBtn.addEventListener("click", toggleConfirm);
+if(copyConlluBtn) copyConlluBtn.addEventListener("click", copySentenceConllu);
 
 // Klick auf Token im Satztext → Tabellenzeile fokussieren + scrollen
 sentText.addEventListener("click", (e) => {
@@ -109,9 +121,15 @@ function renderFiles(){
         <div class="name">${escapeHtml(d.name)}${warnBadge}</div>
         <div class="meta">${escapeHtml(t('files.sentences', { n: d.sentences.length }))}</div>
       </div>
-      <button class="danger">${escapeHtml(t('files.delete'))}</button>
+      <div class="fileActions">
+        <button class="moveUpBtn" title="${escapeHtml(t('files.moveUp'))}" ${idx === 0 ? 'disabled' : ''}>▲</button>
+        <button class="moveDownBtn" title="${escapeHtml(t('files.moveDown'))}" ${idx === state.docs.length - 1 ? 'disabled' : ''}>▼</button>
+        <button class="danger">${escapeHtml(t('files.delete'))}</button>
+      </div>
     `;
-    div.querySelector("button").addEventListener("click", () => removeDoc(idx));
+    div.querySelector(".moveUpBtn").addEventListener("click",   () => moveDoc(idx, -1));
+    div.querySelector(".moveDownBtn").addEventListener("click", () => moveDoc(idx, +1));
+    div.querySelector(".danger").addEventListener("click",      () => removeDoc(idx));
     fileList.appendChild(div);
   });
 
@@ -171,6 +189,7 @@ function renderSentSelect(){
   }
   customClearBtn.disabled = !ok;
   confirmBtn.disabled = !ok;
+  if(copyConlluBtn) copyConlluBtn.disabled = !ok;
   sentSelect.innerHTML = "";
   if(!ok){ sentStats.textContent = ""; if(progressMeta) progressMeta.textContent = ""; return; }
   renderSentSelectOptions();
@@ -254,6 +273,16 @@ function _updateProgressMeta(){
   });
 }
 
+function _updateSentNote(){
+  if(!sentNote || !sentNoteRow) return;
+  const ok = state.docs.length >= 2 && state.maxSents > 0;
+  sentNoteRow.style.display = ok ? "" : "none";
+  if(ok){
+    sentNote.value = state.notes[state.currentSent] ?? "";
+    sentNote.placeholder = t('note.placeholder');
+  }
+}
+
 function renderSentMap(){
   if(!sentMap) return;
   if(state.docs.length < 2 || state.maxSents === 0){ sentMap.innerHTML = ""; return; }
@@ -333,6 +362,7 @@ function renderSentence(){
     treeGrid.innerHTML = "";
     cmpTable.innerHTML = "";
     colToggleBar.innerHTML = "";
+    _updateSentNote();
     return;
   }
 
@@ -353,6 +383,58 @@ function renderSentence(){
   renderCompareTable();
   renderSentSelectOptions();
   renderPreview();
+  _updateSentNote();
+}
+
+// ---------- Clipboard copy ----------
+function copySentenceConllu(){
+  if(state.docs.length < 1 || state.maxSents === 0) return;
+  const sentIdx = state.currentSent;
+  const docMaps = state.docs.map(d => {
+    const s = d.sentences[sentIdx];
+    const m = new Map();
+    if(s) for(const tk of s.tokens) m.set(tk.id, tk);
+    return m;
+  });
+  const ids = new Set();
+  for(const m of docMaps) for(const id of m.keys()) ids.add(id);
+  const customSent = state.custom[sentIdx] || {};
+  for(const idStr of Object.keys(customSent)) ids.add(parseInt(idStr, 10));
+  const idList = Array.from(ids).sort((a,b) => a - b);
+  const goldMap = buildGoldTokenMap(sentIdx, idList, docMaps);
+
+  const lines = [];
+  let sentTextStr = "";
+  for(const d of state.docs){
+    const s = d.sentences[sentIdx];
+    if(s && s.text){ sentTextStr = s.text; break; }
+  }
+  if(sentTextStr) lines.push(`# text = ${sentTextStr}`);
+
+  for(const id of idList){
+    let base = null;
+    for(const m of docMaps){ const tk = m.get(id); if(tk){ base = tk; break; } }
+    if(!base) continue;
+    const goldTok = goldMap.get(id);
+    const head   = goldTok?.head   ?? null;
+    const deprel = goldTok?.deprel ?? "_";
+    const upos   = goldTok?.upos   ?? "_";
+    const xpos   = goldTok?.xpos   ?? "_";
+    lines.push([
+      id, base.form || "_", base.lemma || "_",
+      upos || "_", xpos || "_", base.feats || "_",
+      head === null ? "_" : String(head), deprel,
+      base.deps || "_", base.misc || "_",
+    ].join("\t"));
+  }
+
+  const text = lines.join("\n");
+  navigator.clipboard.writeText(text).then(() => {
+    if(!copyConlluBtn) return;
+    const orig = copyConlluBtn.textContent;
+    copyConlluBtn.textContent = t('copy.done');
+    setTimeout(() => { if(copyConlluBtn) copyConlluBtn.textContent = t('copy.btn'); }, 1500);
+  }).catch(() => {});
 }
 
 // ---------- Demo ----------

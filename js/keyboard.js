@@ -138,6 +138,12 @@ document.addEventListener("keydown", (e) => {
       break;
     }
 
+    // ── Clipboard copy ───────────────────────────────────────────────────────
+    case "c":
+      e.preventDefault();
+      copySentenceConllu();
+      break;
+
     // ── Export ───────────────────────────────────────────────────────────────
     case "e":
       e.preventDefault();

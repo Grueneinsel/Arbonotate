@@ -14,6 +14,7 @@ const state = {
   goldPick: {},        // goldPick[sent][tokId] = docIdx
   hiddenCols: new Set(),
   confirmed: new Set(), // confirmed sentence indices
+  notes: {},           // notes[sentIndex] = string
 };
 
 // ---------- Label helpers ----------

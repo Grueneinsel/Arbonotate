@@ -78,8 +78,20 @@ async function processFiles(files){
 async function onFilesChosen(){
   const files = Array.from(fileInput.files || []);
   if(files.length === 0) return;
-  await processFiles(files);
   fileInput.value = "";
+
+  // If exactly one .json was selected (and no CoNLL-U), treat it as a session import
+  const jsonFiles   = files.filter(f => /\.json$/i.test(f.name));
+  const conlluFiles = files.filter(f => /\.(conllu|conll|txt)$/i.test(f.name));
+
+  if(jsonFiles.length === 1 && conlluFiles.length === 0){
+    const fr = new FileReader();
+    fr.onload = () => importSession(fr.result);
+    fr.readAsText(jsonFiles[0], "utf-8");
+    return;
+  }
+  const toProcess = conlluFiles.length > 0 ? conlluFiles : files.filter(f => !/\.json$/i.test(f.name));
+  if(toProcess.length > 0) await processFiles(toProcess);
 }
 
 function removeDoc(index){
@@ -108,11 +120,44 @@ function removeDoc(index){
   renderSentence();
 }
 
+function moveDoc(idx, dir){
+  const other = idx + dir;
+  if(other < 0 || other >= state.docs.length) return;
+
+  // Swap docs
+  [state.docs[idx], state.docs[other]] = [state.docs[other], state.docs[idx]];
+
+  // Remap hiddenCols
+  const newHidden = new Set();
+  for(const v of state.hiddenCols){
+    if(v === idx)   newHidden.add(other);
+    else if(v === other) newHidden.add(idx);
+    else newHidden.add(v);
+  }
+  state.hiddenCols = newHidden;
+
+  // Remap goldPick: swap values idx <-> other
+  for(const sKey of Object.keys(state.goldPick)){
+    const m = state.goldPick[sKey];
+    for(const tKey of Object.keys(m)){
+      const v = m[tKey];
+      if(typeof v !== "number") continue;
+      if(v === idx)   m[tKey] = other;
+      else if(v === other) m[tKey] = idx;
+    }
+  }
+
+  renderFiles();
+  renderSentSelect();
+  renderSentence();
+}
+
 function resetAll(){
   if(!confirm(t('files.resetConfirm'))) return;
   state.docs = [];
   state.custom = {};
   state.goldPick = {};
+  state.notes = {};
   state.hiddenCols = new Set();
   state.currentSent = 0;
   state.maxSents = 0;

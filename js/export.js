@@ -9,13 +9,20 @@ exportConlluBtn.addEventListener("click", exportGoldConllu);
 exportTreeBtn.addEventListener("click",   exportTreesTxt);
 exportSessionBtn.addEventListener("click", exportSession);
 importSessionInput.addEventListener("change", () => {
-  const f = importSessionInput.files?.[0];
+  const files = Array.from(importSessionInput.files || []);
+  if(!files.length) return;
+  importSessionInput.value = "";
+
+  // If a CoNLL-U / txt file was chosen via the session input, load it as data
+  const conlluFiles = files.filter(f => /\.(conllu|conll|txt)$/i.test(f.name));
+  if(conlluFiles.length > 0){
+    processFiles(conlluFiles);
+    return;
+  }
+  const f = files[0];
   if(!f) return;
   const fr = new FileReader();
-  fr.onload = () => {
-    importSession(fr.result);
-    importSessionInput.value = "";
-  };
+  fr.onload = () => importSession(fr.result);
   fr.readAsText(f, "utf-8");
 });
 
@@ -99,17 +106,7 @@ function exportGoldConllu(){
 
 // ---------- Session Export ----------
 function exportSession(){
-  const session = {
-    version:    1,
-    savedAt:    new Date().toISOString(),
-    currentSent: state.currentSent,
-    docs: state.docs.map(d => ({ name: d.name, content: d.content || "" })),
-    custom:    JSON.parse(JSON.stringify(state.custom)),
-    goldPick:  JSON.parse(JSON.stringify(state.goldPick)),
-    confirmed: Array.from(state.confirmed),
-    labels:    JSON.parse(JSON.stringify(LABELS)),
-    ...getUndoState(),
-  };
+  const session = _buildSessionObject();
   const ts = new Date().toISOString().slice(0, 19).replace(/[:T]/g, "-");
   downloadText(JSON.stringify(session, null, 2), `session_${ts}.json`);
   _showSessionMeta(t('session.exported', { n: session.docs.length, u: session.undo.length }));
@@ -139,6 +136,7 @@ function importSession(jsonText){
   state.goldPick    = data.goldPick || {};
   state.hiddenCols  = new Set();
   state.confirmed   = new Set(data.confirmed || []);
+  state.notes       = data.notes    || {};
   state.currentSent = data.currentSent || 0;
 
   for(const d of data.docs){
@@ -204,3 +202,76 @@ function exportTreesTxt(){
 
   downloadText(parts.join("\n"), "alle_baeume.txt");
 }
+
+// ---------- LocalStorage Autosave ----------
+const AUTOSAVE_KEY = "conllu_autosave";
+
+function _buildSessionObject(){
+  return {
+    version:    1,
+    savedAt:    new Date().toISOString(),
+    currentSent: state.currentSent,
+    docs: state.docs.map(d => ({ name: d.name, content: d.content || "" })),
+    custom:    JSON.parse(JSON.stringify(state.custom)),
+    goldPick:  JSON.parse(JSON.stringify(state.goldPick)),
+    confirmed: Array.from(state.confirmed),
+    notes:     JSON.parse(JSON.stringify(state.notes)),
+    labels:    JSON.parse(JSON.stringify(LABELS)),
+    ...getUndoState(),
+  };
+}
+
+function _autoSave(){
+  if(state.docs.length === 0) return;
+  try {
+    localStorage.setItem(AUTOSAVE_KEY, JSON.stringify(_buildSessionObject()));
+  } catch { /* storage full or unavailable */ }
+}
+
+setInterval(_autoSave, 30_000);
+
+function _tryAutoSaveRestore(){
+  let raw;
+  try { raw = localStorage.getItem(AUTOSAVE_KEY); } catch { return; }
+  if(!raw) return;
+
+  let data;
+  try { data = JSON.parse(raw); } catch { return; }
+  if(!data || data.version !== 1 || !Array.isArray(data.docs) || !data.docs.length) return;
+
+  // Format the saved date for display
+  let dateStr = data.savedAt || "";
+  try {
+    dateStr = new Date(dateStr).toLocaleString();
+  } catch { /* keep raw */ }
+
+  const banner = document.getElementById("autosaveBanner");
+  if(!banner) return;
+
+  banner.innerHTML = "";
+  const msg = document.createElement("span");
+  msg.textContent = t("autosave.found", { date: dateStr }) + " ";
+
+  const restoreBtn = document.createElement("button");
+  restoreBtn.textContent = t("autosave.restore");
+  restoreBtn.addEventListener("click", () => {
+    importSession(raw);
+    banner.style.display = "none";
+    try { localStorage.removeItem(AUTOSAVE_KEY); } catch {}
+  });
+
+  const dismissBtn = document.createElement("button");
+  dismissBtn.textContent = t("autosave.dismiss");
+  dismissBtn.addEventListener("click", () => {
+    banner.style.display = "none";
+    try { localStorage.removeItem(AUTOSAVE_KEY); } catch {}
+  });
+
+  banner.appendChild(msg);
+  banner.appendChild(restoreBtn);
+  banner.appendChild(dismissBtn);
+  banner.style.display = "";
+}
+
+// Scripts are loaded at end of body, so DOM is ready — call directly
+_tryAutoSaveRestore();

@@ -130,6 +130,25 @@ window.LANG_EN = {
   'export.treeVsGold': '--- {name} vs Gold ---',
   'export.treeNoTree': '(no trees for this sentence)',
 
+  // Note per sentence
+  'note.label':       'Note:',
+  'note.placeholder': 'Note for this sentence …',
+
+  // Clipboard
+  'copy.btn':  'Copy CoNLL-U',
+  'copy.done': '✓ Copied!',
+  'kbd.copy':  'Copy',
+
+  // File order
+  'files.moveUp':   'Move up',
+  'files.moveDown': 'Move down',
+
+  // Autosave
+  'autosave.found':   'Auto-save from {date} found.',
+  'autosave.restore': 'Restore',
+  'autosave.dismiss': 'Dismiss',
+  'autosave.saved':   'Autosave stored',
+
   // Help
   'help.unavailable': 'Help not available.',
   'help.runScript':   'Please run python make_readme_js.py and reload the page.',
