@@ -56,7 +56,19 @@ window.addEventListener('mouseup', e => {
   const my = e.clientY - r.top;
   const ni = _arcNearest(mx, my, drag.centers, drag.wordY, drag.cellH);
   if (ni !== null && drag.toks[ni].id !== drag.depId) {
-    drag.onSetHead(drag.depId, drag.toks[ni].id);
+    const newHeadId = drag.toks[ni].id;
+    if (_arcWouldCycle(drag.depId, newHeadId, drag.toks)) {
+      // Reject: flash the target red to signal the cycle
+      if (drag.svg.isConnected) {
+        const el = drag.svg.querySelector(`[data-arctokid="${newHeadId}"]`);
+        if (el) {
+          el.style.fill = 'rgba(255,70,70,0.50)';
+          setTimeout(() => { el.style.fill = 'transparent'; }, 700);
+        }
+      }
+      return;
+    }
+    drag.onSetHead(drag.depId, newHeadId);
     // Show deprel popup immediately after assigning new head
     if (drag.onSetDeprel) {
       const currentDeprel = drag.toks[drag.tokIdx].deprel ?? '_';
@@ -81,7 +93,7 @@ function _arcBeginDrag(e) {
   pd.svg.appendChild(line);
   pd.svg.appendChild(dot);
   pd.svg.style.cursor = 'grabbing';
-  _arcDrag = { ...pd, line, dot, _hovId:null, _hovEl:null };
+  _arcDrag = { ...pd, line, dot, _hovId:null, _hovEl:null, _hovBad:false };
 }
 
 function _arcNearest(mx, my, centers, wordY, cellH) {
@@ -102,13 +114,34 @@ function _arcHighlightDrop(mx, my) {
   _arcDrag._hovId = nid;
   if (nid !== null && _arcDrag.svg.isConnected) {
     const el = _arcDrag.svg.querySelector(`[data-arctokid="${nid}"]`);
-    if (el) { el.style.fill = 'rgba(74,158,255,0.30)'; _arcDrag._hovEl = el; }
+    if (el) {
+      const bad = _arcWouldCycle(_arcDrag.depId, nid, _arcDrag.toks);
+      el.style.fill = bad ? 'rgba(255,70,70,0.40)' : 'rgba(74,158,255,0.30)';
+      _arcDrag._hovEl  = el;
+      _arcDrag._hovBad = bad;
+    }
   }
 }
 
 function _arcClearHighlight(drag) {
   if (drag._hovEl) { drag._hovEl.style.fill = 'transparent'; drag._hovEl = null; }
-  drag._hovId = null;
+  drag._hovId  = null;
+  drag._hovBad = false;
+}
+
+// ── Cycle detection ───────────────────────────────────────────────────────────
+// Returns true if making depId point to newHeadId would create a cycle.
+function _arcWouldCycle(depId, newHeadId, toks) {
+  if (depId === newHeadId) return true;
+  const idToHead = new Map(toks.map(t => [t.id, t.head]));
+  const seen = new Set([depId]);
+  let cur = newHeadId;
+  while (cur != null && cur !== 0) {
+    if (seen.has(cur)) return true;
+    seen.add(cur);
+    cur = idToHead.get(cur) ?? null;
+  }
+  return false;
 }
 
 // ── Deprel popup ──────────────────────────────────────────────────────────────
@@ -187,7 +220,7 @@ function _arcShowDeprelPopup(screenX, screenY, depId, currentDeprel, onSetDeprel
 }
 
 // ── Main builder ──────────────────────────────────────────────────────────────
-function buildArcDiagram(tokMap, { onSetHead = null, onDeleteArc = null, onSetDeprel = null, scrollToTok = null } = {}) {
+function buildArcDiagram(tokMap, { onSetHead = null, onDeleteArc = null, onSetDeprel = null, scrollToTok = null, edgeColors = null } = {}) {
   const NS      = 'http://www.w3.org/2000/svg';
   const toks    = Array.from(tokMap.values()).sort((a, b) => a.id - b.id);
   if (!toks.length) return null;
@@ -252,16 +285,18 @@ function buildArcDiagram(tokMap, { onSetHead = null, onDeleteArc = null, onSetDe
   for (const e of edges) {
     const g     = mk('g');
     const depId = toks[e.dep].id;
+    const arcColor = edgeColors?.get(depId) ?? 'var(--ok)';
 
     if (e.isRoot) {
-      // Vertical root arrow
+      // Vertical root arrow — always green (root is root)
+      const rootColor = 'var(--ok)';
       const dx = centers[e.dep];
       const ty = wordY - ROOT_H;
       g.appendChild(mk('line', { x1:dx, y1:ty+4, x2:dx, y2:wordY-8,
-        stroke:'var(--ok)', 'stroke-width':1.8 }));
+        stroke:rootColor, 'stroke-width':1.8 }));
       g.appendChild(mk('polygon', {
         points:`${dx-5},${wordY-14} ${dx+5},${wordY-14} ${dx},${wordY-3}`,
-        fill:'var(--ok)' }));
+        fill:rootColor }));
 
       // Label — grouped for click (editable)
       const lw = mc.measureText(e.label).width;
@@ -286,29 +321,34 @@ function buildArcDiagram(tokMap, { onSetHead = null, onDeleteArc = null, onSetDe
       const apex = wordY - e.h;
       const mid  = (x1 + x2) / 2;
 
-      // Wide invisible hit-path for reliable hover detection
-      g.appendChild(mk('path', {
-        d:`M ${x1} ${wordY} C ${x1} ${apex} ${x2} ${apex} ${x2} ${wordY}`,
-        stroke:'rgba(0,0,0,0)', 'stroke-width':14, fill:'none', 'pointer-events':'stroke' }));
+      // Measure label width early (needed for hit-rect and × button position)
+      const lw = mc.measureText(e.label).width;
 
-      // Visible arc curve (no pointer events — hit path handles it)
+      // Invisible bounding-box hit rect covering arc + label + × button area
+      // This ensures hover works reliably even in empty space between elements
+      const hLeft  = Math.min(x1, x2) - 8;
+      const hRight = Math.max(x1, x2) + lw / 2 + 26; // extends to × button
+      g.appendChild(mk('rect', {
+        x: hLeft, y: apex - 22, width: hRight - hLeft, height: wordY - apex + 22,
+        fill: 'transparent', 'pointer-events': 'all' }));
+
+      // Visible arc curve
       g.appendChild(mk('path', {
         d:`M ${x1} ${wordY} C ${x1} ${apex} ${x2} ${apex} ${x2} ${wordY}`,
-        stroke:'var(--accent)', 'stroke-width':1.6, fill:'none',
+        stroke:arcColor, 'stroke-width':1.8, fill:'none',
         'stroke-linecap':'round', 'pointer-events':'none' }));
 
       // Arrowhead
       g.appendChild(mk('polygon', {
         points:`${x2-4},${wordY-10} ${x2+4},${wordY-10} ${x2},${wordY-2}`,
-        fill:'var(--accent)', 'pointer-events':'none' }));
+        fill:arcColor, 'pointer-events':'none' }));
 
       // Arc label — grouped for click (editable)
-      const lw = mc.measureText(e.label).width;
       const labelG = mk('g');
       if (editable && onSetDeprel) labelG.style.cssText = 'cursor:pointer;';
       labelG.appendChild(mk('rect', {
         x:mid-lw/2-5, y:apex-14, width:lw+10, height:14,
-        rx:3, fill:'var(--card)', stroke:'var(--line)', 'stroke-width':0.5 }));
+        rx:3, fill:'var(--card)', stroke:arcColor, 'stroke-width':0.8 }));
       const lt = mk('text', { x:mid, y:apex-4, 'text-anchor':'middle',
         'font-size':10, 'font-weight':600, fill:'var(--text)', 'pointer-events':'none' });
       lt.textContent = e.label;
@@ -327,7 +367,7 @@ function buildArcDiagram(tokMap, { onSetHead = null, onDeleteArc = null, onSetDe
         const btnG = mk('g');
         btnG.style.cssText = 'cursor:pointer; opacity:0; transition:opacity .12s;';
 
-        const bx = mid + lw/2 + 12;
+        const bx = mid + lw/2 + 14;
         const by = apex - 7;
         btnG.appendChild(mk('circle', { cx:bx, cy:by, r:7, fill:'var(--bad)', opacity:0.9 }));
         const xt = mk('text', { x:bx, y:by+4, 'text-anchor':'middle',
@@ -341,7 +381,7 @@ function buildArcDiagram(tokMap, { onSetHead = null, onDeleteArc = null, onSetDe
         // Small delay before hiding to prevent button vanishing during mouse travel
         let hideTimer = null;
         g.addEventListener('mouseenter', () => { clearTimeout(hideTimer); btnG.style.opacity = '1'; });
-        g.addEventListener('mouseleave', () => { hideTimer = setTimeout(() => { btnG.style.opacity = '0'; }, 220); });
+        g.addEventListener('mouseleave', () => { hideTimer = setTimeout(() => { btnG.style.opacity = '0'; }, 300); });
         btnG.addEventListener('mouseenter', () => clearTimeout(hideTimer));
       }
     }
@@ -382,7 +422,7 @@ function buildArcDiagram(tokMap, { onSetHead = null, onDeleteArc = null, onSetDe
           tokIdx: i, depId: t.id,
           svg, centers, wordY, cellH: CELL_H, toks,
           onSetHead, onSetDeprel, onScrollTok: scrollToTok,
-          _hovId: null, _hovEl: null,
+          _hovId: null, _hovEl: null, _hovBad: false,
         };
       });
       overlay.addEventListener('mouseenter', () => { overlay.style.fill = 'rgba(74,158,255,0.10)'; });

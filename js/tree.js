@@ -191,12 +191,13 @@ function hasSubtreeDiff(rootId, goldMap, otherMap){
  *   opts.tokenList               — [{id, form}] for clickable sentence header
  *   opts.arcMap                  — full token Map for arc-diagram rendering
  *   opts.arcOnSetHead(depId, newHeadId) — if provided, arc is editable (drag from token)
- *   opts.arcOnDeleteArc(depId)         — resets head for that token
+ *   opts.arcOnDeleteArc(depId)          — resets head for that token
  *   opts.arcOnSetDeprel(depId, deprel) — sets deprel for that token
+ *   opts.arcEdgeColors                 — Map<depId, cssColorVar> for arc coloring
  */
 function buildTreeSection(title, sub, text, opts = {}){
   const { onAdoptSubtree, subtreeDiffCheck, onAdoptToken, tokenList,
-          arcMap, arcOnSetHead, arcOnDeleteArc, arcOnSetDeprel } = opts;
+          arcMap, arcOnSetHead, arcOnDeleteArc, arcOnSetDeprel, arcEdgeColors } = opts;
 
   const section = document.createElement("div");
   section.className = "treeSection";
@@ -211,7 +212,19 @@ function buildTreeSection(title, sub, text, opts = {}){
   `;
   section.appendChild(head);
 
-  // ── Clickable token-chip header ────────────────────────────────────────────
+  // ── Arc diagram (SVG, displaCy-style) ─────────────────────────────────────
+  if(arcMap && typeof buildArcDiagram === "function"){
+    const arcWrap = buildArcDiagram(arcMap, {
+      onSetHead:   arcOnSetHead   || null,
+      onDeleteArc: arcOnDeleteArc || null,
+      onSetDeprel: arcOnSetDeprel || null,
+      edgeColors:  arcEdgeColors  || null,
+      scrollToTok: scrollToToken,
+    });
+    if(arcWrap) section.appendChild(arcWrap);
+  }
+
+  // ── Clickable token-chip row (below arc diagram) ───────────────────────────
   if(tokenList && tokenList.length > 0){
     const chipRow = document.createElement("div");
     chipRow.className = "treeTokenHeader";
@@ -235,17 +248,6 @@ function buildTreeSection(title, sub, text, opts = {}){
       chipRow.appendChild(chip);
     }
     section.appendChild(chipRow);
-  }
-
-  // ── Arc diagram (SVG, displaCy-style) ─────────────────────────────────────
-  if(arcMap && typeof buildArcDiagram === "function"){
-    const arcWrap = buildArcDiagram(arcMap, {
-      onSetHead:   arcOnSetHead   || null,
-      onDeleteArc: arcOnDeleteArc || null,
-      onSetDeprel: arcOnSetDeprel || null,
-      scrollToTok: scrollToToken,
-    });
-    if(arcWrap) section.appendChild(arcWrap);
   }
 
   const pre = document.createElement("pre");
@@ -358,9 +360,33 @@ function renderPreview(){
 
   const tokenList = Array.from(goldMap.values()).map(tk => ({ id: tk.id, form: tk.form }));
 
+  // ── Arc edge colors: match the text-tree legend ───────────────────────────
+  // Gold arc colors: compare each gold arc against all file docMaps
+  const docEdgesArr = docMaps.map(dm => edgesFromMap(dm));
+  const goldArcColors = new Map();
+  for(const [id, tok] of goldMap.entries()){
+    if(tok.head == null) continue;
+    const key = `${id}|${tok.head}`;
+    const gDeprel = tok.deprel ?? '_';
+    let anyPresent = false, allSame = true;
+    for(const de of docEdgesArr){
+      if(de.has(key)){ anyPresent = true; if(de.get(key) !== gDeprel) allSame = false; }
+      else allSame = false;
+    }
+    goldArcColors.set(id,
+      (!anyPresent || !docEdgesArr.length) ? 'var(--gold)'
+      : allSame ? 'var(--ok)'
+      : 'var(--warn)'
+    );
+  }
+
+  // goldEdges cached for file-arc comparisons
+  const goldEdges = edgesFromMap(goldMap);
+
   const goldSection = buildTreeSection("⭐ GOLD", null, renderTreePlain(sentIndex, goldMap, sentenceText), {
     tokenList,
     arcMap: goldMap,
+    arcEdgeColors: goldArcColors,
     arcOnSetHead: (depId, newHeadId) => {
       pushUndo();
       setCustomField(sentIndex, depId, 'head', newHeadId);
@@ -368,8 +394,17 @@ function renderPreview(){
     },
     arcOnDeleteArc: (depId) => {
       pushUndo();
-      setCustomField(sentIndex, depId, 'head',   null);
-      setCustomField(sentIndex, depId, 'deprel', null);
+      // If there is a custom head override: revert it (falls back to file's head).
+      // If the arc comes purely from the file: set head=0 (root) to "delete" it.
+      const rawEntry = state.custom[sentIndex]?.[depId];
+      const hasCustomHead = rawEntry?.head != null; // head=0 is valid, != null catches it
+      if (hasCustomHead) {
+        setCustomField(sentIndex, depId, 'head',   null);
+        setCustomField(sentIndex, depId, 'deprel', null);
+      } else {
+        setCustomField(sentIndex, depId, 'head',   0);
+        setCustomField(sentIndex, depId, 'deprel', 'root');
+      }
       renderSentence();
     },
     arcOnSetDeprel: (depId, deprel) => {
@@ -386,9 +421,21 @@ function renderPreview(){
     const diff     = renderTreeDiff(sentIndex, goldMap, otherMap, sentenceText);
     const docIdx   = i;
 
+    // File arc colors: compare each file arc to gold
+    const fileArcColors = new Map();
+    for(const [id, tok] of otherMap.entries()){
+      if(tok.head == null) continue;
+      const key = `${id}|${tok.head}`;
+      if(goldEdges.has(key))
+        fileArcColors.set(id, goldEdges.get(key) === (tok.deprel ?? '_') ? 'var(--ok)' : 'var(--warn)');
+      else
+        fileArcColors.set(id, 'var(--file)');
+    }
+
     const section = buildTreeSection(name, t('tree.vsGold'), diff, {
       tokenList,
-      arcMap: otherMap,  // read-only arc diagram for each file
+      arcMap: otherMap,
+      arcEdgeColors: fileArcColors,
       onAdoptSubtree: (rootId) => {
         pushUndo();
         const subIds = new Set([
