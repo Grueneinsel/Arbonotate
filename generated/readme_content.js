@@ -19,18 +19,65 @@ Läuft vollständig lokal ohne Server — einfach \`index.html\` im Browser öff
 
 ---
 
+## Projekte
+
+Das Tool unterstützt mehrere **Projekte** gleichzeitig — jedes mit eigenen Dateien, Annotationen und Undo-Verlauf.
+
+### Projekt-Tab-Leiste
+
+Die Tab-Leiste erscheint direkt unterhalb des Headers. Jeder Tab hat:
+
+| Schaltfläche | Funktion |
+|---|---|
+| **◀ / ▶** | Projekt in der Reihenfolge verschieben |
+| **✎** | Projekt umbenennen |
+| **×** | Projekt löschen (nur wenn mehr als 1 Projekt vorhanden) |
+| **+** (rechts außen) | Neues leeres Projekt anlegen |
+
+Klick auf einen Tab → wechselt zum Projekt. Der Zustand (Dateien, Satzposition, Undo-Stack) wird beim Wechsel automatisch gespeichert und wiederhergestellt.
+
+### Tastaturkürzel für Projekte
+
+| Taste | Funktion |
+|---|---|
+| \`[\` | Vorheriges Projekt |
+| \`]\` | Nächstes Projekt |
+
+### Automatische Zuweisung beim Laden
+
+Werden Dateien mit **unterschiedlichen Satzzahlen** geladen, ordnet das Tool sie automatisch den passenden Projekten zu:
+
+1. **Eigenes Projekt** (aktiv) — wenn leer oder passende Satzzahl
+2. **Anderes bestehendes Projekt** — mit übereinstimmender Satzzahl
+3. **Anderes leeres Projekt** — als letzter Ausweg
+4. **Neues Projekt anlegen** — nur wenn kein passendes gefunden
+
+Wenn ein neues Projekt automatisch angelegt wurde, erscheint kurz eine Hinweismeldung.
+
+---
+
 ## 1) Dateien laden
 
 | Aktion | Beschreibung |
 |--------|-------------|
-| **„Dateien hinzufügen"** | Öffnet den Datei-Dialog; mehrere Dateien gleichzeitig wählbar |
-| **Drag & Drop** | \`.conllu\`/\`.conll\`/\`.txt\`-Dateien direkt auf die Seite ziehen |
+| **„Dateien hinzufügen"** | Öffnet den Datei-Dialog; \`.conllu\`, \`.conll\`, \`.txt\` und \`.json\` wählbar |
+| **Drag & Drop** | Dateien direkt auf die Seite ziehen |
 | **Drag & Drop (Session)** | \`.json\`-Session-Datei auf die Seite ziehen → wird automatisch importiert |
 | **„Demo laden"** | Drei vorgefertigte Beispieldateien, die alle Vergleichsfälle abdecken |
-| **„Löschen"** | Einzelne Datei aus der Liste entfernen |
 | **„Reset"** | Alle Dateien und Annotationen zurücksetzen |
 
-Unterstützte Formate: \`.conllu\`, \`.conll\`, \`.txt\`
+Unterstützte Formate: \`.conllu\`, \`.conll\`, \`.txt\` (Daten) · \`.json\` (Session)
+
+### Datei-Aktionen pro Zeile
+
+Jede geladene Datei hat folgende Schaltflächen:
+
+| Schaltfläche | Funktion |
+|---|---|
+| **⬇** | Datei als CoNLL-U herunterladen (Original-Inhalt) |
+| **Projekt-Dropdown** | Datei in ein anderes Projekt verschieben; **＋ Neues Projekt …** legt ein neues an und verschiebt sofort |
+| **▲ / ▼** | Reihenfolge innerhalb des Projekts tauschen |
+| **Löschen** | Datei aus dem Projekt entfernen |
 
 ### Textkonsistenzwarnung
 
@@ -84,6 +131,14 @@ Klick auf einen Punkt springt direkt zu diesem Satz.
 Über **„✓ Bestätigen"** (oder \`Space\`) wird der aktuelle Satz als abgeschlossen markiert.
 Bestätigte Sätze werden gold eingefärbt (Dropdown, Satz-Map, Satztext-Rahmen, Button).
 Erneutes Drücken hebt die Bestätigung wieder auf.
+
+### Notiz pro Satz
+
+Unterhalb des Satztextes gibt es ein **Notizfeld** — freier Text, der pro Satz gespeichert und mit der Session exportiert wird.
+
+### CoNLL-U kopieren
+
+Der **„Copy CoNLL-U"-Button** (oder Taste \`c\`) kopiert die Gold-Annotation des aktuellen Satzes als CoNLL-U in die Zwischenablage.
 
 ---
 
@@ -159,23 +214,27 @@ In den Datei-Spalten werden HEAD/DEPREL und UPOS·XPOS jeweils einzeln hervorgeh
 
 ## 5) Export
 
-### CoNLL-U & Baumansicht
+### Einzelne Datei
+
+Der **⬇-Button** neben jeder Datei lädt den Original-Inhalt der Datei als \`.conllu\` herunter.
+
+### Alle Sätze (Gold-Annotation)
 
 | Button | Inhalt |
 |--------|--------|
 | **Gold CoNLL-U herunterladen** | Alle Sätze mit aktuellen Gold-Annotationen (HEAD, DEPREL, UPOS, XPOS); LEMMA/FEATS/DEPS/MISC aus Quelldatei |
 | **Baumansicht herunterladen** | Alle Sätze als Text-Bäume mit Gold-Baum und Diff-Bäumen pro Datei |
 
-Tastaturkürzel: \`e\` → CoNLL-U · \`E\` → Baumansicht
+Tastaturkürzel: \`e\` → CoNLL-U · \`E\` → Baumansicht · \`c\` → aktuellen Satz in Zwischenablage
 
 ### Session Export / Import
 
-Der **Session-Mechanismus** sichert den vollständigen Arbeitsstand:
+Der **Session-Mechanismus** sichert den vollständigen Arbeitsstand aller Projekte:
 
-- Alle geladenen CoNLL-U-Dateien (Inhalt)
+- Alle Projekte mit Namen, Dateien und Annotationen
 - Custom-Annotationen und Gold-Auswahl
-- Bestätigte Sätze
-- Vollständiger Undo-/Redo-Verlauf
+- Bestätigte Sätze und Notizen
+- Vollständiger Undo-/Redo-Verlauf pro Projekt
 - Labelkonfiguration (\`labels.js\`)
 
 | Aktion | Beschreibung |
@@ -184,20 +243,24 @@ Der **Session-Mechanismus** sichert den vollständigen Arbeitsstand:
 | **📂 Session laden** | Importiert eine gespeicherte Session-Datei |
 | **Drag & Drop** | \`.json\`-Datei auf die Seite ziehen → wird automatisch als Session erkannt |
 
-Das Session-Format ist versioniert (\`version: 1\`) und als JSON lesbar.
+Das Session-Format ist versioniert (\`version: 2\`) und als JSON lesbar. Ältere Sessions (\`version: 1\`) werden automatisch als einzelnes Projekt importiert.
+
+### Autosave
+
+Der Arbeitsstand wird alle **30 Sekunden** automatisch im Browser-LocalStorage gesichert. Beim nächsten Öffnen der Seite erscheint ein Banner mit der Option, den Stand wiederherzustellen oder zu verwerfen.
 
 ---
 
 ## 6) Undo / Redo
 
-Alle Annotationsänderungen (Datei-Auswahl, Custom-Popup, Bestätigen, Teilbaum-Übernahme) sind rückgängig machbar.
+Alle Annotationsänderungen (Datei-Auswahl, Custom-Popup, Bestätigen, Teilbaum-Übernahme) sind rückgängig machbar. Jedes Projekt hat seinen eigenen Undo-Stack.
 
 | Aktion | Beschreibung |
 |--------|-------------|
 | **↩ Undo** / \`Ctrl+Z\` | Letzte Änderung rückgängig |
 | **↪ Redo** / \`Ctrl+Y\` | Rückgängige Änderung wiederherstellen |
 
-Der Verlauf wird in der Session mitgespeichert (bis zu 80 Schritte).
+Der Verlauf wird in der Session mitgespeichert (bis zu 80 Schritte pro Projekt).
 
 ---
 
@@ -208,6 +271,7 @@ Der Verlauf wird in der Session mitgespeichert (bis zu 80 Schritte).
 | \`←\` / \`→\` | Vorheriger / nächster Satz |
 | \`Ctrl+←\` / \`Ctrl+→\` | Erster / letzter Satz |
 | \`n\` / \`N\` | Nächster / vorheriger Satz mit Diffs |
+| \`[\` / \`]\` | Vorheriges / nächstes Projekt |
 | \`↑\` / \`↓\` | Tabellenzeile navigieren |
 | \`Enter\` | Gold-Popup für fokussierte Zeile öffnen |
 | \`Space\` | Satz bestätigen / Bestätigung aufheben |
@@ -216,6 +280,7 @@ Der Verlauf wird in der Session mitgespeichert (bis zu 80 Schritte).
 | \`Ctrl+Z\` | Undo |
 | \`Ctrl+Y\` | Redo |
 | \`Del\` / \`Backspace\` | Custom des aktuellen Satzes löschen |
+| \`c\` | Aktuellen Satz als CoNLL-U in Zwischenablage kopieren |
 | \`e\` | Gold CoNLL-U exportieren |
 | \`E\` (Shift+e) | Baumansicht exportieren |
 | \`?\` | Hilfe öffnen / schließen |
@@ -321,18 +386,65 @@ Runs entirely locally without a server — simply open \`index.html\` in your br
 
 ---
 
+## Projects
+
+The tool supports multiple **projects** simultaneously — each with its own files, annotations, and undo history.
+
+### Project Tab Bar
+
+The tab bar appears directly below the header. Each tab has:
+
+| Button | Function |
+|---|---|
+| **◀ / ▶** | Reorder projects |
+| **✎** | Rename project |
+| **×** | Delete project (only when more than one project exists) |
+| **+** (far right) | Create a new empty project |
+
+Click a tab to switch to that project. State (files, sentence position, undo stack) is automatically saved and restored on switch.
+
+### Keyboard Shortcuts for Projects
+
+| Key | Function |
+|---|---|
+| \`[\` | Previous project |
+| \`]\` | Next project |
+
+### Automatic Assignment on Load
+
+When files with **different sentence counts** are loaded, the tool assigns them to projects automatically:
+
+1. **Own project** (active) — if empty or matching sentence count
+2. **Other existing project** — with matching sentence count
+3. **Other empty project** — as a last resort
+4. **Create new project** — only if no match found
+
+A brief notification appears when a new project is created automatically.
+
+---
+
 ## 1) Load Files
 
 | Action | Description |
 |--------|-------------|
-| **"Add files"** | Opens the file dialog; multiple files can be selected at once |
-| **Drag & Drop** | Drop \`.conllu\`/\`.conll\`/\`.txt\` files directly onto the page |
+| **"Add files"** | Opens the file dialog; \`.conllu\`, \`.conll\`, \`.txt\` and \`.json\` files selectable |
+| **Drag & Drop** | Drop files directly onto the page |
 | **Drag & Drop (Session)** | Drop a \`.json\` session file onto the page → imported automatically |
 | **"Load demo"** | Three pre-built example files covering all comparison cases |
-| **"Remove"** | Remove an individual file from the list |
 | **"Reset"** | Reset all files and annotations |
 
-Supported formats: \`.conllu\`, \`.conll\`, \`.txt\`
+Supported formats: \`.conllu\`, \`.conll\`, \`.txt\` (data) · \`.json\` (session)
+
+### Per-File Actions
+
+Each loaded file has the following buttons:
+
+| Button | Function |
+|---|---|
+| **⬇** | Download file as CoNLL-U (original content) |
+| **Project dropdown** | Move file to another project; **＋ New project …** creates one and moves the file immediately |
+| **▲ / ▼** | Change order within the project |
+| **Remove** | Remove file from the project |
 
 ### Text Consistency Warning
 
@@ -386,6 +498,14 @@ Click a dot to jump directly to that sentence.
 Use **"✓ Confirm"** (or \`Space\`) to mark the current sentence as finished.
 Confirmed sentences are coloured gold (dropdown, sentence map, sentence text border, button).
 Pressing again removes the confirmation.
+
+### Note per Sentence
+
+Below the sentence text there is a **note field** — free text, saved per sentence and exported with the session.
+
+### Copy CoNLL-U
+
+The **"Copy CoNLL-U" button** (or key \`c\`) copies the Gold annotation of the current sentence as CoNLL-U to the clipboard.
 
 ---
 
@@ -461,23 +581,27 @@ Use the **column toggle bar** to show or hide individual file columns.
 
 ## 5) Export
 
-### CoNLL-U & Tree View
+### Individual File
+
+The **⬇ button** next to each file downloads the original file content as \`.conllu\`.
+
+### All Sentences (Gold Annotation)
 
 | Button | Content |
 |--------|---------|
 | **Download Gold CoNLL-U** | All sentences with current Gold annotations (HEAD, DEPREL, UPOS, XPOS); LEMMA/FEATS/DEPS/MISC from source file |
 | **Download tree view** | All sentences as plain-text trees with Gold tree and diff trees per file |
 
-Keyboard shortcuts: \`e\` → CoNLL-U · \`E\` → tree view
+Keyboard shortcuts: \`e\` → CoNLL-U · \`E\` → tree view · \`c\` → copy current sentence to clipboard
 
 ### Session Export / Import
 
-The **session mechanism** saves the complete working state:
+The **session mechanism** saves the complete working state of all projects:
 
-- All loaded CoNLL-U files (content)
+- All projects with names, files, and annotations
 - Custom annotations and Gold selection
-- Confirmed sentences
-- Full undo/redo history
+- Confirmed sentences and notes
+- Full undo/redo history per project
 - Label configuration (\`labels.js\`)
 
 | Action | Description |
@@ -486,20 +610,24 @@ The **session mechanism** saves the complete working state:
 | **📂 Load session** | Imports a saved session file |
 | **Drag & Drop** | Drop a \`.json\` file onto the page → automatically recognised as a session |
 
-The session format is versioned (\`version: 1\`) and human-readable JSON.
+The session format is versioned (\`version: 2\`) and human-readable JSON. Older sessions (\`version: 1\`) are automatically imported as a single project.
+
+### Autosave
+
+The working state is automatically saved to the browser's LocalStorage every **30 seconds**. On the next page load, a banner offers the option to restore or dismiss the saved state.
 
 ---
 
 ## 6) Undo / Redo
 
-All annotation changes (file selection, custom popup, confirm, subtree adoption) can be undone.
+All annotation changes (file selection, custom popup, confirm, subtree adoption) can be undone. Each project has its own undo stack.
 
 | Action | Description |
 |--------|-------------|
 | **↩ Undo** / \`Ctrl+Z\` | Undo last change |
 | **↪ Redo** / \`Ctrl+Y\` | Redo undone change |
 
-The history is saved with the session (up to 80 steps).
+The history is saved with the session (up to 80 steps per project).
 
 ---
 
@@ -510,6 +638,7 @@ The history is saved with the session (up to 80 steps).
 | \`←\` / \`→\` | Previous / next sentence |
 | \`Ctrl+←\` / \`Ctrl+→\` | First / last sentence |
 | \`n\` / \`N\` | Next / previous sentence with diffs |
+| \`[\` / \`]\` | Previous / next project |
 | \`↑\` / \`↓\` | Navigate table rows |
 | \`Enter\` | Open Gold popup for focused row |
 | \`Space\` | Confirm / unconfirm sentence |
@@ -518,6 +647,7 @@ The history is saved with the session (up to 80 steps).
 | \`Ctrl+Z\` | Undo |
 | \`Ctrl+Y\` | Redo |
 | \`Del\` / \`Backspace\` | Delete custom for current sentence |
+| \`c\` | Copy current sentence as CoNLL-U to clipboard |
 | \`e\` | Export Gold CoNLL-U |
 | \`E\` (Shift+e) | Export tree view |
 | \`?\` | Open / close help |

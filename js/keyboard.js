@@ -138,6 +138,18 @@ document.addEventListener("keydown", (e) => {
       break;
     }
 
+    // ── Projekt wechseln ─────────────────────────────────────────────────────
+    case "[":
+      e.preventDefault();
+      if(state.activeProjectIdx > 0) switchProject(state.activeProjectIdx - 1);
+      break;
+
+    case "]":
+      e.preventDefault();
+      if(state.activeProjectIdx < state.projects.length - 1)
+        switchProject(state.activeProjectIdx + 1);
+      break;
+
     // ── Clipboard copy ───────────────────────────────────────────────────────
     case "c":
       e.preventDefault();

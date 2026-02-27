@@ -16,18 +16,65 @@ Runs entirely locally without a server — simply open `index.html` in your brow
 
 ---
 
+## Projects
+
+The tool supports multiple **projects** simultaneously — each with its own files, annotations, and undo history.
+
+### Project Tab Bar
+
+The tab bar appears directly below the header. Each tab has:
+
+| Button | Function |
+|---|---|
+| **◀ / ▶** | Reorder projects |
+| **✎** | Rename project |
+| **×** | Delete project (only when more than one project exists) |
+| **+** (far right) | Create a new empty project |
+
+Click a tab to switch to that project. State (files, sentence position, undo stack) is automatically saved and restored on switch.
+
+### Keyboard Shortcuts for Projects
+
+| Key | Function |
+|---|---|
+| `[` | Previous project |
+| `]` | Next project |
+
+### Automatic Assignment on Load
+
+When files with **different sentence counts** are loaded, the tool assigns them to projects automatically:
+
+1. **Own project** (active) — if empty or matching sentence count
+2. **Other existing project** — with matching sentence count
+3. **Other empty project** — as a last resort
+4. **Create new project** — only if no match found
+
+A brief notification appears when a new project is created automatically.
+
+---
+
 ## 1) Load Files
 
 | Action | Description |
 |--------|-------------|
-| **"Add files"** | Opens the file dialog; multiple files can be selected at once |
-| **Drag & Drop** | Drop `.conllu`/`.conll`/`.txt` files directly onto the page |
+| **"Add files"** | Opens the file dialog; `.conllu`, `.conll`, `.txt` and `.json` files selectable |
+| **Drag & Drop** | Drop files directly onto the page |
 | **Drag & Drop (Session)** | Drop a `.json` session file onto the page → imported automatically |
 | **"Load demo"** | Three pre-built example files covering all comparison cases |
-| **"Remove"** | Remove an individual file from the list |
 | **"Reset"** | Reset all files and annotations |
 
-Supported formats: `.conllu`, `.conll`, `.txt`
+Supported formats: `.conllu`, `.conll`, `.txt` (data) · `.json` (session)
+
+### Per-File Actions
+
+Each loaded file has the following buttons:
+
+| Button | Function |
+|---|---|
+| **⬇** | Download file as CoNLL-U (original content) |
+| **Project dropdown** | Move file to another project; **＋ New project …** creates one and moves the file immediately |
+| **▲ / ▼** | Change order within the project |
+| **Remove** | Remove file from the project |
 
 ### Text Consistency Warning
 
@@ -81,6 +128,14 @@ Click a dot to jump directly to that sentence.
 Use **"✓ Confirm"** (or `Space`) to mark the current sentence as finished.
 Confirmed sentences are coloured gold (dropdown, sentence map, sentence text border, button).
 Pressing again removes the confirmation.
+
+### Note per Sentence
+
+Below the sentence text there is a **note field** — free text, saved per sentence and exported with the session.
+
+### Copy CoNLL-U
+
+The **"Copy CoNLL-U" button** (or key `c`) copies the Gold annotation of the current sentence as CoNLL-U to the clipboard.
 
 ---
 
@@ -156,23 +211,27 @@ Use the **column toggle bar** to show or hide individual file columns.
 
 ## 5) Export
 
-### CoNLL-U & Tree View
+### Individual File
+
+The **⬇ button** next to each file downloads the original file content as `.conllu`.
+
+### All Sentences (Gold Annotation)
 
 | Button | Content |
 |--------|---------|
 | **Download Gold CoNLL-U** | All sentences with current Gold annotations (HEAD, DEPREL, UPOS, XPOS); LEMMA/FEATS/DEPS/MISC from source file |
 | **Download tree view** | All sentences as plain-text trees with Gold tree and diff trees per file |
 
-Keyboard shortcuts: `e` → CoNLL-U · `E` → tree view
+Keyboard shortcuts: `e` → CoNLL-U · `E` → tree view · `c` → copy current sentence to clipboard
 
 ### Session Export / Import
 
-The **session mechanism** saves the complete working state:
+The **session mechanism** saves the complete working state of all projects:
 
-- All loaded CoNLL-U files (content)
+- All projects with names, files, and annotations
 - Custom annotations and Gold selection
-- Confirmed sentences
-- Full undo/redo history
+- Confirmed sentences and notes
+- Full undo/redo history per project
 - Label configuration (`labels.js`)
 
 | Action | Description |
@@ -181,20 +240,24 @@ The **session mechanism** saves the complete working state:
 | **📂 Load session** | Imports a saved session file |
 | **Drag & Drop** | Drop a `.json` file onto the page → automatically recognised as a session |
 
-The session format is versioned (`version: 1`) and human-readable JSON.
+The session format is versioned (`version: 2`) and human-readable JSON. Older sessions (`version: 1`) are automatically imported as a single project.
+
+### Autosave
+
+The working state is automatically saved to the browser's LocalStorage every **30 seconds**. On the next page load, a banner offers the option to restore or dismiss the saved state.
 
 ---
 
 ## 6) Undo / Redo
 
-All annotation changes (file selection, custom popup, confirm, subtree adoption) can be undone.
+All annotation changes (file selection, custom popup, confirm, subtree adoption) can be undone. Each project has its own undo stack.
 
 | Action | Description |
 |--------|-------------|
 | **↩ Undo** / `Ctrl+Z` | Undo last change |
 | **↪ Redo** / `Ctrl+Y` | Redo undone change |
 
-The history is saved with the session (up to 80 steps).
+The history is saved with the session (up to 80 steps per project).
 
 ---
 
@@ -205,6 +268,7 @@ The history is saved with the session (up to 80 steps).
 | `←` / `→` | Previous / next sentence |
 | `Ctrl+←` / `Ctrl+→` | First / last sentence |
 | `n` / `N` | Next / previous sentence with diffs |
+| `[` / `]` | Previous / next project |
 | `↑` / `↓` | Navigate table rows |
 | `Enter` | Open Gold popup for focused row |
 | `Space` | Confirm / unconfirm sentence |
@@ -213,6 +277,7 @@ The history is saved with the session (up to 80 steps).
 | `Ctrl+Z` | Undo |
 | `Ctrl+Y` | Redo |
 | `Del` / `Backspace` | Delete custom for current sentence |
+| `c` | Copy current sentence as CoNLL-U to clipboard |
 | `e` | Export Gold CoNLL-U |
 | `E` (Shift+e) | Export tree view |
 | `?` | Open / close help |
