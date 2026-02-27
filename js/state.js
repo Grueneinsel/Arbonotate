@@ -15,6 +15,9 @@ const state = {
   hiddenCols: new Set(),
   confirmed: new Set(), // confirmed sentence indices
   notes: {},           // notes[sentIndex] = string
+  // Project management
+  projects: [],        // array of project snapshots
+  activeProjectIdx: 0,
 };
 
 // ---------- Label helpers ----------

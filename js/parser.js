@@ -61,18 +61,17 @@ function fileKey(f){
 
 // ---------- File management ----------
 async function processFiles(files){
+  const parsed = [];
   for(const f of files){
     const key = fileKey(f);
+    // Skip if already present in the current project
     if(state.docs.some(d => d.key === key)) continue;
     const text = await readFileAsText(f);
     const doc = parseConllu(text);
-    state.docs.push({ key, name: f.name, content: text, sentences: doc.sentences });
+    parsed.push({ key, name: f.name, content: text, sentences: doc.sentences });
   }
-  recomputeMaxSents();
-  state.currentSent = 0;
-  renderFiles();
-  renderSentSelect();
-  renderSentence();
+  // Delegate to project-aware assignment (defined in projects.js)
+  autoAssignToProjects(parsed);
 }
 
 async function onFilesChosen(){
@@ -154,6 +153,7 @@ function moveDoc(idx, dir){
 
 function resetAll(){
   if(!confirm(t('files.resetConfirm'))) return;
+  // Reset to a single empty project
   state.docs = [];
   state.custom = {};
   state.goldPick = {};
@@ -161,7 +161,11 @@ function resetAll(){
   state.hiddenCols = new Set();
   state.currentSent = 0;
   state.maxSents = 0;
+  state.projects = [_emptyProject(`${t('project.default')} 1`)];
+  state.activeProjectIdx = 0;
+  loadUndoState({ undo: [], redo: [] });
   fileInput.value = "";
+  renderProjectTabs();
   renderFiles();
   renderSentSelect();
   renderSentence();

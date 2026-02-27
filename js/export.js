@@ -109,7 +109,8 @@ function exportSession(){
   const session = _buildSessionObject();
   const ts = new Date().toISOString().slice(0, 19).replace(/[:T]/g, "-");
   downloadText(JSON.stringify(session, null, 2), `session_${ts}.json`);
-  _showSessionMeta(t('session.exported', { n: session.docs.length, u: session.undo.length }));
+  const totalDocs = session.projects.reduce((s, p) => s + p.docs.length, 0);
+  _showSessionMeta(t('session.exported', { n: totalDocs, u: session.projects[session.activeProjectIdx].undo?.length || 0 }));
 }
 
 // ---------- Session Import ----------
@@ -117,12 +118,6 @@ function importSession(jsonText){
   let data;
   try { data = JSON.parse(jsonText); }
   catch { alert(t('session.errJson')); return; }
-  if(data.version !== 1 || !Array.isArray(data.docs)){
-    alert(t('session.errFormat')); return;
-  }
-  if(!data.docs.length){
-    alert(t('session.errNoDocs')); return;
-  }
 
   // Labels wiederherstellen (vor buildDeprelOptionsCache)
   if(data.labels && typeof data.labels === "object"){
@@ -130,29 +125,75 @@ function importSession(jsonText){
     buildDeprelOptionsCache();
   }
 
-  // State zurücksetzen und neu befüllen
-  state.docs        = [];
-  state.custom      = data.custom   || {};
-  state.goldPick    = data.goldPick || {};
-  state.hiddenCols  = new Set();
-  state.confirmed   = new Set(data.confirmed || []);
-  state.notes       = data.notes    || {};
-  state.currentSent = data.currentSent || 0;
+  // ── v2: multi-project format ──────────────────────────────────────────────
+  if(data.version === 2 && Array.isArray(data.projects) && data.projects.length){
+    state.projects = data.projects.map(p => {
+      const docs = (p.docs || []).filter(d => typeof d.content === "string").map(d => {
+        const parsed = parseConllu(d.content);
+        return { key: `session::${d.name}`, name: d.name, content: d.content, sentences: parsed.sentences };
+      });
+      return {
+        name:        p.name || t('project.default'),
+        docs,
+        custom:      JSON.parse(JSON.stringify(p.custom    || {})),
+        goldPick:    JSON.parse(JSON.stringify(p.goldPick  || {})),
+        confirmed:   p.confirmed || [],
+        notes:       JSON.parse(JSON.stringify(p.notes     || {})),
+        currentSent: p.currentSent || 0,
+        maxSents:    Math.max(0, ...docs.map(d => d.sentences.length), 0),
+        hiddenCols:  p.hiddenCols  || [],
+        undoStack:   p.undo  || [],
+        redoStack:   p.redo  || [],
+      };
+    });
+    state.activeProjectIdx = Math.min(data.activeProjectIdx || 0, state.projects.length - 1);
+    _loadActiveProject();
+    renderProjectTabs();
+    renderFiles();
+    renderSentSelect();
+    renderSentence();
+    const totalDocs = state.projects.reduce((s, p) => s + p.docs.length, 0);
+    _showSessionMeta(t('session.loaded', { n: totalDocs, s: state.maxSents, u: data.projects[state.activeProjectIdx]?.undo?.length || 0 }));
+    return;
+  }
 
+  // ── v1: backward-compat single-project ───────────────────────────────────
+  if(data.version !== 1 || !Array.isArray(data.docs)){
+    alert(t('session.errFormat')); return;
+  }
+  if(!data.docs.length){
+    alert(t('session.errNoDocs')); return;
+  }
+
+  const docs = [];
   for(const d of data.docs){
     if(typeof d.content !== "string") continue;
     const parsed = parseConllu(d.content);
-    state.docs.push({ key: `session::${d.name}`, name: d.name, content: d.content, sentences: parsed.sentences });
+    docs.push({ key: `session::${d.name}`, name: d.name, content: d.content, sentences: parsed.sentences });
   }
+  const maxSents = Math.max(0, ...docs.map(d => d.sentences.length), 0);
+  const currentSent = Math.min(data.currentSent || 0, Math.max(0, maxSents - 1));
 
-  recomputeMaxSents();
-  state.currentSent = Math.min(state.currentSent, Math.max(0, state.maxSents - 1));
-  loadUndoState({ undo: data.undo || [], redo: data.redo || [] });
-
+  state.projects = [{
+    name:        `${t('project.default')} 1`,
+    docs,
+    custom:      JSON.parse(JSON.stringify(data.custom    || {})),
+    goldPick:    JSON.parse(JSON.stringify(data.goldPick  || {})),
+    confirmed:   data.confirmed || [],
+    notes:       JSON.parse(JSON.stringify(data.notes     || {})),
+    currentSent,
+    maxSents,
+    hiddenCols:  [],
+    undoStack:   data.undo || [],
+    redoStack:   data.redo || [],
+  }];
+  state.activeProjectIdx = 0;
+  _loadActiveProject();
+  renderProjectTabs();
   renderFiles();
   renderSentSelect();
   renderSentence();
-  _showSessionMeta(t('session.loaded', { n: state.docs.length, s: state.maxSents, u: data.undo?.length || 0 }));
+  _showSessionMeta(t('session.loaded', { n: docs.length, s: maxSents, u: data.undo?.length || 0 }));
 }
 
 function _showSessionMeta(msg){
@@ -207,22 +248,30 @@ function exportTreesTxt(){
 const AUTOSAVE_KEY = "conllu_autosave";
 
 function _buildSessionObject(){
+  // Snapshot active project before serialising
+  _saveActiveProject();
   return {
-    version:    1,
-    savedAt:    new Date().toISOString(),
-    currentSent: state.currentSent,
-    docs: state.docs.map(d => ({ name: d.name, content: d.content || "" })),
-    custom:    JSON.parse(JSON.stringify(state.custom)),
-    goldPick:  JSON.parse(JSON.stringify(state.goldPick)),
-    confirmed: Array.from(state.confirmed),
-    notes:     JSON.parse(JSON.stringify(state.notes)),
-    labels:    JSON.parse(JSON.stringify(LABELS)),
-    ...getUndoState(),
+    version:          2,
+    savedAt:          new Date().toISOString(),
+    activeProjectIdx: state.activeProjectIdx,
+    projects: state.projects.map(p => ({
+      name:        p.name,
+      docs:        p.docs.map(d => ({ name: d.name, content: d.content || "" })),
+      custom:      JSON.parse(JSON.stringify(p.custom    || {})),
+      goldPick:    JSON.parse(JSON.stringify(p.goldPick  || {})),
+      confirmed:   p.confirmed instanceof Set ? Array.from(p.confirmed) : (p.confirmed || []),
+      notes:       JSON.parse(JSON.stringify(p.notes     || {})),
+      currentSent: p.currentSent || 0,
+      hiddenCols:  p.hiddenCols instanceof Set ? Array.from(p.hiddenCols) : (p.hiddenCols || []),
+      undo:        p.undoStack || [],
+      redo:        p.redoStack || [],
+    })),
+    labels: JSON.parse(JSON.stringify(LABELS)),
   };
 }
 
 function _autoSave(){
-  if(state.docs.length === 0) return;
+  if(!state.projects.some(p => p.docs.length > 0) && state.docs.length === 0) return;
   try {
     localStorage.setItem(AUTOSAVE_KEY, JSON.stringify(_buildSessionObject()));
   } catch { /* storage full or unavailable */ }

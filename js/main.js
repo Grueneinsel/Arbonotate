@@ -445,6 +445,7 @@ async function loadExamples(){
 
 // ---------- Init ----------
 buildDeprelOptionsCache();
+initProjects();
 renderFiles();
 renderSentSelect();
 renderSentence();

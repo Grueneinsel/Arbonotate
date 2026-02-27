@@ -628,6 +628,39 @@ tr.keyFocus > td:first-child{ border-left:2px solid var(--accent) }
 }
 html[data-theme="light"] .autosaveBanner{ background:#fffbe8; border-color:#c09000; }
 
+/* Project tab bar */
+.projectTabBar{
+  display:flex; gap:4px; align-items:flex-end; overflow-x:auto;
+  padding:6px 14px 0; background:var(--bg);
+  border-bottom:2px solid var(--line);
+}
+.projectTab{
+  display:flex; align-items:center; gap:6px; cursor:pointer;
+  padding:6px 14px; border-radius:10px 10px 0 0;
+  border:1px solid var(--line); border-bottom:none;
+  background:var(--bg-control); font-size:12px; white-space:nowrap;
+  transition:background .15s, border-color .15s;
+}
+.projectTab:hover:not(.projectTabActive){ background:var(--bg-control-hover,#2a3040); }
+.projectTabActive{
+  background:var(--card); border-color:var(--accent);
+  border-bottom:2px solid var(--card); margin-bottom:-2px;
+}
+.projectTabName{ max-width:160px; overflow:hidden; text-overflow:ellipsis; }
+.projectTabClose{
+  padding:0 3px; border:none; background:transparent;
+  color:var(--muted); font-size:14px; line-height:1; cursor:pointer;
+}
+.projectTabClose:hover{ color:var(--bad,#e06c75); }
+.projectTabAdd{
+  padding:5px 12px; border-radius:8px 8px 0 0;
+  font-size:15px; align-self:flex-end; flex-shrink:0;
+}
+html[data-theme="light"] .projectTabBar{ background:#f0f5fb; border-color:#c5d5e8; }
+html[data-theme="light"] .projectTab{ background:#ddeaf8; border-color:#b0c8e0; }
+html[data-theme="light"] .projectTab:hover:not(.projectTabActive){ background:#cce0f4; }
+html[data-theme="light"] .projectTabActive{ background:#fff; border-color:#3a7fc1; border-bottom-color:#fff; }
+
 /* POS edit cells */
 .posEditCell { padding: 4px 6px !important; }
 .posSelect {

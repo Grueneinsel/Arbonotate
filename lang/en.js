@@ -149,6 +149,12 @@ window.LANG_EN = {
   'autosave.dismiss': 'Dismiss',
   'autosave.saved':   'Autosave stored',
 
+  // Projects
+  'project.new':           'New project',
+  'project.default':       'Project',
+  'project.namePrompt':    'Project name:',
+  'project.deleteConfirm': 'Really delete project "{name}"?',
+
   // Help
   'help.unavailable': 'Help not available.',
   'help.runScript':   'Please run python make_readme_js.py and reload the page.',
