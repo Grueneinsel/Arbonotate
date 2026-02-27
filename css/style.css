@@ -426,6 +426,11 @@ tr.keyFocus > td:first-child{ border-left:2px solid var(--accent) }
 .fileItem .fileActions button{ padding:4px 7px; font-size:12px; line-height:1 }
 .fileItem .fileActions .moveUpBtn,
 .fileItem .fileActions .moveDownBtn{ min-width:26px }
+.moveToProjectSel{
+  font-size:11px; padding:3px 4px; border-radius:6px;
+  border:1px solid var(--line); background:var(--bg-control); color:var(--text);
+  max-width:110px; cursor:pointer;
+}
 .fileWarnIcon{ font-size:13px; vertical-align:middle; margin-left:4px; cursor:default }
 
 /* Tree blocks */
@@ -647,10 +652,15 @@ html[data-theme="light"] .autosaveBanner{ background:#fffbe8; border-color:#c090
   border-bottom:2px solid var(--card); margin-bottom:-2px;
 }
 .projectTabName{ max-width:160px; overflow:hidden; text-overflow:ellipsis; }
-.projectTabClose{
+.projectTabMoveBtn,.projectTabRenameBtn,.projectTabClose{
   padding:0 3px; border:none; background:transparent;
-  color:var(--muted); font-size:14px; line-height:1; cursor:pointer;
+  color:var(--muted); font-size:11px; line-height:1; cursor:pointer; flex-shrink:0;
 }
+.projectTabMoveBtn:hover:not(:disabled){ color:var(--text); }
+.projectTabMoveBtn:disabled{ opacity:.25; cursor:default; }
+.projectTabRenameBtn{ font-size:13px; }
+.projectTabRenameBtn:hover{ color:var(--accent); }
+.projectTabClose{ font-size:14px; }
 .projectTabClose:hover{ color:var(--bad,#e06c75); }
 .projectTabAdd{
   padding:5px 12px; border-radius:8px 8px 0 0;

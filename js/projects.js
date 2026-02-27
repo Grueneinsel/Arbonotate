@@ -110,11 +110,66 @@ function deleteProject(idx){
 function renameProject(idx, name){
   if(!name || !name.trim()) return;
   state.projects[idx].name = name.trim();
-  if(idx === state.activeProjectIdx){
-    // Also update saved copy
-    state.projects[idx].name = name.trim();
-  }
   renderProjectTabs();
+}
+
+/** Move project at idx by dir (+1 / -1). */
+function moveProject(idx, dir){
+  const other = idx + dir;
+  if(other < 0 || other >= state.projects.length) return;
+  _saveActiveProject();
+  [state.projects[idx], state.projects[other]] = [state.projects[other], state.projects[idx]];
+  if(state.activeProjectIdx === idx)        state.activeProjectIdx = other;
+  else if(state.activeProjectIdx === other) state.activeProjectIdx = idx;
+  renderProjectTabs();
+}
+
+/** Move doc at docIdx from the active project to targetProjectIdx. */
+function moveDocToProject(docIdx, targetProjectIdx){
+  if(targetProjectIdx === state.activeProjectIdx) return;
+  const doc = state.docs[docIdx];
+  if(!doc) return;
+
+  // Remove from live state
+  state.docs.splice(docIdx, 1);
+
+  // Remap hiddenCols
+  const newHidden = new Set();
+  for(const v of state.hiddenCols){
+    if(v > docIdx) newHidden.add(v - 1);
+    else if(v < docIdx) newHidden.add(v);
+  }
+  state.hiddenCols = newHidden;
+
+  // Remap goldPick indices
+  for(const sKey of Object.keys(state.goldPick)){
+    const m = state.goldPick[sKey];
+    for(const tKey of Object.keys(m)){
+      const v = m[tKey];
+      if(typeof v !== "number") continue;
+      if(v === docIdx)   m[tKey] = 0;
+      else if(v > docIdx) m[tKey] = v - 1;
+    }
+  }
+
+  recomputeMaxSents();
+  state.currentSent = Math.min(state.currentSent, Math.max(0, state.maxSents - 1));
+
+  // Snapshot source project (now without the moved doc)
+  _saveActiveProject();
+
+  // Add to target project
+  const target = state.projects[targetProjectIdx];
+  if(!target.docs.some(d => d.key === doc.key)){
+    target.docs.push(doc);
+    target.maxSents = Math.max(0, ...target.docs.map(d => d.sentences.length), 0);
+  }
+
+  _loadActiveProject();
+  renderProjectTabs();
+  renderFiles();
+  renderSentSelect();
+  renderSentence();
 }
 
 /** Rebuild the #projectTabBar DOM. */
@@ -123,32 +178,60 @@ function renderProjectTabs(){
   if(!bar) return;
   bar.innerHTML = "";
 
+  const n = state.projects.length;
+
   state.projects.forEach((p, idx) => {
     const tab = document.createElement("div");
     tab.className = "projectTab" + (idx === state.activeProjectIdx ? " projectTabActive" : "");
 
+    // ◀ move left
+    if(n > 1){
+      const leftBtn = document.createElement("button");
+      leftBtn.className = "projectTabMoveBtn";
+      leftBtn.textContent = "◀";
+      leftBtn.title = t('project.moveLeft');
+      leftBtn.disabled = idx === 0;
+      leftBtn.addEventListener("click", (e) => { e.stopPropagation(); moveProject(idx, -1); });
+      tab.appendChild(leftBtn);
+    }
+
+    // Name span
     const nameSpan = document.createElement("span");
     nameSpan.className = "projectTabName";
     nameSpan.textContent = p.name;
-    nameSpan.title = p.name;
-    // Double-click to rename
-    nameSpan.addEventListener("dblclick", (e) => {
+    nameSpan.title = t('project.renameHint');
+    tab.appendChild(nameSpan);
+
+    // ✎ rename button
+    const renameBtn = document.createElement("button");
+    renameBtn.className = "projectTabRenameBtn";
+    renameBtn.textContent = "✎";
+    renameBtn.title = t('project.rename');
+    renameBtn.addEventListener("click", (e) => {
       e.stopPropagation();
       const newName = prompt(t('project.namePrompt'), p.name);
       if(newName !== null) renameProject(idx, newName);
     });
-    tab.appendChild(nameSpan);
+    tab.appendChild(renameBtn);
 
-    // Close button (only if more than 1 project)
-    if(state.projects.length > 1){
+    // ▶ move right
+    if(n > 1){
+      const rightBtn = document.createElement("button");
+      rightBtn.className = "projectTabMoveBtn";
+      rightBtn.textContent = "▶";
+      rightBtn.title = t('project.moveRight');
+      rightBtn.disabled = idx === n - 1;
+      rightBtn.addEventListener("click", (e) => { e.stopPropagation(); moveProject(idx, +1); });
+      tab.appendChild(rightBtn);
+    }
+
+    // × close button (only if more than 1 project)
+    if(n > 1){
       const closeBtn = document.createElement("button");
       closeBtn.className = "projectTabClose";
       closeBtn.textContent = "×";
       closeBtn.title = t('project.deleteConfirm', { name: p.name });
-      closeBtn.addEventListener("click", (e) => {
-        e.stopPropagation();
-        deleteProject(idx);
-      });
+      closeBtn.addEventListener("click", (e) => { e.stopPropagation(); deleteProject(idx); });
       tab.appendChild(closeBtn);
     }
 
@@ -190,45 +273,59 @@ function autoAssignToProjects(parsedDocs){
   }
 
   if(groups.size === 1){
-    // All same sentence count → add to current project
-    for(const doc of parsedDocs){
-      if(!state.docs.some(d => d.key === doc.key)) state.docs.push(doc);
+    const [[sentCount]] = groups.entries();
+    // Fast path: current project is empty or already has the same sentence count
+    if(state.docs.length === 0 || state.maxSents === sentCount){
+      for(const doc of parsedDocs){
+        if(!state.docs.some(d => d.key === doc.key)) state.docs.push(doc);
+      }
+      recomputeMaxSents();
+      state.currentSent = 0;
+      renderFiles();
+      renderSentSelect();
+      renderSentence();
+      return;
     }
-    recomputeMaxSents();
-    state.currentSent = 0;
-    renderFiles();
-    renderSentSelect();
-    renderSentence();
-    return;
+    // Mismatch with current project → fall through to distribution logic below
   }
 
-  // Multiple groups → save current project first
+  // Multiple groups OR sentence count differs from current project → distribute
   _saveActiveProject();
 
-  let firstGroup = true;
+  const newProjectNames = [];
+
   for(const [sentCount, docs] of groups.entries()){
     let targetIdx = -1;
 
-    if(firstGroup){
-      // First group goes to the active project if it has no docs yet
-      if(state.projects[state.activeProjectIdx].docs.length === 0){
-        targetIdx = state.activeProjectIdx;
-      }
-      firstGroup = false;
+    // Prefer the active project if it is empty or already has matching sentence count
+    const ap = state.projects[state.activeProjectIdx];
+    if((ap.docs.length === 0 || ap.maxSents === sentCount) &&
+       !docs.some(d => ap.docs.some(pd => pd.key === d.key))){
+      targetIdx = state.activeProjectIdx;
     }
 
     if(targetIdx === -1){
-      // Find an existing project with matching maxSents and compatible docs
+      // Second: any other project with a matching sentence count
       targetIdx = state.projects.findIndex((p, i) =>
-        p.maxSents === sentCount && !docs.some(d => p.docs.some(pd => pd.key === d.key))
+        i !== state.activeProjectIdx &&
+        p.docs.length > 0 && p.maxSents === sentCount &&
+        !docs.some(d => p.docs.some(pd => pd.key === d.key))
       );
     }
 
     if(targetIdx === -1){
-      // Create a new project
+      // Third: any other empty project (last resort before creating a new one)
+      targetIdx = state.projects.findIndex((p, i) =>
+        i !== state.activeProjectIdx && p.docs.length === 0
+      );
+    }
+
+    if(targetIdx === -1){
+      // Create a new project and record its name for the notification
       const name = `${t('project.default')} ${state.projects.length + 1}`;
       state.projects.push(_emptyProject(name));
       targetIdx = state.projects.length - 1;
+      newProjectNames.push(name);
     }
 
     const p = state.projects[targetIdx];
@@ -244,4 +341,11 @@ function autoAssignToProjects(parsedDocs){
   renderFiles();
   renderSentSelect();
   renderSentence();
+
+  // Notify user about auto-created projects
+  if(newProjectNames.length === 1){
+    _showSessionMeta(t('project.autoCreated', { name: newProjectNames[0] }));
+  } else if(newProjectNames.length > 1){
+    _showSessionMeta(t('project.autoCreatedN', { n: newProjectNames.length }));
+  }
 }

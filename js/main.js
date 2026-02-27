@@ -114,22 +114,99 @@ function renderFiles(){
   state.docs.forEach((d, idx) => {
     const div = document.createElement("div");
     div.className = "fileItem";
-    const warnBadge = warnedIndices.has(idx)
-      ? ` <span class="fileWarnIcon" title="${escapeHtml(t('files.warnBadge'))}">⚠️</span>` : "";
-    div.innerHTML = `
-      <div class="left">
-        <div class="name">${escapeHtml(d.name)}${warnBadge}</div>
-        <div class="meta">${escapeHtml(t('files.sentences', { n: d.sentences.length }))}</div>
-      </div>
-      <div class="fileActions">
-        <button class="moveUpBtn" title="${escapeHtml(t('files.moveUp'))}" ${idx === 0 ? 'disabled' : ''}>▲</button>
-        <button class="moveDownBtn" title="${escapeHtml(t('files.moveDown'))}" ${idx === state.docs.length - 1 ? 'disabled' : ''}>▼</button>
-        <button class="danger">${escapeHtml(t('files.delete'))}</button>
-      </div>
-    `;
-    div.querySelector(".moveUpBtn").addEventListener("click",   () => moveDoc(idx, -1));
-    div.querySelector(".moveDownBtn").addEventListener("click", () => moveDoc(idx, +1));
-    div.querySelector(".danger").addEventListener("click",      () => removeDoc(idx));
+
+    // Info column
+    const left = document.createElement("div");
+    left.className = "left";
+    const nameDiv = document.createElement("div");
+    nameDiv.className = "name";
+    nameDiv.textContent = d.name;
+    if(warnedIndices.has(idx)){
+      const badge = document.createElement("span");
+      badge.className = "fileWarnIcon";
+      badge.title = t('files.warnBadge');
+      badge.textContent = "⚠️";
+      nameDiv.appendChild(badge);
+    }
+    const metaDiv = document.createElement("div");
+    metaDiv.className = "meta";
+    metaDiv.textContent = t('files.sentences', { n: d.sentences.length });
+    left.appendChild(nameDiv);
+    left.appendChild(metaDiv);
+    div.appendChild(left);
+
+    // Actions column
+    const actions = document.createElement("div");
+    actions.className = "fileActions";
+
+    // Download button
+    const dlBtn = document.createElement("button");
+    dlBtn.title = t('files.download');
+    dlBtn.textContent = "⬇";
+    dlBtn.addEventListener("click", () => downloadText(d.content || "", d.name));
+    actions.appendChild(dlBtn);
+
+    // Move-to-project select (always shown so new project can be created)
+    {
+      const sel = document.createElement("select");
+      sel.className = "moveToProjectSel";
+      sel.title = t('files.moveToProject');
+      state.projects.forEach((p, pi) => {
+        const opt = document.createElement("option");
+        opt.value = pi;
+        opt.textContent = p.name;
+        if(pi === state.activeProjectIdx) opt.selected = true;
+        sel.appendChild(opt);
+      });
+      // "New project…" sentinel option
+      const newOpt = document.createElement("option");
+      newOpt.value = "__new__";
+      newOpt.textContent = t('files.moveToNewProject');
+      sel.appendChild(newOpt);
+
+      sel.addEventListener("change", () => {
+        if(sel.value === "__new__"){
+          const name = prompt(t('project.namePrompt'),
+            `${t('project.default')} ${state.projects.length + 1}`);
+          if(!name){ sel.value = String(state.activeProjectIdx); return; }
+          // Push new project WITHOUT switching — active project stays the source
+          const newIdx = state.projects.length;
+          _saveActiveProject();
+          state.projects.push(_emptyProject(name));
+          // Now move the doc; moveDocToProject handles all re-renders
+          moveDocToProject(idx, newIdx);
+        } else {
+          moveDocToProject(idx, parseInt(sel.value, 10));
+        }
+      });
+      actions.appendChild(sel);
+    }
+
+    // Move up / down
+    const upBtn = document.createElement("button");
+    upBtn.className = "moveUpBtn";
+    upBtn.title = t('files.moveUp');
+    upBtn.textContent = "▲";
+    upBtn.disabled = idx === 0;
+    upBtn.addEventListener("click", () => moveDoc(idx, -1));
+    actions.appendChild(upBtn);
+
+    const downBtn = document.createElement("button");
+    downBtn.className = "moveDownBtn";
+    downBtn.title = t('files.moveDown');
+    downBtn.textContent = "▼";
+    downBtn.disabled = idx === state.docs.length - 1;
+    downBtn.addEventListener("click", () => moveDoc(idx, +1));
+    actions.appendChild(downBtn);
+
+    // Delete
+    const delBtn = document.createElement("button");
+    delBtn.className = "danger";
+    delBtn.textContent = t('files.delete');
+    delBtn.addEventListener("click", () => removeDoc(idx));
+    actions.appendChild(delBtn);
+
+    div.appendChild(actions);
     fileList.appendChild(div);
   });
 
