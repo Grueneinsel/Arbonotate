@@ -87,7 +87,9 @@ window.LANG_DE = {
 
   // Export
   'export.conllu':     'Gold CoNLL-U herunterladen',
+  'export.conlluAll':  'Alle Projekte CoNLL-U herunterladen',
   'export.trees':      'Baumansicht (alle Sätze) herunterladen',
+  'export.treesAll':   'Alle Projekte Baumansicht herunterladen',
   'export.conlluDesc': 'Gold CoNLL-U enthält alle Sätze mit den aktuellen Gold-Annotationen (HEAD, DEPREL, UPOS, XPOS). LEMMA / FEATS / DEPS / MISC werden aus der Quelldatei übernommen.',
   'export.mwtNote':    'Hinweis: Multi-Word-Tokens (IDs mit „-" oder „.") werden ignoriert.',
 

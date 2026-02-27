@@ -1,13 +1,17 @@
 // ---------- Export buttons ----------
 const exportConlluBtn    = document.getElementById("exportConlluBtn");
+const exportAllConlluBtn = document.getElementById("exportAllConlluBtn");
 const exportTreeBtn      = document.getElementById("exportTreeBtn");
+const exportAllTreeBtn   = document.getElementById("exportAllTreeBtn");
 const exportSessionBtn   = document.getElementById("exportSessionBtn");
 const importSessionInput = document.getElementById("importSessionInput");
 const sessionMeta        = document.getElementById("sessionMeta");
 
-exportConlluBtn.addEventListener("click", exportGoldConllu);
-exportTreeBtn.addEventListener("click",   exportTreesTxt);
-exportSessionBtn.addEventListener("click", exportSession);
+exportConlluBtn.addEventListener("click",    exportGoldConllu);
+exportAllConlluBtn.addEventListener("click", exportAllProjectsConllu);
+exportTreeBtn.addEventListener("click",      exportTreesTxt);
+exportAllTreeBtn.addEventListener("click",   exportAllProjectsTrees);
+exportSessionBtn.addEventListener("click",   exportSession);
 importSessionInput.addEventListener("change", () => {
   const files = Array.from(importSessionInput.files || []);
   if(!files.length) return;
@@ -27,9 +31,12 @@ importSessionInput.addEventListener("change", () => {
 });
 
 function updateExportButtons(){
-  const ok = state.docs.length >= 1;
-  exportConlluBtn.disabled = !ok;
-  exportTreeBtn.disabled   = !(ok && state.maxSents > 0);
+  const ok   = state.docs.length >= 1;
+  const tree = ok && state.maxSents > 0;
+  exportConlluBtn.disabled    = !ok;
+  exportAllConlluBtn.disabled = !ok;
+  exportTreeBtn.disabled      = !tree;
+  exportAllTreeBtn.disabled   = !tree;
 }
 
 // ---------- Download helper ----------
@@ -43,11 +50,9 @@ function downloadText(content, filename){
   URL.revokeObjectURL(url);
 }
 
-// ---------- Gold CoNLL-U (alle Sätze) ----------
-function exportGoldConllu(){
-  if(state.docs.length < 1) return;
+// ---------- Gold CoNLL-U Kernlogik (nutzt state.* direkt) ----------
+function _buildConlluText(){
   const out = [];
-
   for(let sentIdx = 0; sentIdx < state.maxSents; sentIdx++){
     const docMaps = state.docs.map(d => {
       const s = d.sentences[sentIdx];
@@ -64,7 +69,6 @@ function exportGoldConllu(){
 
     const goldMap = buildGoldTokenMap(sentIdx, idList, docMaps);
 
-    // # text header
     let sentText = "";
     for(const d of state.docs){
       const s = d.sentences[sentIdx];
@@ -77,13 +81,11 @@ function exportGoldConllu(){
       for(const m of docMaps){ const t = m.get(id); if(t){ base = t; break; } }
       if(!base) continue;
 
-      const goldTok     = goldMap.get(id);
-      const customEntry = getCustomEntry(sentIdx, id);
-
-      const head   = goldTok?.head   ?? null;
-      const deprel = goldTok?.deprel ?? "_";
-      const upos   = goldTok?.upos ?? "_";
-      const xpos   = goldTok?.xpos ?? "_";
+      const goldTok = goldMap.get(id);
+      const head    = goldTok?.head   ?? null;
+      const deprel  = goldTok?.deprel ?? "_";
+      const upos    = goldTok?.upos   ?? "_";
+      const xpos    = goldTok?.xpos   ?? "_";
 
       out.push([
         id,
@@ -98,10 +100,47 @@ function exportGoldConllu(){
         base.misc   || "_",
       ].join("\t"));
     }
-    out.push(""); // Leerzeile zwischen Sätzen
+    out.push("");
+  }
+  return out.join("\n");
+}
+
+// ---------- Gold CoNLL-U — aktives Projekt ----------
+function exportGoldConllu(){
+  if(state.docs.length < 1) return;
+  const name = state.projects.length > 1
+    ? `gold_${state.projects[state.activeProjectIdx].name}.conllu`
+    : "gold_annotation.conllu";
+  downloadText(_buildConlluText(), name);
+}
+
+// ---------- Gold CoNLL-U — alle Projekte (je eine Datei) ----------
+function exportAllProjectsConllu(){
+  if(!state.projects.length) return;
+  _saveActiveProject(); // aktiven Stand einfrieren
+
+  // Originale state-Felder sichern
+  const origDocs     = state.docs;
+  const origMaxSents = state.maxSents;
+  const origCustom   = state.custom;
+  const origGoldPick = state.goldPick;
+
+  for(const p of state.projects){
+    if(!p.docs.length) continue;
+    // Temporären State einspielen
+    state.docs     = p.docs;
+    state.maxSents = p.maxSents;
+    state.custom   = p.custom;
+    state.goldPick = p.goldPick;
+
+    downloadText(_buildConlluText(), `gold_${p.name}.conllu`);
   }
 
-  downloadText(out.join("\n"), "gold_annotation.conllu");
+  // State wiederherstellen (kein Re-Render nötig)
+  state.docs     = origDocs;
+  state.maxSents = origMaxSents;
+  state.custom   = origCustom;
+  state.goldPick = origGoldPick;
 }
 
 // ---------- Session Export ----------
@@ -202,10 +241,10 @@ function _showSessionMeta(msg){
   setTimeout(() => { sessionMeta.textContent = ""; }, 4000);
 }
 
-// ---------- Baumansicht als .txt (alle Sätze) ----------
-function exportTreesTxt(){
-  if(state.docs.length < 1) return;
+// ---------- Baumansicht Kernlogik (nutzt state.* direkt) ----------
+function _buildTreeText(){
   const parts = [];
+  const stripHeader = txt => txt.split("\n").slice(1).join("\n");
 
   for(let sentIdx = 0; sentIdx < state.maxSents; sentIdx++){
     const docMaps = state.docs.map(d => {
@@ -222,9 +261,6 @@ function exportTreesTxt(){
     const goldMap  = buildGoldTokenMap(sentIdx, idList, docMaps);
     const sentText = getSentenceTextFallback(sentIdx);
 
-    // Hilfsfunktion: erste Zeile (📝 Satztext) abtrennen
-    const stripHeader = txt => txt.split("\n").slice(1).join("\n");
-
     let block = `${"=".repeat(60)}\n`;
     block += `📝 S${sentIdx + 1}: ${sentText}\n\n`;
     block += t('export.treeGold') + "\n";
@@ -240,8 +276,42 @@ function exportTreesTxt(){
     }
     parts.push(block);
   }
+  return parts.join("\n");
+}
 
-  downloadText(parts.join("\n"), "alle_baeume.txt");
+// ---------- Baumansicht — aktives Projekt ----------
+function exportTreesTxt(){
+  if(state.docs.length < 1) return;
+  const name = state.projects.length > 1
+    ? `baeume_${state.projects[state.activeProjectIdx].name}.txt`
+    : "alle_baeume.txt";
+  downloadText(_buildTreeText(), name);
+}
+
+// ---------- Baumansicht — alle Projekte (je eine Datei) ----------
+function exportAllProjectsTrees(){
+  if(!state.projects.length) return;
+  _saveActiveProject();
+
+  const origDocs     = state.docs;
+  const origMaxSents = state.maxSents;
+  const origCustom   = state.custom;
+  const origGoldPick = state.goldPick;
+
+  for(const p of state.projects){
+    if(!p.docs.length) continue;
+    state.docs     = p.docs;
+    state.maxSents = p.maxSents;
+    state.custom   = p.custom;
+    state.goldPick = p.goldPick;
+
+    downloadText(_buildTreeText(), `baeume_${p.name}.txt`);
+  }
+
+  state.docs     = origDocs;
+  state.maxSents = origMaxSents;
+  state.custom   = origCustom;
+  state.goldPick = origGoldPick;
 }
 
 // ---------- LocalStorage Autosave ----------

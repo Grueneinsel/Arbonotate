@@ -87,7 +87,9 @@ window.LANG_EN = {
 
   // Export
   'export.conllu':     'Download Gold CoNLL-U',
+  'export.conlluAll':  'Download all projects CoNLL-U',
   'export.trees':      'Download tree view (all sentences)',
+  'export.treesAll':   'Download all projects tree view',
   'export.conlluDesc': 'Gold CoNLL-U contains all sentences with current Gold annotations (HEAD, DEPREL, UPOS, XPOS). LEMMA / FEATS / DEPS / MISC are taken from the source file.',
   'export.mwtNote':    'Note: Multi-word tokens (IDs with "-" or ".") are ignored.',
 
