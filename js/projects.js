@@ -10,12 +10,33 @@ function _emptyProject(name){
     goldPick:    {},
     confirmed:   [],   // serialised Set (array of ints)
     notes:       {},
+    flags:       {},   // serialised: { sentIdx: tokId[] }
     currentSent: 0,
     maxSents:    0,
     hiddenCols:  [],   // serialised Set (array of ints)
     undoStack:   [],
     redoStack:   [],
   };
+}
+
+/** Serialize state.flags → plain object { sentIdx: tokId[] } */
+function _serializeFlags(flags){
+  const out = {};
+  for(const [k, v] of Object.entries(flags)){
+    const arr = v instanceof Set ? Array.from(v) : (Array.isArray(v) ? v : []);
+    if(arr.length > 0) out[k] = arr;
+  }
+  return out;
+}
+
+/** Deserialize stored flags → { sentIdx(number): Set<tokId> } */
+function _deserializeFlags(raw){
+  const out = {};
+  for(const [k, v] of Object.entries(raw || {})){
+    const arr = Array.isArray(v) ? v : [];
+    if(arr.length > 0) out[Number(k)] = new Set(arr);
+  }
+  return out;
 }
 
 /** Save live state → projects[activeProjectIdx] */
@@ -29,6 +50,7 @@ function _saveActiveProject(){
     goldPick:    JSON.parse(JSON.stringify(state.goldPick)),
     confirmed:   Array.from(state.confirmed),
     notes:       JSON.parse(JSON.stringify(state.notes)),
+    flags:       _serializeFlags(state.flags),
     currentSent: state.currentSent,
     maxSents:    state.maxSents,
     hiddenCols:  Array.from(state.hiddenCols),
@@ -45,6 +67,7 @@ function _loadActiveProject(){
   state.goldPick    = JSON.parse(JSON.stringify(p.goldPick  || {}));
   state.confirmed   = new Set(p.confirmed || []);
   state.notes       = JSON.parse(JSON.stringify(p.notes     || {}));
+  state.flags       = _deserializeFlags(p.flags || {});
   state.currentSent = p.currentSent || 0;
   state.maxSents    = p.maxSents    || 0;
   state.hiddenCols  = new Set(p.hiddenCols || []);

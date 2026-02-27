@@ -15,6 +15,7 @@ const state = {
   hiddenCols: new Set(),
   confirmed: new Set(), // confirmed sentence indices
   notes: {},           // notes[sentIndex] = string
+  flags: {},           // flags[sentIndex] = Set<tokId> — flagged for attention
   // Project management
   projects: [],        // array of project snapshots
   activeProjectIdx: 0,

@@ -8,7 +8,8 @@ window.LANG_DE = {
 
   // Datei-Bereich
   'files.add':          'Dateien hinzufügen',
-  'files.reset':        'Reset',
+  'files.reset':        'Projekt zurücksetzen',
+  'files.globalReset':  '↺ Alles zurücksetzen',
   'files.none':         'Keine Dateien geladen',
   'files.loaded':       '{n} Datei(en) geladen',
   'files.drop':         'Dateien hier ablegen oder Schaltfläche nutzen · .conllu / .conll / .txt',
@@ -22,7 +23,8 @@ window.LANG_DE = {
   'files.sentences':    '{n} Sätze',
   'files.warnBadge':    'Unterschiedlicher Text!',
   'files.warnBanner':   '⚠️ Unterschiedliche Texte geladen — Vergleich möglicherweise fehlerhaft.',
-  'files.resetConfirm': 'Wirklich alles zurücksetzen?',
+  'files.resetConfirm':        'Aktuelles Projekt wirklich zurücksetzen?',
+  'files.globalResetConfirm':  'Wirklich ALLE Projekte und Annotationen zurücksetzen?',
 
   // Satz-Auswahl
   'sent.optLabel':     'Satz {n}',
@@ -123,12 +125,15 @@ window.LANG_DE = {
   'label.empty': '(leer)',
 
   // Baumansicht
-  'tree.toGold':      '→ Gold',
-  'tree.toGoldTitle': 'Teilbaum ab Token {id} als Gold übernehmen',
-  'tree.jumpTitle':   'Zur Zeile springen: Token {id}',
-  'tree.fileDefault': 'Datei {n}',
-  'tree.vsGold':      'vs Gold',
-  'tree.noTree':      '(keine Bäume für diesen Satz)',
+  'tree.toGold':            '→ Gold',
+  'tree.toGoldTitle':       'Teilbaum ab Token {id} als Gold übernehmen',
+  'tree.adoptToken':        '→',
+  'tree.adoptTokenTitle':   'Dieses Token als Gold übernehmen (Token {id})',
+  'tree.jumpTitle':         'Zur Zeile springen: Token {id}',
+  'tree.rootJumpTitle':     'Zur Zeile springen: Token {id} (Wurzel)',
+  'tree.fileDefault':       'Datei {n}',
+  'tree.vsGold':            'vs Gold',
+  'tree.noTree':            '(keine Bäume für diesen Satz)',
 
   // Export – Baumtext
   'export.treeGold':  '=== GOLD ===',
@@ -165,6 +170,13 @@ window.LANG_DE = {
   'project.renameHint':    '✎ klicken zum Umbenennen',
   'project.moveLeft':      'Nach links verschieben',
   'project.moveRight':     'Nach rechts verschieben',
+
+  // Zeilen-Markierung (Flags)
+  'flag.toggle':     'Zeile markieren / Markierung aufheben',
+  'flag.sentDot':    'Satz {n}: hat Markierungen',
+  'flag.sentOpt':    ' ⚑',
+  'kbd.flagNext':    'Nächste Markierung',
+  'kbd.flagPrev':    'Vorherige Markierung',
 
   // Hilfe
   'help.unavailable': 'Hilfe nicht verfügbar.',

@@ -96,8 +96,11 @@ function renderCompareTable(){
     const uposDiff = allVals.some(v => v !== null && v.upos !== goldUpos);
     const xposDiff = allVals.some(v => v !== null && v.xpos !== goldXpos);
 
-    html += `<tr data-id="${id}" class="${hasDiff ? 'rowDiff' : ''}">`;
-    html += `<td>${id}</td>`;
+    const isFlagged = !!state.flags[sentIndex]?.has(id);
+    let rowCls = hasDiff ? 'rowDiff' : '';
+    if(isFlagged) rowCls += ' rowFlagged';
+    html += `<tr data-id="${id}" class="${rowCls.trim()}">`;
+    html += `<td>${id}<button class="flagBtn${isFlagged ? ' flagBtnActive' : ''}" title="${escapeHtml(t('flag.toggle'))}">!</button></td>`;
     html += `<td>${escapeHtml(form)}</td>`;
 
     // UPOS / XPOS — inline editable dropdown (or text input if no options)
@@ -347,6 +350,16 @@ function _positionPopup(cellEl){
   _popup.style.top  = `${top}px`;
   _popup.style.left = `${left}px`;
 }
+
+// Click on flag button → toggle flag
+cmpTable.addEventListener("click", (e) => {
+  const btn = e.target.closest?.(".flagBtn");
+  if(!btn) return;
+  const tr = btn.closest("tr[data-id]");
+  if(!tr) return;
+  e.stopPropagation();
+  toggleFlag(state.currentSent, parseInt(tr.dataset.id, 10));
+});
 
 // Click on Gold cell → open / close popup
 cmpTable.addEventListener("click", (e) => {

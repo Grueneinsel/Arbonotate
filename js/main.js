@@ -26,9 +26,12 @@ const sentMap         = document.getElementById("sentMap");
 const sentNoteRow     = document.getElementById("sentNoteRow");
 const sentNote        = document.getElementById("sentNote");
 
+const globalResetBtn = document.getElementById("globalResetBtn");
+
 // ---------- Events ----------
 fileInput.addEventListener("change", onFilesChosen);
-resetBtn.addEventListener("click", resetAll);
+resetBtn.addEventListener("click", resetProject);
+if(globalResetBtn) globalResetBtn.addEventListener("click", resetAll);
 
 if(sentNote){
   sentNote.addEventListener("input", () => {
@@ -314,15 +317,23 @@ function renderSentSelectOptions(){
     const stats = _sentStats(i);
     const hasDiff   = stats.diffCount > 0;
     const confirmed = state.confirmed.has(i);
+    const hasFlags  = state.flags[i]?.size > 0;
     const opt = document.createElement("option");
     opt.value = String(i);
     const diffPart = hasDiff
       ? ` ${t(stats.diffCount !== 1 ? 'sent.optDiffs' : 'sent.optDiff', { n: stats.diffCount })}`
       : ` ${t('sent.optOk')}`;
-    opt.textContent = `${t('sent.optLabel', { n: i+1 })}${confirmed ? ' ★' : ''}  (${stats.totalTokens} Tok${diffPart})`;
-    if(confirmed){
+    const flagPart = hasFlags ? t('flag.sentOpt') : '';
+    opt.textContent = `${t('sent.optLabel', { n: i+1 })}${confirmed ? ' ★' : ''}${flagPart}  (${stats.totalTokens} Tok${diffPart})`;
+    if(confirmed && hasFlags){
+      opt.style.background = '#1a0c00';
+      opt.style.color = '#ffcc44';   // gold + slight warm tint to show both
+    } else if(confirmed){
       opt.style.background = '#1a1000';
-      opt.style.color = '#ffb347';
+      opt.style.color = '#ffb347';   // gold
+    } else if(hasFlags){
+      opt.style.background = '#1c0e00';
+      opt.style.color = '#ff9100';   // orange — clearly distinct from gold and red/green
     } else {
       opt.style.background = hasDiff ? '#1f0b0b' : '#091a10';
       opt.style.color = hasDiff ? '#ff9090' : '#6fe8a8';
@@ -333,8 +344,12 @@ function renderSentSelectOptions(){
 
   // Rahmenfarbe des Selects nach aktuellem Satz
   const curConfirmed = state.confirmed.has(state.currentSent);
+  const curFlagged   = state.flags[state.currentSent]?.size > 0;
   const curStats = _sentStats(state.currentSent);
-  sentSelect.style.borderColor = curConfirmed ? '#ff9f43' : (curStats.diffCount > 0 ? '#ff5f5f' : '#3de89a');
+  sentSelect.style.borderColor = curConfirmed ? '#ff9f43'
+    : curFlagged              ? '#ff9100'
+    : curStats.diffCount > 0  ? '#ff5f5f'
+    : '#3de89a';
 
   updateConfirmBtn();
   renderSentMap();
@@ -368,6 +383,7 @@ function renderSentMap(){
     const stats = _sentStats(i);
     const hasDiff   = stats.diffCount > 0;
     const confirmed = state.confirmed.has(i);
+    const hasFlags  = state.flags[i]?.size > 0;
     const isCurrent = i === state.currentSent;
     const dot = document.createElement("button");
     let cls = "sentDot ";
@@ -375,16 +391,45 @@ function renderSentMap(){
     else if(hasDiff) cls += "sentDotDiff";
     else             cls += "sentDotOk";
     if(isCurrent)    cls += " sentDotCurrent";
+    if(hasFlags)     cls += " sentDotFlagged";
     dot.className = cls;
-    dot.title = t(confirmed ? 'sent.dotTitleConf' : 'sent.dotTitle', {
+    dot.title = t(confirmed ? 'sent.dotTitleConf' : (hasFlags ? 'flag.sentDot' : 'sent.dotTitle'), {
       n: i + 1, toks: stats.totalTokens, diffs: stats.diffCount
     });
+    // Accessibility: symbol inside dot conveys state independently of color
+    if     (confirmed && hasFlags)        dot.textContent = "★!";
+    else if(confirmed)                    dot.textContent = "★";
+    else if(hasFlags   && hasDiff)        dot.textContent = "×!";
+    else if(hasFlags)                     dot.textContent = "!";
+    else if(!hasDiff)                     dot.textContent = "✓";
+    else                                  dot.textContent = "×";
     dot.addEventListener("click", () => {
       state.currentSent = i;
       renderSentence();
     });
     sentMap.appendChild(dot);
   }
+}
+
+// ---------- Flags ----------
+function toggleFlag(sentIdx, tokId){
+  if(!state.flags[sentIdx]) state.flags[sentIdx] = new Set();
+  const s = state.flags[sentIdx];
+  if(s.has(tokId)){
+    s.delete(tokId);
+    if(s.size === 0) delete state.flags[sentIdx];
+  } else {
+    s.add(tokId);
+  }
+  // Update row and button in-place (no full re-render needed)
+  const tr  = cmpTable.querySelector(`tr[data-id="${tokId}"]`);
+  const btn = tr?.querySelector(".flagBtn");
+  const isFlagged = !!state.flags[sentIdx]?.has(tokId);
+  if(btn)  btn.classList.toggle("flagBtnActive", isFlagged);
+  if(tr)   tr.classList.toggle("rowFlagged", isFlagged);
+  // Reflect in sentMap and sentSelect
+  renderSentMap();
+  renderSentSelectOptions();
 }
 
 // ---------- UI: Column toggle ----------

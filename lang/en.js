@@ -8,7 +8,8 @@ window.LANG_EN = {
 
   // File section
   'files.add':          'Add files',
-  'files.reset':        'Reset',
+  'files.reset':        'Reset project',
+  'files.globalReset':  '↺ Reset all',
   'files.none':         'No files loaded',
   'files.loaded':       '{n} file(s) loaded',
   'files.drop':         'Drop files here or use the button · .conllu / .conll / .txt',
@@ -22,7 +23,8 @@ window.LANG_EN = {
   'files.sentences':    '{n} sentences',
   'files.warnBadge':    'Different text!',
   'files.warnBanner':   '⚠️ Different texts loaded — comparison may be inaccurate.',
-  'files.resetConfirm': 'Really reset everything?',
+  'files.resetConfirm':       'Really reset the current project?',
+  'files.globalResetConfirm': 'Really reset ALL projects and annotations?',
 
   // Sentence select
   'sent.optLabel':     'Sentence {n}',
@@ -123,12 +125,15 @@ window.LANG_EN = {
   'label.empty': '(empty)',
 
   // Tree view
-  'tree.toGold':      '→ Gold',
-  'tree.toGoldTitle': 'Adopt subtree from token {id} as Gold',
-  'tree.jumpTitle':   'Jump to row: token {id}',
-  'tree.fileDefault': 'File {n}',
-  'tree.vsGold':      'vs Gold',
-  'tree.noTree':      '(no trees for this sentence)',
+  'tree.toGold':           '→ Gold',
+  'tree.toGoldTitle':      'Adopt subtree from token {id} as Gold',
+  'tree.adoptToken':       '→',
+  'tree.adoptTokenTitle':  'Adopt this token as Gold (token {id})',
+  'tree.jumpTitle':        'Jump to row: token {id}',
+  'tree.rootJumpTitle':    'Jump to row: token {id} (root)',
+  'tree.fileDefault':      'File {n}',
+  'tree.vsGold':           'vs Gold',
+  'tree.noTree':           '(no trees for this sentence)',
 
   // Export – tree text
   'export.treeGold':   '=== GOLD ===',
@@ -165,6 +170,13 @@ window.LANG_EN = {
   'project.renameHint':    'Click ✎ to rename',
   'project.moveLeft':      'Move left',
   'project.moveRight':     'Move right',
+
+  // Row flags
+  'flag.toggle':     'Flag / unflag row',
+  'flag.sentDot':    'Sentence {n}: has flags',
+  'flag.sentOpt':    ' ⚑',
+  'kbd.flagNext':    'Next flag',
+  'kbd.flagPrev':    'Previous flag',
 
   // Help
   'help.unavailable': 'Help not available.',

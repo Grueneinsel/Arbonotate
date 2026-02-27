@@ -150,6 +150,26 @@ document.addEventListener("keydown", (e) => {
         switchProject(state.activeProjectIdx + 1);
       break;
 
+    // ── Nächster / vorheriger Satz mit Flags ─────────────────────────────────
+    case "f":
+    case "F": {
+      if(state.maxSents === 0) break;
+      e.preventDefault();
+      const forward = e.key === "f";
+      const step    = forward ? 1 : -1;
+      const start   = state.currentSent;
+      for(let i = 1; i < state.maxSents; i++){
+        const idx = ((start + step * i) % state.maxSents + state.maxSents) % state.maxSents;
+        if(state.flags[idx]?.size > 0){
+          state.currentSent = idx;
+          keyFocusTokId = null;
+          renderSentence();
+          break;
+        }
+      }
+      break;
+    }
+
     // ── Clipboard copy ───────────────────────────────────────────────────────
     case "c":
       e.preventDefault();

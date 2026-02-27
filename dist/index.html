@@ -1,29 +1,4 @@
-<!doctype html><html lang="de"><head><meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" /><title>CoNLL-U Vergleich</title> <style>@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;800&display=swap');:root{--bg:#090d12;--card:#0f1620;--card2:#111a26;--line:#1e2e42;--line2:#243548;--text:#dde8f5;--muted:#7a96b5;--bad:#ff5f5f;--ok:#3de89a;--warn:#f5c842;--gold:#ff9f43;--file:#5b9fff;--accent:#4a9eff;--mono:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;--sans:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;--bg-control:#0c1420;--bg-control-hover:#101e2f;--bg-focus:#0d2040;--bg-focus-soft:#0e1e32;--bg-tree-head:#0f1e30;--bg-sent:#0c1420;--shadow:rgba(0,0,0,.65)}html[data-theme="light"]{--bg:#f0f5fb;--card:#ffffff;--card2:#edf3fa;--line:#ccd8ea;--line2:#a8c0d8;--text:#18283a;--muted:#4e6880;--bad:#c0282a;--ok:#176e38;--warn:#7a5500;--gold:#a86000;--file:#1448a0;--accent:#1558b0;--bg-control:#ffffff;--bg-control-hover:#ddeeff;--bg-focus:#c8dff8;--bg-focus-soft:#d8ecff;--bg-tree-head:#e8f2fc;--bg-sent:#fafcff;--shadow:rgba(0,0,0,.18)}html[data-theme="light"] .bar{background:linear-gradient(135deg,#ddeaf8 0%,#cee0f4 100%)}html[data-theme="light"] kbd{background:#eef4fb;border-color:var(--line2)}html[data-theme="light"] .langBtn:hover:not(:disabled){background:#ddeef8}html[data-theme="light"] .langBtnActive{background:#c8e0f8 !important}html[data-theme="light"] button.danger{border-color:#e0a0a0;background:#fff5f5;color:#c03030}html[data-theme="light"] button.danger:hover:not(:disabled){border-color:#c83030;background:#ffe0e0}html[data-theme="light"] .sentText{background:var(--bg-sent);border-color:var(--line)}html[data-theme="light"] .sentNote{background:var(--bg-control);border-color:var(--line2)}html[data-theme="light"] .sentTextConfirmed{background:#fffae8 !important;border-color:#c07000 !important}html[data-theme="light"] .sentDotOk{background:#a8e4c0;border-color:#28904a}html[data-theme="light"] .sentDotDiff{background:#f0b0b0;border-color:#c04040}html[data-theme="light"] .sentDotConfirmed{background:#ffe88a;border-color:#b07800}html[data-theme="light"] .statBadge{background:#e4edf8;border-color:var(--line2)}html[data-theme="light"] .statOk{color:#0a6030;border-color:#80cca0;background:#e0f8ec}html[data-theme="light"] .statDiff{color:#c02828;border-color:#e0a0a0;background:#fce8e8}html[data-theme="light"] .confirmBtn{border-color:#b07000;background:#fff8e8;color:#8a5000}html[data-theme="light"] .confirmBtn:hover:not(:disabled){border-color:var(--gold);background:#fff0c8;color:var(--gold)}html[data-theme="light"] .confirmBtnActive{border-color:var(--gold) !important;background:#fff0c8 !important;color:var(--gold) !important}html[data-theme="light"] .sentToken:hover{background:rgba(0,0,0,.08)}html[data-theme="light"] .sentTokenActive{background:#c8dff8;outline-color:var(--accent)}html[data-theme="light"] th{background:var(--card)}html[data-theme="light"] .goldEditable:hover{background:var(--bg-focus-soft);outline-color:var(--accent)}html[data-theme="light"] tr.keyFocus > td{background:var(--bg-focus)}html[data-theme="light"] tr.keyFocus > td:first-child{border-left-color:var(--accent)}html[data-theme="light"] .srcCustom{background:#c8e0f8;color:var(--accent);border-color:#a8c8e8}html[data-theme="light"] .srcDoc{background:#b8f0d0;color:#146838;border-color:#70c890}html[data-theme="light"] .picked{background:#c8dff8}html[data-theme="light"] .pickable:hover{outline-color:#3a78c0}html[data-theme="light"] .treeHead{background:var(--bg-tree-head);border-bottom-color:var(--line)}html[data-theme="light"] .treeSection:first-child{background:linear-gradient(135deg,#fffbe8 0%,#fdf5cc 60%,#faf4d8 100%)}html[data-theme="light"] .treeSection:first-child .treeHead{background:#fef0b0;border-bottom-color:#e8d860}html[data-theme="light"] .treeSection:first-child .treeHead .title{color:#7a5000}html[data-theme="light"] .treeSection:not(:first-child) .treeHead{background:var(--bg-tree-head)}html[data-theme="light"] .treeLineClickable:hover{background:#d8eaf8}html[data-theme="light"] .treeSubtreeBtn{color:#4a2800;border-color:#a07000;background:#ffe066}html[data-theme="light"] .treeSubtreeBtn:hover{background:#ffd030;border-color:#c09000}html[data-theme="light"] .textWarnBanner{background:#fff3e0;border-color:#e8a030;color:#7a4800}html[data-theme="light"] .fileItem{background:#fafcff}html[data-theme="light"] .fileList.dragOver{background:#d8eeff}html[data-theme="light"] .dropOverlay{background:rgba(200,220,245,.88)}html[data-theme="light"] .dropOverlayInner{background:rgba(255,255,255,.96);border-color:var(--accent)}html[data-theme="light"] .goldPopup{box-shadow:0 8px 40px var(--shadow)}html[data-theme="light"] .colVisible{background:#ddeef8;border-color:#a8c8e8;color:var(--accent)}html[data-theme="light"] .colHidden{background:#eff4f8;border-color:#c8d8e8;color:#6a8898}html[data-theme="light"] .helpModal{background:rgba(180,210,240,.88)}html[data-theme="light"] .helpContent .helpCode{background:#f2f6fc;border-color:var(--line)}html[data-theme="light"] .helpContent .helpInlineCode{background:#e0eaf8}html[data-theme="light"] .helpContent .helpTable th{background:#e4eef8}html[data-theme="light"] .helpContent .helpTable tr:nth-child(even) td{background:#f4f8fc}html[data-theme="light"] .posCustom{color:var(--accent)}@keyframes highlightPulseLt{0%{background:#b0d0f0}50%{background:#c8e4fc}100%{background:transparent}}html[data-theme="light"] .highlightRow td{animation:highlightPulseLt 1.6s ease-out}*{box-sizing:border-box}body{margin:0;font-family:var(--sans);background:var(--bg);color:var(--text);font-size:13px}.bar{padding:14px 20px;border-bottom:1px solid var(--line);background:linear-gradient(135deg,#0a1118 0%,#0f1928 100%);display:flex;gap:16px;align-items:center;flex-wrap:wrap}.bar h1{margin:0;font-size:17px;font-weight:800;letter-spacing:-.3px}.bar p{margin:0;font-size:12px;color:var(--muted)}.langBar{display:flex;gap:4px;margin-left:auto}.langBtn{width:28px;height:28px;padding:0;border-radius:6px;font-size:16px;border-color:transparent;background:transparent;opacity:.55;transition:opacity .15s,border-color .15s}.langBtn:hover:not(:disabled){opacity:1;border-color:var(--line2);background:#0f1a2a}.langBtnActive{opacity:1 !important;border-color:var(--accent) !important;background:#0d1e33 !important}kbd{display:inline-block;padding:1px 5px;border-radius:4px;border:1px solid var(--line2);background:#0f1a2a;font-family:var(--mono);font-size:10px;color:var(--text)}.wrap{max-width:1440px;margin:0 auto;padding:14px;display:grid;gap:10px}.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px}h2{margin:0 0 10px 0;font-size:13px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}.muted{color:var(--muted)}.small{font-size:11px}.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.sentInfoRow{margin-top:4px;min-height:0}button,select,input,.btnLike{border:1px solid var(--line2);background:var(--bg-control);color:var(--text);border-radius:8px;padding:7px 12px;cursor:pointer;font-size:12px;font-family:var(--sans);transition:border-color .15s,background .15s}button:hover:not(:disabled),.btnLike:hover{border-color:var(--accent);background:var(--bg-control-hover)}button:disabled,select:disabled{opacity:.45;cursor:not-allowed}button.danger{border-color:#4a1f1f;background:#160b0b;color:#ff7e7e}button.danger:hover:not(:disabled){border-color:#ff5f5f;background:#1e0e0e}.sentText{margin-top:8px;padding:10px 14px;border:1px solid var(--line);border-radius:10px;background:var(--bg-sent);font-family:var(--mono);font-size:13px;line-height:1.5}.sentNoteRow{display:flex;align-items:flex-start;gap:8px;margin-top:8px}.sentNoteRow label{white-space:nowrap;padding-top:5px}.sentNote{flex:1;resize:vertical;min-height:36px;background:var(--bg-control);color:var(--text);border:1px solid var(--line2);border-radius:8px;padding:6px 10px;font-family:var(--mono);font-size:12px;line-height:1.5}.sentNote:focus{border-color:var(--accent);outline:none}.sentMap{display:flex;flex-wrap:wrap;gap:4px;margin-top:10px}.progressMeta{margin-left:auto;font-size:.75rem;opacity:.7}.sentDot{width:14px;height:14px;border-radius:3px;padding:0;border:2px solid transparent;cursor:pointer;transition:transform .1s,border-color .1s}.sentDot:hover{transform:scale(1.3)}.sentDotOk{background:#1a4a2e;border-color:#2a7a4a}.sentDotDiff{background:#4a1a1a;border-color:#8a3030}.sentDotConfirmed{background:#3a2600;border-color:#c07a10}.sentDotCurrent{border-color:#4a9eff !important;transform:scale(1.25)}.confirmBtn{border-color:#5a3a00;background:#1a1000;color:#cc8800}.confirmBtn:hover:not(:disabled){border-color:#ff9f43;background:#261800;color:#ffb347}.confirmBtnActive{border-color:#ff9f43 !important;background:#261800 !important;color:#ffb347 !important}.sentTextConfirmed{border-color:#c07a10 !important;background:#13100a !important}.sentToken{cursor:pointer;border-radius:3px;padding:1px 3px;transition:background .12s}.sentToken:hover{background:rgba(255,255,255,.10)}.sentTokenActive{background:#0d2040;outline:1px solid var(--accent);outline-offset:1px;border-radius:3px}.sentStatsRow{display:flex;gap:6px;align-items:center;flex-wrap:wrap}.statBadge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;font-family:var(--mono);background:#1a2535;border:1px solid var(--line2)}.statOk{color:var(--ok);border-color:#1a4030;background:#0d2420}.statDiff{color:var(--bad);border-color:#4a1a1a;background:#200d0d}.tableWrap{overflow:auto;border:1px solid var(--line);border-radius:12px}table{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:12px}th,td{border-bottom:1px solid var(--line);padding:7px 10px;white-space:nowrap;vertical-align:middle}th{text-align:left;color:var(--muted);position:sticky;top:0;background:var(--card);font-size:11px;font-weight:700;letter-spacing:.3px}tr:last-child td{border-bottom:none}.same{color:var(--ok);font-weight:700}.diff{color:var(--bad);font-weight:700}.fDiff{color:var(--bad);font-weight:600}.posLine{font-size:10px;color:var(--muted);margin-top:2px;line-height:1.3}.goldPos{opacity:.8}.posDiff{outline:1px solid #ff79c6;outline-offset:-2px;border-radius:4px}.posCell{color:var(--muted)}td select.posInlineSelect,td input.posInlineInput{border:1px solid var(--line2) !important;background:var(--bg-control) !important;color:var(--text) !important;font-family:var(--mono) !important;font-size:11px !important;padding:3px 6px !important;margin:0 !important;border-radius:6px !important;width:100%;min-width:0;cursor:pointer;box-shadow:none;transition:border-color .12s,background .12s}td select.posInlineSelect:focus,td input.posInlineInput:focus{outline:none !important;border-color:var(--accent) !important;background:var(--bg-focus-soft) !important;border-radius:6px !important}td input.posInlineInput{cursor:text !important}.rowDiff td:first-child{border-left:3px solid #ff5f5f44}.goldCell{font-weight:700;color:var(--text)}.goldEditable{cursor:pointer}.goldEditable:hover{background:var(--bg-focus-soft);outline:1px solid var(--accent);outline-offset:-2px;border-radius:4px}.goldPopup{display:none;position:fixed;z-index:5000;background:var(--card2);border:1px solid var(--line2);border-radius:12px;padding:14px 16px;min-width:230px;box-shadow:0 8px 40px var(--shadow)}.goldPopup.active{display:block}.gpTitle{font-size:11px;color:var(--muted);font-weight:700;margin-bottom:10px}.gpTitle b{color:var(--accent)}.gpRow{display:flex;align-items:center;gap:8px;margin-bottom:6px}.gpRow label{font-size:11px;color:var(--muted);width:46px;flex-shrink:0;text-align:right}.gpRow select,.gpRow input.gpTextInput{flex:1;font-size:11px;padding:3px 6px;border-radius:6px;border:1px solid var(--line2);background:var(--bg-control);color:var(--text)}.gpActions{margin-top:10px;display:flex;justify-content:flex-end}.gpActions button{font-size:11px;padding:4px 10px}.gpHint{font-size:10px;color:var(--muted);margin-top:6px;text-align:center;opacity:.7}tr.keyFocus > td{background:var(--bg-focus)}tr.keyFocus > td:first-child{border-left:2px solid var(--accent)}.srcTag{display:inline-block;padding:1px 5px;border-radius:4px;font-size:10px;font-weight:800;font-family:var(--mono);margin-right:4px;vertical-align:middle}.srcCustom{background:#1a3a5c;color:var(--accent);border:1px solid #234}.srcDoc{background:#1a2a1e;color:#6dce8a;border:1px solid #1d3825}@keyframes highlightPulse{0%{background:#1e3a5a}50%{background:#244a70}100%{background:transparent}}.highlightRow td{animation:highlightPulse 1.6s ease-out}.dropOverlay{display:none;position:fixed;inset:0;z-index:9999;background:rgba(9,13,18,.82);backdrop-filter:blur(6px);align-items:center;justify-content:center;animation:overlayIn .15s ease-out}.dropOverlay.active{display:flex}.dropOverlayInner{display:flex;flex-direction:column;align-items:center;gap:12px;padding:40px 56px;border:2px dashed var(--accent);border-radius:20px;background:#0a1622cc;animation:dropPulse .9s ease-in-out infinite}.dropOverlayIcon{font-size:56px;animation:dropBounce .7s ease-in-out infinite}.dropOverlayText{font-size:22px;font-weight:800;color:var(--accent);letter-spacing:-.3px}.dropOverlaySub{font-size:12px;color:var(--muted)}@keyframes overlayIn{from{opacity:0}to{opacity:1}}@keyframes dropBounce{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-10px) scale(1.08)}}.textWarnBanner{margin-top:8px;padding:8px 12px;border:1px solid #6b2e0a;border-radius:8px;background:#1a0c04;color:#ff9f43;font-size:11px;line-height:1.5}.fileList{display:grid;gap:6px;min-height:72px;border:2px dashed transparent;border-radius:12px;padding:4px;transition:border-color .2s,background .2s,box-shadow .2s}.fileList.dragOver{border-color:var(--accent);background:#0d1e35;animation:dropPulse .9s ease-in-out infinite}@keyframes dropPulse{0%,100%{box-shadow:0 0 0 0 #4a9eff33}50%{box-shadow:0 0 0 10px #4a9eff00}}.fileItem{display:flex;gap:10px;align-items:center;justify-content:space-between;border:1px solid var(--line);border-radius:10px;padding:8px 12px;background:var(--bg-control)}.fileItem .left{display:flex;flex-direction:column;gap:2px;flex:1;min-width:0}.fileItem .name{font-weight:700;font-size:12px}.fileItem .meta{font-size:11px;color:var(--muted)}.fileItem .fileActions{display:flex;gap:4px;align-items:center;flex-shrink:0}.fileItem .fileActions button{padding:4px 7px;font-size:12px;line-height:1}.fileItem .fileActions .moveUpBtn,.fileItem .fileActions .moveDownBtn{min-width:26px}.moveToProjectSel{font-size:11px;padding:3px 4px;border-radius:6px;border:1px solid var(--line);background:var(--bg-control);color:var(--text);max-width:110px;cursor:pointer}.fileWarnIcon{font-size:13px;vertical-align:middle;margin-left:4px;cursor:default}.treeGrid{display:block}.treeBlock{border:1px solid var(--line);border-radius:12px;background:var(--card2);overflow:hidden}.treeBlockStacked{display:flex;flex-direction:column}.treeSection{border-bottom:1px solid var(--line)}.treeSection:last-child{border-bottom:none}.treeHead{padding:7px 12px;border-bottom:1px solid var(--line);display:flex;gap:8px;align-items:center;justify-content:space-between;background:var(--bg-tree-head)}.treeHead .title{font-weight:800;font-size:12px}.treeHead .sub{color:var(--muted);font-size:11px}.treeLineRoot{display:flex;align-items:center;gap:8px;white-space:pre}.treeSubtreeBtn{padding:2px 8px;font-size:10px;font-family:var(--sans);border-color:#c07a10;color:#1a0e00;background:var(--gold);border-radius:6px;flex-shrink:0;font-weight:700}.treeSubtreeBtn:hover{border-color:#ffb94e;background:#ffb94e}.treePre{margin:0;padding:10px 12px;font-family:var(--mono);font-size:12px;white-space:pre;overflow:auto;line-height:1.6}.treeLine{display:block}.treeLineClickable{cursor:pointer;border-radius:4px;transition:background .1s}.treeLineClickable:hover{background:#1a2f48}.legendOk{color:var(--ok);font-weight:700}.legendWarn{color:var(--warn);font-weight:700}.legendGold{color:var(--gold);font-weight:700}.legendFile{color:var(--file);font-weight:700}.treeLineOk{color:var(--ok)}.treeLineWarn{color:var(--warn)}.treeLineGold{color:var(--gold)}.treeLineFileOnly{color:var(--file)}.pickable{cursor:pointer;user-select:none}.pickable:hover{outline:2px solid #2a5080;outline-offset:-2px;border-radius:6px}.picked{outline:2px solid #4a9eff66;outline-offset:-2px;border-radius:6px;background:#0f2038}.disabledPick{opacity:.4;cursor:not-allowed}.customCell{display:flex;gap:6px;align-items:center}.customCell input,.customCell select{font-family:var(--mono);font-size:12px;padding:5px 8px;border-radius:7px}.customHead{width:72px}.customRelSelect{width:160px}.colToggleBar{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:2px}.colToggle{font-size:11px;padding:4px 10px;border-radius:20px;transition:opacity .15s,border-color .15s}.colVisible{border-color:#2a4a6a;color:var(--accent);background:#0d1f33}.colVisible:hover{border-color:var(--accent)}.colHidden{border-color:#2a2a3a;color:#556;background:#0c0f16;opacity:.6}.colHidden:hover{opacity:1;border-color:#445}.fileHidden{position:absolute;left:-9999px;width:1px;height:1px;opacity:0}.btnLike{display:inline-block;user-select:none}.btnLike:active{transform:translateY(1px)}.treeSection:first-child{background:linear-gradient(135deg,#1a1500 0%,#1f1a00 60%,#141200 100%)}.treeSection:first-child .treeHead{background:#211900;border-bottom-color:#3a3000}.treeSection:first-child .treeHead .title{color:#f5c842}.treeSection:first-child .treePre{background:transparent}.treeSection:not(:first-child) .treeHead{background:#0f1a28}.helpBtn{width:30px;height:30px;border-radius:50%;padding:0;font-size:15px;font-weight:800;flex-shrink:0;margin-left:auto}.helpModal{display:none;position:fixed;inset:0;z-index:10000;background:rgba(9,13,18,.88);backdrop-filter:blur(5px);align-items:flex-start;justify-content:center;padding:32px 12px;animation:overlayIn .15s ease-out}.helpModal.active{display:flex}.helpModalBox{position:relative;width:calc(100% - 24px);min-width:0;max-height:calc(100vh - 64px);overflow-x:hidden;overflow-y:auto;background:var(--card);border:1px solid var(--line2);border-radius:16px;padding:28px 32px 36px;scrollbar-gutter:stable}#helpCloseBtn{position:fixed;top:16px;right:20px;z-index:10001;width:32px;height:32px;padding:0;border-radius:50%;font-size:14px;display:none}.helpModal.active #helpCloseBtn{display:flex;align-items:center;justify-content:center}.helpContent{line-height:1.6;overflow-wrap:break-word;word-break:break-word}.helpContent .helpH{margin:0 0 8px}.helpContent h1.helpH{font-size:20px;font-weight:800;color:var(--text);padding-right:40px}.helpContent h2.helpH{font-size:12px;font-weight:700;color:var(--accent);margin-top:26px;text-transform:uppercase;letter-spacing:.4px}.helpContent h3.helpH{font-size:12px;font-weight:700;color:var(--muted);margin-top:16px}.helpContent .helpHr{border:none;border-top:1px solid var(--line);margin:16px 0}.helpContent .helpP{margin:4px 0 8px}.helpContent .helpUl,.helpContent .helpOl{padding-left:20px;margin:4px 0 10px}.helpContent li{margin:3px 0}.helpContent .helpCode{margin:8px 0;padding:12px 14px;background:#060e18;border:1px solid var(--line);border-radius:8px;overflow-x:auto;font-family:var(--mono);font-size:11px;line-height:1.6;white-space:pre}.helpContent .helpInlineCode{font-family:var(--mono);font-size:11px;background:#1a2535;padding:1px 5px;border-radius:4px}.helpContent .helpTable{width:100%;table-layout:fixed;border-collapse:collapse;margin:8px 0 14px;font-size:12px}.helpContent .helpTable th{background:#0d1a2a;color:var(--muted);font-size:11px;letter-spacing:.3px}.helpContent .helpTable th,.helpContent .helpTable td{border:1px solid var(--line);padding:6px 10px;text-align:left;word-break:break-word;overflow-wrap:break-word}.helpContent .helpTable tr:nth-child(even) td{background:#0a1218}.helpContent strong{color:var(--text);font-weight:700}.sessionRow{margin-top:10px;padding-top:10px;border-top:1px solid var(--line)}.autosaveBanner{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);z-index:9000;max-width:600px;width:calc(100% - 32px);background:var(--card);border:1px solid var(--warn);border-radius:12px;padding:10px 16px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;box-shadow:0 4px 24px var(--shadow);font-size:13px;color:var(--text)}html[data-theme="light"] .autosaveBanner{background:#fffbe8;border-color:#c09000}.projectTabBar{display:flex;flex-wrap:wrap;gap:4px;align-items:flex-end;padding:6px 14px 0;background:var(--bg);border-bottom:2px solid var(--line)}.projectTab{display:flex;align-items:center;gap:6px;cursor:pointer;padding:6px 14px;border-radius:10px 10px 0 0;border:1px solid var(--line);border-bottom:none;background:var(--bg-control);font-size:12px;white-space:nowrap;transition:background .15s,border-color .15s}.projectTab:hover:not(.projectTabActive){background:var(--bg-control-hover,#2a3040)}.projectTabActive{background:var(--card);border-color:var(--accent);border-bottom:2px solid var(--card);margin-bottom:-2px}.projectTabName{max-width:160px;overflow:hidden;text-overflow:ellipsis}.projectTabMoveBtn,.projectTabRenameBtn,.projectTabClose{padding:0 3px;border:none;background:transparent;color:var(--muted);font-size:11px;line-height:1;cursor:pointer;flex-shrink:0}.projectTabMoveBtn:hover:not(:disabled){color:var(--text)}.projectTabMoveBtn:disabled{opacity:.25;cursor:default}.projectTabRenameBtn{font-size:13px}.projectTabRenameBtn:hover{color:var(--accent)}.projectTabClose{font-size:14px}.projectTabClose:hover{color:var(--bad,#e06c75)}.projectTabAdd{padding:5px 12px;border-radius:8px 8px 0 0;font-size:15px;align-self:flex-end;flex-shrink:0}html[data-theme="light"] .projectTabBar{background:#f0f5fb;border-color:#c5d5e8}html[data-theme="light"] .projectTab{background:#ddeaf8;border-color:#b0c8e0}html[data-theme="light"] .projectTab:hover:not(.projectTabActive){background:#cce0f4}html[data-theme="light"] .projectTabActive{background:#fff;border-color:#3a7fc1;border-bottom-color:#fff}.posEditCell{padding:4px 6px !important}.posSelect{font-family:var(--mono);font-size:11px;padding:3px 6px;border-radius:6px;border-color:var(--line2);background:var(--bg-control);color:var(--muted);width:90px;cursor:pointer}.posSelect:focus{outline:1px solid var(--accent);color:var(--text)}.posCustom{color:var(--accent);font-weight:700}</style> <script>
-// ---------- Theme (Light / Dark) ----------
-// IIFE runs immediately (before DOMContentLoaded) to prevent flash of wrong theme
-(function(){
-  const saved = localStorage.getItem('theme') || 'dark';
-  document.documentElement.dataset.theme = saved;
-})();
-
-function getTheme(){ return document.documentElement.dataset.theme || 'dark'; }
-
-function setTheme(theme){
-  document.documentElement.dataset.theme = theme;
-  localStorage.setItem('theme', theme);
-  _syncThemeBtn();
-}
-
-function toggleTheme(){ setTheme(getTheme() === 'light' ? 'dark' : 'light'); }
-
-function _syncThemeBtn(){
-  const btn = document.getElementById('themeToggleBtn');
-  if(btn) btn.textContent = getTheme() === 'light' ? '🌙' : '☀️';
-}
-
-document.addEventListener('DOMContentLoaded', _syncThemeBtn);
-
-</script> <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2064%2064%22%3E%0A%20%20%3Crect%20width%3D%2264%22%20height%3D%2264%22%20rx%3D%2214%22%20fill%3D%22%230b1220%22/%3E%0A%20%20%3Cg%20fill%3D%22none%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%0A%20%20%20%20%3Cpath%20d%3D%22M18%2020v16%22%20stroke%3D%22%236ee7b7%22%20stroke-width%3D%224%22/%3E%0A%20%20%20%20%3Cpath%20d%3D%22M18%2036h28%22%20stroke%3D%22%2393c5fd%22%20stroke-width%3D%224%22/%3E%0A%20%20%20%20%3Cpath%20d%3D%22M46%2036v10%22%20stroke%3D%22%23fbbf24%22%20stroke-width%3D%224%22/%3E%0A%20%20%20%20%3Cpath%20d%3D%22M18%2020c10%200%2018%208%2028%208%22%20stroke%3D%22%2393c5fd%22%20stroke-width%3D%224%22/%3E%0A%20%20%3C/g%3E%0A%20%20%3Cg%3E%0A%20%20%20%20%3Ccircle%20cx%3D%2218%22%20cy%3D%2220%22%20r%3D%225%22%20fill%3D%22%236ee7b7%22/%3E%0A%20%20%20%20%3Ccircle%20cx%3D%2246%22%20cy%3D%2228%22%20r%3D%225%22%20fill%3D%22%2393c5fd%22/%3E%0A%20%20%20%20%3Ccircle%20cx%3D%2218%22%20cy%3D%2236%22%20r%3D%225%22%20fill%3D%22%2393c5fd%22/%3E%0A%20%20%20%20%3Ccircle%20cx%3D%2246%22%20cy%3D%2246%22%20r%3D%225%22%20fill%3D%22%23fbbf24%22/%3E%0A%20%20%3C/g%3E%0A%20%20%3Ctext%20x%3D%2232%22%20y%3D%2258%22%20font-family%3D%22system-ui%2CSegoe%20UI%2CRoboto%2CArial%22%20font-size%3D%2212%22%20text-anchor%3D%22middle%22%20fill%3D%22%23e5e7eb%22%3ECoNLL%3C/text%3E%0A%3C/svg%3E"></head><body><header class="bar"><h1>CoNLL-U Vergleich</h1><p class="muted"><kbd>←</kbd><kbd>→</kbd><span data-i18n="kbd.sent">Satz</span> &nbsp; <kbd>Ctrl+←</kbd><kbd>Ctrl+→</kbd><span data-i18n="kbd.firstLast">Erster/Letzter</span> &nbsp; <kbd>n</kbd><kbd>N</kbd><span data-i18n="kbd.nextDiff">Nächster/Vorheriger Diff</span> &nbsp;|&nbsp; <kbd>↑</kbd><kbd>↓</kbd><span data-i18n="kbd.row">Zeile</span> &nbsp; <kbd>Enter</kbd><span data-i18n="kbd.popup">Gold-Popup</span> &nbsp;|&nbsp; <kbd>1</kbd>–<kbd>9</kbd><span data-i18n="kbd.chooseDoc">Doc wählen</span> &nbsp; <kbd>Ctrl+1</kbd>–<kbd>9</kbd><span data-i18n="kbd.loadCustom">Custom laden</span> &nbsp;|&nbsp; <kbd>Ctrl+Z</kbd> Undo &nbsp; <kbd>Ctrl+Y</kbd> Redo &nbsp; <kbd>Space</kbd><span data-i18n="kbd.confirm">Bestätigen</span> &nbsp; <kbd>Del</kbd><span data-i18n="kbd.delCustom">Custom löschen</span> &nbsp; <kbd>c</kbd><span data-i18n="kbd.copy">Kopieren</span> &nbsp; <kbd>e</kbd><span data-i18n="kbd.exportConllu">Export CoNLL-U</span> &nbsp; <kbd>E</kbd><span data-i18n="kbd.exportTrees">Export Bäume</span> &nbsp;|&nbsp; <kbd>?</kbd><span data-i18n="kbd.help">Hilfe</span> &nbsp; <kbd>Esc</kbd><span data-i18n="kbd.close">Schließen</span></p><div class="langBar"><button class="langBtn" data-lang="de" onclick="setLang('de')" title="Deutsch">🇩🇪</button><button class="langBtn" data-lang="en" onclick="setLang('en')" title="English">🇬🇧</button><button id="themeToggleBtn" class="langBtn" onclick="toggleTheme()" title="Theme">☀️</button></div><button id="helpBtn" class="helpBtn" data-i18n-title="help.btnTitle">?</button></header><div id="projectTabBar" class="projectTabBar"></div><main class="wrap"><section class="card"><h2 data-i18n="sec.files">1) Dateien</h2><input id="fileInput" type="file" accept=".conllu,.conll,.txt,.json" multiple class="fileHidden" /><div class="row"><label id="addBtn" class="btnLike" for="fileInput" data-i18n="files.add">Dateien hinzufügen</label><button id="resetBtn" class="danger" data-i18n="files.reset">Reset</button><span id="fileMeta" class="muted"></span></div><div id="fileList" class="fileList" style="margin-top:10px"></div><div id="textWarn"></div></section><section class="card"><h2 data-i18n="sec.select">2) Satz wählen</h2><div class="row"><button id="prevBtn" disabled>←</button><select id="sentSelect" disabled></select><button id="nextBtn" disabled>→</button><button id="confirmBtn" class="confirmBtn" disabled>✓ Bestätigen</button><button id="copyConlluBtn" disabled data-i18n="copy.btn">CoNLL-U kopieren</button><span id="sentMeta" class="muted"></span></div><div class="row sentInfoRow"><div id="sentStats" class="sentStatsRow"></div><span id="progressMeta" class="muted small progressMeta"></span></div><div id="sentText" class="sentText"></div><div id="sentNoteRow" class="sentNoteRow" style="display:none"><label class="muted small" for="sentNote" data-i18n="note.label">Notiz:</label> <textarea id="sentNote" class="sentNote" rows="2"></textarea> </div><div id="sentMap" class="sentMap"></div></section><section class="card"><h2 data-i18n="sec.tree">3) Baumansicht</h2><div id="treeGrid" class="treeGrid"></div><div class="muted small" style="margin-top:8px"><span data-i18n="legend.label">Legende:</span><span class="legendOk" data-i18n="legend.ok">✅ gleich</span> &nbsp;|&nbsp; <span class="legendWarn" data-i18n="legend.warn">⚠️ Label-Unterschied</span> &nbsp;|&nbsp; <span class="legendGold" data-i18n="legend.gold">🅶 nur in Gold</span> &nbsp;|&nbsp; <span class="legendFile" data-i18n="legend.file">🅵 nur in dieser Datei</span> &nbsp;|&nbsp; <span data-i18n="legend.root">🌱 Teilbaum-Wurzel</span> &nbsp;|&nbsp; <span data-i18n="legend.click">Klick auf Zeile → springt zur Tabellenzeile</span></div></section><section class="card"><h2 data-i18n="sec.compare">4) Vergleich</h2><div class="row" style="margin-bottom:8px"><div id="customInitBtns"></div><button id="customClearBtn" class="danger" disabled data-i18n="custom.clear">Custom Satz löschen</button><button id="undoBtn" disabled data-i18n="undo.btn">↩ Undo</button><button id="redoBtn" disabled data-i18n="redo.btn">↪ Redo</button></div><div id="colToggleBar" class="colToggleBar"></div><div class="tableWrap" style="margin-top:8px"><table id="cmpTable"></table></div><p class="muted small" style="margin-top:10px" data-i18n="export.mwtNote"> Hinweis: Multi-Word-Tokens (IDs mit „-" oder „.") werden ignoriert. </p></section><section class="card"><h2 data-i18n="sec.export">5) Export</h2><div class="row"><button id="exportConlluBtn" disabled data-i18n="export.conllu">Gold CoNLL-U herunterladen</button><button id="exportAllConlluBtn" disabled data-i18n="export.conlluAll">Alle Projekte CoNLL-U herunterladen</button><button id="exportTreeBtn" disabled data-i18n="export.trees">Baumansicht (alle Sätze) herunterladen</button><button id="exportAllTreeBtn" disabled data-i18n="export.treesAll">Alle Projekte Baumansicht herunterladen</button></div><p class="muted small" style="margin-top:8px" data-i18n="export.conlluDesc"> Gold CoNLL-U enthält alle Sätze mit den aktuellen Gold-Annotationen (HEAD, DEPREL, UPOS, XPOS). LEMMA / FEATS / DEPS / MISC werden aus der Quelldatei übernommen. </p><div class="row sessionRow"><button id="exportSessionBtn" data-i18n="session.save">💾 Session speichern</button><label class="btnLike" for="importSessionInput" data-i18n="session.load">📂 Session laden</label><input id="importSessionInput" type="file" accept=".json,.conllu,.conll,.txt" class="fileHidden"><span id="sessionMeta" class="muted small"></span></div><p class="muted small" style="margin-top:4px" data-i18n="session.desc"> Session speichert alle geladenen Dateien, Annotationen und den kompletten Undo-/Redo-Verlauf als JSON. </p></section></main><div id="autosaveBanner" class="autosaveBanner" style="display:none"></div><div id="dropOverlay" class="dropOverlay"><div class="dropOverlayInner"><span data-i18n="files.dropOverlay">Dateien hier ablegen</span></div></div><div id="helpModal" class="helpModal"><button id="helpCloseBtn" data-i18n-title="kbd.close">✕</button><div class="helpModalBox"><div id="helpContent" class="helpContent"></div></div></div> <script>
+<!doctype html><html lang="de"><head><meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" /><title>CoNLL-U Vergleich</title> <style>@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;800&display=swap');:root{--bg:#090d12;--card:#0f1620;--card2:#111a26;--line:#1e2e42;--line2:#243548;--text:#dde8f5;--muted:#7a96b5;--bad:#ff5f5f;--ok:#3de89a;--warn:#f5c842;--gold:#ff9f43;--file:#5b9fff;--accent:#4a9eff;--mono:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;--sans:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial}*{box-sizing:border-box}body{margin:0;font-family:var(--sans);background:var(--bg);color:var(--text);font-size:13px}.bar{padding:14px 20px;border-bottom:1px solid var(--line);background:linear-gradient(135deg,#0a1118 0%,#0f1928 100%);display:flex;gap:16px;align-items:center;flex-wrap:wrap}.bar h1{margin:0;font-size:17px;font-weight:800;letter-spacing:-.3px}.bar p{margin:0;font-size:12px;color:var(--muted)}.langBar{display:flex;gap:4px;margin-left:auto}.langBtn{width:28px;height:28px;padding:0;border-radius:6px;font-size:16px;border-color:transparent;background:transparent;opacity:.55;transition:opacity .15s,border-color .15s}.langBtn:hover:not(:disabled){opacity:1;border-color:var(--line2);background:#0f1a2a}.langBtnActive{opacity:1 !important;border-color:var(--accent) !important;background:#0d1e33 !important}kbd{display:inline-block;padding:1px 5px;border-radius:4px;border:1px solid var(--line2);background:#0f1a2a;font-family:var(--mono);font-size:10px;color:var(--text)}.wrap{max-width:1440px;margin:0 auto;padding:14px;display:grid;gap:10px}.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px}h2{margin:0 0 10px 0;font-size:13px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}.muted{color:var(--muted)}.small{font-size:11px}.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}button,select,input,.btnLike{border:1px solid var(--line2);background:#0c1420;color:var(--text);border-radius:8px;padding:7px 12px;cursor:pointer;font-size:12px;font-family:var(--sans);transition:border-color .15s,background .15s}button:hover:not(:disabled),.btnLike:hover{border-color:var(--accent);background:#101e2f}button:disabled,select:disabled{opacity:.45;cursor:not-allowed}button.danger{border-color:#4a1f1f;background:#160b0b;color:#ff7e7e}button.danger:hover:not(:disabled){border-color:#ff5f5f;background:#1e0e0e}.sentText{margin-top:8px;padding:10px 14px;border:1px solid var(--line);border-radius:10px;background:#0c1420;font-family:var(--mono);font-size:13px;line-height:1.5}.sentMap{display:flex;flex-wrap:wrap;gap:4px;margin-top:10px;max-height:96px;overflow-y:auto;padding-right:4px}.progressMeta{margin-left:auto;font-size:.75rem;opacity:.7}.sentDot{width:14px;height:14px;border-radius:3px;padding:0;border:2px solid transparent;cursor:pointer;transition:transform .1s,border-color .1s}.sentDot:hover{transform:scale(1.3)}.sentDotOk{background:#1a4a2e;border-color:#2a7a4a}.sentDotDiff{background:#4a1a1a;border-color:#8a3030}.sentDotConfirmed{background:#3a2600;border-color:#c07a10}.sentDotCurrent{border-color:#4a9eff !important;transform:scale(1.25)}.confirmBtn{border-color:#5a3a00;background:#1a1000;color:#cc8800}.confirmBtn:hover:not(:disabled){border-color:#ff9f43;background:#261800;color:#ffb347}.confirmBtnActive{border-color:#ff9f43 !important;background:#261800 !important;color:#ffb347 !important}.sentTextConfirmed{border-color:#c07a10 !important;background:#13100a !important}.sentToken{cursor:pointer;border-radius:3px;padding:1px 3px;transition:background .12s}.sentToken:hover{background:rgba(255,255,255,.10)}.sentTokenActive{background:#0d2040;outline:1px solid var(--accent);outline-offset:1px;border-radius:3px}.sentStatsRow{display:flex;gap:6px;align-items:center;flex-wrap:wrap}.statBadge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;font-family:var(--mono);background:#1a2535;border:1px solid var(--line2)}.statOk{color:var(--ok);border-color:#1a4030;background:#0d2420}.statDiff{color:var(--bad);border-color:#4a1a1a;background:#200d0d}.tableWrap{overflow:auto;border:1px solid var(--line);border-radius:12px}table{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:12px}th,td{border-bottom:1px solid var(--line);padding:7px 10px;white-space:nowrap;vertical-align:middle}th{text-align:left;color:var(--muted);position:sticky;top:0;background:var(--card);font-size:11px;font-weight:700;letter-spacing:.3px}tr:last-child td{border-bottom:none}.same{color:var(--ok);font-weight:700}.diff{color:var(--bad);font-weight:700}.fDiff{color:var(--bad);font-weight:600}.posLine{font-size:10px;color:var(--muted);margin-top:2px;line-height:1.3}.goldPos{opacity:.8}.posDiff{outline:1px solid #ff79c6;outline-offset:-2px;border-radius:4px}.posCell{color:var(--muted)}td select.posInlineSelect,td input.posInlineInput{border:none !important;background:transparent !important;color:inherit !important;font-family:var(--mono) !important;font-size:12px !important;padding:0 !important;margin:0 !important;border-radius:0 !important;width:100%;min-width:0;cursor:pointer;box-shadow:none}td select.posInlineSelect:focus,td input.posInlineInput:focus{outline:1px solid var(--accent) !important;border-radius:3px !important}td input.posInlineInput{cursor:text !important}.rowDiff td:first-child{border-left:3px solid #ff5f5f44}.goldCell{font-weight:700;color:var(--text)}.goldEditable{cursor:pointer}.goldEditable:hover{background:#0e1e32;outline:1px solid var(--accent);outline-offset:-2px;border-radius:4px}.goldPopup{display:none;position:fixed;z-index:5000;background:var(--card2);border:1px solid var(--line2);border-radius:12px;padding:14px 16px;min-width:230px;box-shadow:0 8px 40px rgba(0,0,0,.65)}.goldPopup.active{display:block}.gpTitle{font-size:11px;color:var(--muted);font-weight:700;margin-bottom:10px}.gpTitle b{color:var(--accent)}.gpRow{display:flex;align-items:center;gap:8px;margin-bottom:6px}.gpRow label{font-size:11px;color:var(--muted);width:46px;flex-shrink:0;text-align:right}.gpRow select,.gpRow input.gpTextInput{flex:1;font-size:11px;padding:3px 6px;border-radius:6px;border:1px solid var(--line2);background:#0c1420;color:var(--text)}.gpActions{margin-top:10px;display:flex;justify-content:flex-end}.gpActions button{font-size:11px;padding:4px 10px}.gpHint{font-size:10px;color:var(--muted);margin-top:6px;text-align:center;opacity:.7}tr.keyFocus > td{background:#0d2040}tr.keyFocus > td:first-child{border-left:2px solid var(--accent)}.srcTag{display:inline-block;padding:1px 5px;border-radius:4px;font-size:10px;font-weight:800;font-family:var(--mono);margin-right:4px;vertical-align:middle}.srcCustom{background:#1a3a5c;color:var(--accent);border:1px solid #234}.srcDoc{background:#1a2a1e;color:#6dce8a;border:1px solid #1d3825}@keyframes highlightPulse{0%{background:#1e3a5a}50%{background:#244a70}100%{background:transparent}}.highlightRow td{animation:highlightPulse 1.6s ease-out}.dropOverlay{display:none;position:fixed;inset:0;z-index:9999;background:rgba(9,13,18,.82);backdrop-filter:blur(6px);align-items:center;justify-content:center;animation:overlayIn .15s ease-out}.dropOverlay.active{display:flex}.dropOverlayInner{display:flex;flex-direction:column;align-items:center;gap:12px;padding:40px 56px;border:2px dashed var(--accent);border-radius:20px;background:#0a1622cc;animation:dropPulse .9s ease-in-out infinite}.dropOverlayIcon{font-size:56px;animation:dropBounce .7s ease-in-out infinite}.dropOverlayText{font-size:22px;font-weight:800;color:var(--accent);letter-spacing:-.3px}.dropOverlaySub{font-size:12px;color:var(--muted)}@keyframes overlayIn{from{opacity:0}to{opacity:1}}@keyframes dropBounce{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-10px) scale(1.08)}}.textWarnBanner{margin-top:8px;padding:8px 12px;border:1px solid #6b2e0a;border-radius:8px;background:#1a0c04;color:#ff9f43;font-size:11px;line-height:1.5}.fileList{display:grid;gap:6px;min-height:72px;border:2px dashed transparent;border-radius:12px;padding:4px;transition:border-color .2s,background .2s,box-shadow .2s}.fileList.dragOver{border-color:var(--accent);background:#0d1e35;animation:dropPulse .9s ease-in-out infinite}@keyframes dropPulse{0%,100%{box-shadow:0 0 0 0 #4a9eff33}50%{box-shadow:0 0 0 10px #4a9eff00}}.fileItem{display:flex;gap:10px;align-items:center;justify-content:space-between;border:1px solid var(--line);border-radius:10px;padding:8px 12px;background:#0c1420}.fileItem .left{display:flex;flex-direction:column;gap:2px}.fileItem .name{font-weight:700;font-size:12px}.fileItem .meta{font-size:11px;color:var(--muted)}.fileItem button{padding:5px 10px}.fileWarnIcon{font-size:13px;vertical-align:middle;margin-left:4px;cursor:default}.treeGrid{display:block}.treeBlock{border:1px solid var(--line);border-radius:12px;background:var(--card2);overflow:hidden}.treeBlockStacked{display:flex;flex-direction:column}.treeSection{border-bottom:1px solid var(--line)}.treeSection:last-child{border-bottom:none}.treeHead{padding:7px 12px;border-bottom:1px solid var(--line);display:flex;gap:8px;align-items:center;justify-content:space-between;background:#0f1e30}.treeHead .title{font-weight:800;font-size:12px}.treeHead .sub{color:var(--muted);font-size:11px}.treeLineRoot{display:flex;align-items:center;gap:8px;white-space:pre}.treeSubtreeBtn{padding:2px 8px;font-size:10px;font-family:var(--sans);border-color:#c07a10;color:#1a0e00;background:var(--gold);border-radius:6px;flex-shrink:0;font-weight:700}.treeSubtreeBtn:hover{border-color:#ffb94e;background:#ffb94e}.treePre{margin:0;padding:10px 12px;font-family:var(--mono);font-size:12px;white-space:pre;overflow:auto;line-height:1.6}.treeLine{display:block}.treeLineClickable{cursor:pointer;border-radius:4px;transition:background .1s}.treeLineClickable:hover{background:#1a2f48}.legendOk{color:var(--ok);font-weight:700}.legendWarn{color:var(--warn);font-weight:700}.legendGold{color:var(--gold);font-weight:700}.legendFile{color:var(--file);font-weight:700}.treeLineOk{color:var(--ok)}.treeLineWarn{color:var(--warn)}.treeLineGold{color:var(--gold)}.treeLineFileOnly{color:var(--file)}.pickable{cursor:pointer;user-select:none}.pickable:hover{outline:2px solid #2a5080;outline-offset:-2px;border-radius:6px}.picked{outline:2px solid #4a9eff66;outline-offset:-2px;border-radius:6px;background:#0f2038}.disabledPick{opacity:.4;cursor:not-allowed}.customCell{display:flex;gap:6px;align-items:center}.customCell input,.customCell select{font-family:var(--mono);font-size:12px;padding:5px 8px;border-radius:7px}.customHead{width:72px}.customRelSelect{width:160px}.colToggleBar{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:2px}.colToggle{font-size:11px;padding:4px 10px;border-radius:20px;transition:opacity .15s,border-color .15s}.colVisible{border-color:#2a4a6a;color:var(--accent);background:#0d1f33}.colVisible:hover{border-color:var(--accent)}.colHidden{border-color:#2a2a3a;color:#556;background:#0c0f16;opacity:.6}.colHidden:hover{opacity:1;border-color:#445}.fileHidden{position:absolute;left:-9999px;width:1px;height:1px;opacity:0}.btnLike{display:inline-block;user-select:none}.btnLike:active{transform:translateY(1px)}.treeSection:first-child{background:linear-gradient(135deg,#1a1500 0%,#1f1a00 60%,#141200 100%)}.treeSection:first-child .treeHead{background:#211900;border-bottom-color:#3a3000}.treeSection:first-child .treeHead .title{color:#f5c842}.treeSection:first-child .treePre{background:transparent}.treeSection:not(:first-child) .treeHead{background:#0f1a28}.helpBtn{width:30px;height:30px;border-radius:50%;padding:0;font-size:15px;font-weight:800;flex-shrink:0;margin-left:auto}.helpModal{display:none;position:fixed;inset:0;z-index:10000;background:rgba(9,13,18,.88);backdrop-filter:blur(5px);align-items:flex-start;justify-content:center;padding:32px 12px;animation:overlayIn .15s ease-out}.helpModal.active{display:flex}.helpModalBox{position:relative;width:calc(100% - 24px);min-width:0;max-height:calc(100vh - 64px);overflow-x:hidden;overflow-y:auto;background:var(--card);border:1px solid var(--line2);border-radius:16px;padding:28px 32px 36px;scrollbar-gutter:stable}#helpCloseBtn{position:absolute;top:14px;right:16px;width:28px;height:28px;padding:0;border-radius:50%;font-size:13px}.helpContent{line-height:1.6;overflow-wrap:break-word;word-break:break-word}.helpContent .helpH{margin:0 0 8px}.helpContent h1.helpH{font-size:20px;font-weight:800;color:var(--text);padding-right:40px}.helpContent h2.helpH{font-size:12px;font-weight:700;color:var(--accent);margin-top:26px;text-transform:uppercase;letter-spacing:.4px}.helpContent h3.helpH{font-size:12px;font-weight:700;color:var(--muted);margin-top:16px}.helpContent .helpHr{border:none;border-top:1px solid var(--line);margin:16px 0}.helpContent .helpP{margin:4px 0 8px}.helpContent .helpUl,.helpContent .helpOl{padding-left:20px;margin:4px 0 10px}.helpContent li{margin:3px 0}.helpContent .helpCode{margin:8px 0;padding:12px 14px;background:#060e18;border:1px solid var(--line);border-radius:8px;overflow-x:auto;font-family:var(--mono);font-size:11px;line-height:1.6;white-space:pre}.helpContent .helpInlineCode{font-family:var(--mono);font-size:11px;background:#1a2535;padding:1px 5px;border-radius:4px}.helpContent .helpTable{width:100%;table-layout:fixed;border-collapse:collapse;margin:8px 0 14px;font-size:12px}.helpContent .helpTable th{background:#0d1a2a;color:var(--muted);font-size:11px;letter-spacing:.3px}.helpContent .helpTable th,.helpContent .helpTable td{border:1px solid var(--line);padding:6px 10px;text-align:left;word-break:break-word;overflow-wrap:break-word}.helpContent .helpTable tr:nth-child(even) td{background:#0a1218}.helpContent strong{color:var(--text);font-weight:700}.sessionRow{margin-top:10px;padding-top:10px;border-top:1px solid var(--line)}.posEditCell{padding:4px 6px !important}.posSelect{font-family:var(--mono);font-size:11px;padding:3px 6px;border-radius:6px;border-color:var(--line2);background:#0c1420;color:var(--muted);width:90px;cursor:pointer}.posSelect:focus{outline:1px solid var(--accent);color:var(--text)}.posCustom{color:var(--accent);font-weight:700}</style> <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2064%2064%22%3E%0A%20%20%3Crect%20width%3D%2264%22%20height%3D%2264%22%20rx%3D%2214%22%20fill%3D%22%230b1220%22/%3E%0A%20%20%3Cg%20fill%3D%22none%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%0A%20%20%20%20%3Cpath%20d%3D%22M18%2020v16%22%20stroke%3D%22%236ee7b7%22%20stroke-width%3D%224%22/%3E%0A%20%20%20%20%3Cpath%20d%3D%22M18%2036h28%22%20stroke%3D%22%2393c5fd%22%20stroke-width%3D%224%22/%3E%0A%20%20%20%20%3Cpath%20d%3D%22M46%2036v10%22%20stroke%3D%22%23fbbf24%22%20stroke-width%3D%224%22/%3E%0A%20%20%20%20%3Cpath%20d%3D%22M18%2020c10%200%2018%208%2028%208%22%20stroke%3D%22%2393c5fd%22%20stroke-width%3D%224%22/%3E%0A%20%20%3C/g%3E%0A%20%20%3Cg%3E%0A%20%20%20%20%3Ccircle%20cx%3D%2218%22%20cy%3D%2220%22%20r%3D%225%22%20fill%3D%22%236ee7b7%22/%3E%0A%20%20%20%20%3Ccircle%20cx%3D%2246%22%20cy%3D%2228%22%20r%3D%225%22%20fill%3D%22%2393c5fd%22/%3E%0A%20%20%20%20%3Ccircle%20cx%3D%2218%22%20cy%3D%2236%22%20r%3D%225%22%20fill%3D%22%2393c5fd%22/%3E%0A%20%20%20%20%3Ccircle%20cx%3D%2246%22%20cy%3D%2246%22%20r%3D%225%22%20fill%3D%22%23fbbf24%22/%3E%0A%20%20%3C/g%3E%0A%20%20%3Ctext%20x%3D%2232%22%20y%3D%2258%22%20font-family%3D%22system-ui%2CSegoe%20UI%2CRoboto%2CArial%22%20font-size%3D%2212%22%20text-anchor%3D%22middle%22%20fill%3D%22%23e5e7eb%22%3ECoNLL%3C/text%3E%0A%3C/svg%3E"></head><body><header class="bar"><h1>CoNLL-U Vergleich</h1><p class="muted"><kbd>←</kbd><kbd>→</kbd><span data-i18n="kbd.sent">Satz</span> &nbsp; <kbd>Ctrl+←</kbd><kbd>Ctrl+→</kbd><span data-i18n="kbd.firstLast">Erster/Letzter</span> &nbsp; <kbd>n</kbd><kbd>N</kbd><span data-i18n="kbd.nextDiff">Nächster/Vorheriger Diff</span> &nbsp;|&nbsp; <kbd>↑</kbd><kbd>↓</kbd><span data-i18n="kbd.row">Zeile</span> &nbsp; <kbd>Enter</kbd><span data-i18n="kbd.popup">Gold-Popup</span> &nbsp;|&nbsp; <kbd>1</kbd>–<kbd>9</kbd><span data-i18n="kbd.chooseDoc">Doc wählen</span> &nbsp; <kbd>Ctrl+1</kbd>–<kbd>9</kbd><span data-i18n="kbd.loadCustom">Custom laden</span> &nbsp;|&nbsp; <kbd>Ctrl+Z</kbd> Undo &nbsp; <kbd>Ctrl+Y</kbd> Redo &nbsp; <kbd>Space</kbd><span data-i18n="kbd.confirm">Bestätigen</span> &nbsp; <kbd>Del</kbd><span data-i18n="kbd.delCustom">Custom löschen</span> &nbsp; <kbd>e</kbd><span data-i18n="kbd.exportConllu">Export CoNLL-U</span> &nbsp; <kbd>E</kbd><span data-i18n="kbd.exportTrees">Export Bäume</span> &nbsp;|&nbsp; <kbd>?</kbd><span data-i18n="kbd.help">Hilfe</span> &nbsp; <kbd>Esc</kbd><span data-i18n="kbd.close">Schließen</span></p><div class="langBar"><button class="langBtn" data-lang="de" onclick="setLang('de')" title="Deutsch">🇩🇪</button><button class="langBtn" data-lang="en" onclick="setLang('en')" title="English">🇬🇧</button></div><button id="helpBtn" class="helpBtn" data-i18n-title="help.btnTitle">?</button></header><main class="wrap"><section class="card"><h2 data-i18n="sec.files">1) Dateien</h2><input id="fileInput" type="file" accept=".conllu,.conll,.txt" multiple class="fileHidden" /><div class="row"><label id="addBtn" class="btnLike" for="fileInput" data-i18n="files.add">Dateien hinzufügen</label><button id="resetBtn" class="danger" data-i18n="files.reset">Reset</button><span id="fileMeta" class="muted"></span></div><div id="fileList" class="fileList" style="margin-top:10px"></div><div id="textWarn"></div></section><section class="card"><h2 data-i18n="sec.select">2) Satz wählen</h2><div class="row"><button id="prevBtn" disabled>←</button><select id="sentSelect" disabled></select><button id="nextBtn" disabled>→</button><button id="confirmBtn" class="confirmBtn" disabled>✓ Bestätigen</button><span id="sentMeta" class="muted"></span><div id="sentStats" class="sentStatsRow"></div><span id="progressMeta" class="muted small progressMeta"></span></div><div id="sentText" class="sentText"></div><div id="sentMap" class="sentMap"></div></section><section class="card"><h2 data-i18n="sec.tree">3) Baumansicht</h2><div id="treeGrid" class="treeGrid"></div><div class="muted small" style="margin-top:8px"><span data-i18n="legend.label">Legende:</span><span class="legendOk" data-i18n="legend.ok">✅ gleich</span> &nbsp;|&nbsp; <span class="legendWarn" data-i18n="legend.warn">⚠️ Label-Unterschied</span> &nbsp;|&nbsp; <span class="legendGold" data-i18n="legend.gold">🅶 nur in Gold</span> &nbsp;|&nbsp; <span class="legendFile" data-i18n="legend.file">🅵 nur in dieser Datei</span> &nbsp;|&nbsp; <span data-i18n="legend.root">🌱 Teilbaum-Wurzel</span> &nbsp;|&nbsp; <span data-i18n="legend.click">Klick auf Zeile → springt zur Tabellenzeile</span></div></section><section class="card"><h2 data-i18n="sec.compare">4) Vergleich</h2><div class="row" style="margin-bottom:8px"><div id="customInitBtns"></div><button id="customClearBtn" class="danger" disabled data-i18n="custom.clear">Custom Satz löschen</button><button id="undoBtn" disabled data-i18n="undo.btn">↩ Undo</button><button id="redoBtn" disabled data-i18n="redo.btn">↪ Redo</button></div><div id="colToggleBar" class="colToggleBar"></div><div class="tableWrap" style="margin-top:8px"><table id="cmpTable"></table></div><p class="muted small" style="margin-top:10px" data-i18n="export.mwtNote"> Hinweis: Multi-Word-Tokens (IDs mit „-" oder „.") werden ignoriert. </p></section><section class="card"><h2 data-i18n="sec.export">5) Export</h2><div class="row"><button id="exportConlluBtn" disabled data-i18n="export.conllu">Gold CoNLL-U herunterladen</button><button id="exportTreeBtn" disabled data-i18n="export.trees">Baumansicht (alle Sätze) herunterladen</button></div><p class="muted small" style="margin-top:8px" data-i18n="export.conlluDesc"> Gold CoNLL-U enthält alle Sätze mit den aktuellen Gold-Annotationen (HEAD, DEPREL, UPOS, XPOS). LEMMA / FEATS / DEPS / MISC werden aus der Quelldatei übernommen. </p><div class="row sessionRow"><button id="exportSessionBtn" data-i18n="session.save">💾 Session speichern</button><label class="btnLike" for="importSessionInput" data-i18n="session.load">📂 Session laden</label><input id="importSessionInput" type="file" accept=".json" class="fileHidden"><span id="sessionMeta" class="muted small"></span></div><p class="muted small" style="margin-top:4px" data-i18n="session.desc"> Session speichert alle geladenen Dateien, Annotationen und den kompletten Undo-/Redo-Verlauf als JSON. </p></section></main><div id="dropOverlay" class="dropOverlay"><div class="dropOverlayInner"><span data-i18n="files.dropOverlay">Dateien hier ablegen</span></div></div><div id="helpModal" class="helpModal"><div class="helpModalBox"><button id="helpCloseBtn" data-i18n-title="kbd.close">✕</button><div id="helpContent" class="helpContent"></div></div></div> <script>
 window.LANG_DE = {
   // Abschnitte
   'sec.files':   '1) Dateien',
@@ -41,10 +16,7 @@ window.LANG_DE = {
   'files.dropOverlay':  'Dateien hier ablegen',
   'help.btnTitle':      'Hilfe / README anzeigen',
   'files.demo':         'Demo laden (3 Beispieldateien)',
-  'files.delete':        'Löschen',
-  'files.download':      'CoNLL-U herunterladen',
-  'files.moveToProject':    'In Projekt verschieben …',
-  'files.moveToNewProject': '＋ Neues Projekt …',
+  'files.delete':       'Löschen',
   'files.sentences':    '{n} Sätze',
   'files.warnBadge':    'Unterschiedlicher Text!',
   'files.warnBanner':   '⚠️ Unterschiedliche Texte geladen — Vergleich möglicherweise fehlerhaft.',
@@ -113,9 +85,7 @@ window.LANG_DE = {
 
   // Export
   'export.conllu':     'Gold CoNLL-U herunterladen',
-  'export.conlluAll':  'Alle Projekte CoNLL-U herunterladen',
   'export.trees':      'Baumansicht (alle Sätze) herunterladen',
-  'export.treesAll':   'Alle Projekte Baumansicht herunterladen',
   'export.conlluDesc': 'Gold CoNLL-U enthält alle Sätze mit den aktuellen Gold-Annotationen (HEAD, DEPREL, UPOS, XPOS). LEMMA / FEATS / DEPS / MISC werden aus der Quelldatei übernommen.',
   'export.mwtNote':    'Hinweis: Multi-Word-Tokens (IDs mit „-" oder „.") werden ignoriert.',
 
@@ -161,37 +131,6 @@ window.LANG_DE = {
   'export.treeVsGold':'--- {name} vs Gold ---',
   'export.treeNoTree':'(keine Bäume für diesen Satz)',
 
-  // Notiz pro Satz
-  'note.label':       'Notiz:',
-  'note.placeholder': 'Notiz zum Satz …',
-
-  // Zwischenablage
-  'copy.btn':  'CoNLL-U kopieren',
-  'copy.done': '✓ Kopiert!',
-  'kbd.copy':  'Kopieren',
-
-  // Datei-Reihenfolge
-  'files.moveUp':   'Nach oben',
-  'files.moveDown': 'Nach unten',
-
-  // Autosave
-  'autosave.found':   'Automatische Sicherung vom {date} gefunden.',
-  'autosave.restore': 'Wiederherstellen',
-  'autosave.dismiss': 'Verwerfen',
-  'autosave.saved':   'Autosave gespeichert',
-
-  // Projekte
-  'project.new':           'Neues Projekt',
-  'project.default':       'Projekt',
-  'project.namePrompt':    'Projektname:',
-  'project.deleteConfirm': 'Projekt „{name}" wirklich löschen?',
-  'project.autoCreated':   'Neues Projekt „{name}" automatisch erstellt.',
-  'project.autoCreatedN':  '{n} neue Projekte automatisch erstellt.',
-  'project.rename':        'Projekt umbenennen',
-  'project.renameHint':    '✎ klicken zum Umbenennen',
-  'project.moveLeft':      'Nach links verschieben',
-  'project.moveRight':     'Nach rechts verschieben',
-
   // Hilfe
   'help.unavailable': 'Hilfe nicht verfügbar.',
   'help.runScript':   'Bitte python make_readme_js.py ausführen und die Seite neu laden.',
@@ -215,10 +154,7 @@ window.LANG_EN = {
   'files.dropOverlay':  'Drop files here',
   'help.btnTitle':      'Help / show README',
   'files.demo':         'Load demo (3 example files)',
-  'files.delete':        'Remove',
-  'files.download':      'Download CoNLL-U',
-  'files.moveToProject':    'Move to project …',
-  'files.moveToNewProject': '＋ New project …',
+  'files.delete':       'Remove',
   'files.sentences':    '{n} sentences',
   'files.warnBadge':    'Different text!',
   'files.warnBanner':   '⚠️ Different texts loaded — comparison may be inaccurate.',
@@ -287,9 +223,7 @@ window.LANG_EN = {
 
   // Export
   'export.conllu':     'Download Gold CoNLL-U',
-  'export.conlluAll':  'Download all projects CoNLL-U',
   'export.trees':      'Download tree view (all sentences)',
-  'export.treesAll':   'Download all projects tree view',
   'export.conlluDesc': 'Gold CoNLL-U contains all sentences with current Gold annotations (HEAD, DEPREL, UPOS, XPOS). LEMMA / FEATS / DEPS / MISC are taken from the source file.',
   'export.mwtNote':    'Note: Multi-word tokens (IDs with "-" or ".") are ignored.',
 
@@ -334,37 +268,6 @@ window.LANG_EN = {
   'export.treeGold':   '=== GOLD ===',
   'export.treeVsGold': '--- {name} vs Gold ---',
   'export.treeNoTree': '(no trees for this sentence)',
-
-  // Note per sentence
-  'note.label':       'Note:',
-  'note.placeholder': 'Note for this sentence …',
-
-  // Clipboard
-  'copy.btn':  'Copy CoNLL-U',
-  'copy.done': '✓ Copied!',
-  'kbd.copy':  'Copy',
-
-  // File order
-  'files.moveUp':   'Move up',
-  'files.moveDown': 'Move down',
-
-  // Autosave
-  'autosave.found':   'Auto-save from {date} found.',
-  'autosave.restore': 'Restore',
-  'autosave.dismiss': 'Dismiss',
-  'autosave.saved':   'Autosave stored',
-
-  // Projects
-  'project.new':           'New project',
-  'project.default':       'Project',
-  'project.namePrompt':    'Project name:',
-  'project.deleteConfirm': 'Really delete project "{name}"?',
-  'project.autoCreated':   'New project "{name}" created automatically.',
-  'project.autoCreatedN':  '{n} new projects created automatically.',
-  'project.rename':        'Rename project',
-  'project.renameHint':    'Click ✎ to rename',
-  'project.moveLeft':      'Move left',
-  'project.moveRight':     'Move right',
 
   // Help
   'help.unavailable': 'Help not available.',
@@ -459,10 +362,6 @@ const state = {
   goldPick: {},        // goldPick[sent][tokId] = docIdx
   hiddenCols: new Set(),
   confirmed: new Set(), // confirmed sentence indices
-  notes: {},           // notes[sentIndex] = string
-  // Project management
-  projects: [],        // array of project snapshots
-  activeProjectIdx: 0,
 };
 
 // ---------- Label helpers ----------
@@ -756,36 +655,25 @@ function fileKey(f){
 
 // ---------- File management ----------
 async function processFiles(files){
-  const parsed = [];
   for(const f of files){
     const key = fileKey(f);
-    // Skip if already present in the current project
     if(state.docs.some(d => d.key === key)) continue;
     const text = await readFileAsText(f);
     const doc = parseConllu(text);
-    parsed.push({ key, name: f.name, content: text, sentences: doc.sentences });
+    state.docs.push({ key, name: f.name, content: text, sentences: doc.sentences });
   }
-  // Delegate to project-aware assignment (defined in projects.js)
-  autoAssignToProjects(parsed);
+  recomputeMaxSents();
+  state.currentSent = 0;
+  renderFiles();
+  renderSentSelect();
+  renderSentence();
 }
 
 async function onFilesChosen(){
   const files = Array.from(fileInput.files || []);
   if(files.length === 0) return;
+  await processFiles(files);
   fileInput.value = "";
-
-  // If exactly one .json was selected (and no CoNLL-U), treat it as a session import
-  const jsonFiles   = files.filter(f => /\.json$/i.test(f.name));
-  const conlluFiles = files.filter(f => /\.(conllu|conll|txt)$/i.test(f.name));
-
-  if(jsonFiles.length === 1 && conlluFiles.length === 0){
-    const fr = new FileReader();
-    fr.onload = () => importSession(fr.result);
-    fr.readAsText(jsonFiles[0], "utf-8");
-    return;
-  }
-  const toProcess = conlluFiles.length > 0 ? conlluFiles : files.filter(f => !/\.json$/i.test(f.name));
-  if(toProcess.length > 0) await processFiles(toProcess);
 }
 
 function removeDoc(index){
@@ -814,53 +702,15 @@ function removeDoc(index){
   renderSentence();
 }
 
-function moveDoc(idx, dir){
-  const other = idx + dir;
-  if(other < 0 || other >= state.docs.length) return;
-
-  // Swap docs
-  [state.docs[idx], state.docs[other]] = [state.docs[other], state.docs[idx]];
-
-  // Remap hiddenCols
-  const newHidden = new Set();
-  for(const v of state.hiddenCols){
-    if(v === idx)   newHidden.add(other);
-    else if(v === other) newHidden.add(idx);
-    else newHidden.add(v);
-  }
-  state.hiddenCols = newHidden;
-
-  // Remap goldPick: swap values idx <-> other
-  for(const sKey of Object.keys(state.goldPick)){
-    const m = state.goldPick[sKey];
-    for(const tKey of Object.keys(m)){
-      const v = m[tKey];
-      if(typeof v !== "number") continue;
-      if(v === idx)   m[tKey] = other;
-      else if(v === other) m[tKey] = idx;
-    }
-  }
-
-  renderFiles();
-  renderSentSelect();
-  renderSentence();
-}
-
 function resetAll(){
   if(!confirm(t('files.resetConfirm'))) return;
-  // Reset to a single empty project
   state.docs = [];
   state.custom = {};
   state.goldPick = {};
-  state.notes = {};
   state.hiddenCols = new Set();
   state.currentSent = 0;
   state.maxSents = 0;
-  state.projects = [_emptyProject(`${t('project.default')} 1`)];
-  state.activeProjectIdx = 0;
-  loadUndoState({ undo: [], redo: [] });
   fileInput.value = "";
-  renderProjectTabs();
   renderFiles();
   renderSentSelect();
   renderSentence();
@@ -950,359 +800,6 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("undoBtn")?.addEventListener("click", undo);
   document.getElementById("redoBtn")?.addEventListener("click", redo);
 });
-
-</script> <script>
-// ---------- Project management ----------
-
-// ── Internal helpers ─────────────────────────────────────────────────────────
-
-function _emptyProject(name){
-  return {
-    name,
-    docs:        [],
-    custom:      {},
-    goldPick:    {},
-    confirmed:   [],   // serialised Set (array of ints)
-    notes:       {},
-    currentSent: 0,
-    maxSents:    0,
-    hiddenCols:  [],   // serialised Set (array of ints)
-    undoStack:   [],
-    redoStack:   [],
-  };
-}
-
-/** Save live state → projects[activeProjectIdx] */
-function _saveActiveProject(){
-  if(!state.projects.length) return;
-  const { undo, redo } = getUndoState();
-  state.projects[state.activeProjectIdx] = {
-    name:        state.projects[state.activeProjectIdx].name,
-    docs:        state.docs,
-    custom:      JSON.parse(JSON.stringify(state.custom)),
-    goldPick:    JSON.parse(JSON.stringify(state.goldPick)),
-    confirmed:   Array.from(state.confirmed),
-    notes:       JSON.parse(JSON.stringify(state.notes)),
-    currentSent: state.currentSent,
-    maxSents:    state.maxSents,
-    hiddenCols:  Array.from(state.hiddenCols),
-    undoStack:   undo,
-    redoStack:   redo,
-  };
-}
-
-/** Load projects[activeProjectIdx] → live state */
-function _loadActiveProject(){
-  const p = state.projects[state.activeProjectIdx];
-  state.docs        = p.docs       || [];
-  state.custom      = JSON.parse(JSON.stringify(p.custom    || {}));
-  state.goldPick    = JSON.parse(JSON.stringify(p.goldPick  || {}));
-  state.confirmed   = new Set(p.confirmed || []);
-  state.notes       = JSON.parse(JSON.stringify(p.notes     || {}));
-  state.currentSent = p.currentSent || 0;
-  state.maxSents    = p.maxSents    || 0;
-  state.hiddenCols  = new Set(p.hiddenCols || []);
-  loadUndoState({ undo: p.undoStack || [], redo: p.redoStack || [] });
-}
-
-// ── Public API ────────────────────────────────────────────────────────────────
-
-/** Called once on page-load to set up the default project. */
-function initProjects(){
-  if(state.projects.length === 0){
-    const name = `${t('project.default')} 1`;
-    state.projects.push(_emptyProject(name));
-    state.activeProjectIdx = 0;
-  }
-  renderProjectTabs();
-}
-
-/** Switch to project at idx (save current first). */
-function switchProject(idx){
-  if(idx === state.activeProjectIdx) return;
-  _saveActiveProject();
-  state.activeProjectIdx = idx;
-  _loadActiveProject();
-  renderProjectTabs();
-  renderFiles();
-  renderSentSelect();
-  renderSentence();
-}
-
-/** Create a new empty project and switch to it. */
-function createProject(name){
-  _saveActiveProject();
-  const n = name || `${t('project.default')} ${state.projects.length + 1}`;
-  state.projects.push(_emptyProject(n));
-  state.activeProjectIdx = state.projects.length - 1;
-  _loadActiveProject();
-  renderProjectTabs();
-  renderFiles();
-  renderSentSelect();
-  renderSentence();
-}
-
-/** Delete project at idx. Requires >1 project. */
-function deleteProject(idx){
-  if(state.projects.length <= 1) return;
-  const name = state.projects[idx].name;
-  if(!confirm(t('project.deleteConfirm', { name }))) return;
-  state.projects.splice(idx, 1);
-  if(state.activeProjectIdx >= state.projects.length){
-    state.activeProjectIdx = state.projects.length - 1;
-  } else if(state.activeProjectIdx > idx){
-    state.activeProjectIdx--;
-  }
-  _loadActiveProject();
-  renderProjectTabs();
-  renderFiles();
-  renderSentSelect();
-  renderSentence();
-}
-
-/** Rename project at idx. */
-function renameProject(idx, name){
-  if(!name || !name.trim()) return;
-  state.projects[idx].name = name.trim();
-  renderProjectTabs();
-}
-
-/** Move project at idx by dir (+1 / -1). */
-function moveProject(idx, dir){
-  const other = idx + dir;
-  if(other < 0 || other >= state.projects.length) return;
-  _saveActiveProject();
-  [state.projects[idx], state.projects[other]] = [state.projects[other], state.projects[idx]];
-  if(state.activeProjectIdx === idx)        state.activeProjectIdx = other;
-  else if(state.activeProjectIdx === other) state.activeProjectIdx = idx;
-  renderProjectTabs();
-}
-
-/** Move doc at docIdx from the active project to targetProjectIdx. */
-function moveDocToProject(docIdx, targetProjectIdx){
-  if(targetProjectIdx === state.activeProjectIdx) return;
-  const doc = state.docs[docIdx];
-  if(!doc) return;
-
-  // Remove from live state
-  state.docs.splice(docIdx, 1);
-
-  // Remap hiddenCols
-  const newHidden = new Set();
-  for(const v of state.hiddenCols){
-    if(v > docIdx) newHidden.add(v - 1);
-    else if(v < docIdx) newHidden.add(v);
-  }
-  state.hiddenCols = newHidden;
-
-  // Remap goldPick indices
-  for(const sKey of Object.keys(state.goldPick)){
-    const m = state.goldPick[sKey];
-    for(const tKey of Object.keys(m)){
-      const v = m[tKey];
-      if(typeof v !== "number") continue;
-      if(v === docIdx)   m[tKey] = 0;
-      else if(v > docIdx) m[tKey] = v - 1;
-    }
-  }
-
-  recomputeMaxSents();
-  state.currentSent = Math.min(state.currentSent, Math.max(0, state.maxSents - 1));
-
-  // Snapshot source project (now without the moved doc)
-  _saveActiveProject();
-
-  // Add to target project
-  const target = state.projects[targetProjectIdx];
-  if(!target.docs.some(d => d.key === doc.key)){
-    target.docs.push(doc);
-    target.maxSents = Math.max(0, ...target.docs.map(d => d.sentences.length), 0);
-  }
-
-  _loadActiveProject();
-  renderProjectTabs();
-  renderFiles();
-  renderSentSelect();
-  renderSentence();
-}
-
-/** Rebuild the #projectTabBar DOM. */
-function renderProjectTabs(){
-  const bar = document.getElementById("projectTabBar");
-  if(!bar) return;
-  bar.innerHTML = "";
-
-  const n = state.projects.length;
-
-  state.projects.forEach((p, idx) => {
-    const tab = document.createElement("div");
-    tab.className = "projectTab" + (idx === state.activeProjectIdx ? " projectTabActive" : "");
-
-    // ◀ move left
-    if(n > 1){
-      const leftBtn = document.createElement("button");
-      leftBtn.className = "projectTabMoveBtn";
-      leftBtn.textContent = "◀";
-      leftBtn.title = t('project.moveLeft');
-      leftBtn.disabled = idx === 0;
-      leftBtn.addEventListener("click", (e) => { e.stopPropagation(); moveProject(idx, -1); });
-      tab.appendChild(leftBtn);
-    }
-
-    // Name span
-    const nameSpan = document.createElement("span");
-    nameSpan.className = "projectTabName";
-    nameSpan.textContent = p.name;
-    nameSpan.title = t('project.renameHint');
-    tab.appendChild(nameSpan);
-
-    // ✎ rename button
-    const renameBtn = document.createElement("button");
-    renameBtn.className = "projectTabRenameBtn";
-    renameBtn.textContent = "✎";
-    renameBtn.title = t('project.rename');
-    renameBtn.addEventListener("click", (e) => {
-      e.stopPropagation();
-      const newName = prompt(t('project.namePrompt'), p.name);
-      if(newName !== null) renameProject(idx, newName);
-    });
-    tab.appendChild(renameBtn);
-
-    // ▶ move right
-    if(n > 1){
-      const rightBtn = document.createElement("button");
-      rightBtn.className = "projectTabMoveBtn";
-      rightBtn.textContent = "▶";
-      rightBtn.title = t('project.moveRight');
-      rightBtn.disabled = idx === n - 1;
-      rightBtn.addEventListener("click", (e) => { e.stopPropagation(); moveProject(idx, +1); });
-      tab.appendChild(rightBtn);
-    }
-
-    // × close button (only if more than 1 project)
-    if(n > 1){
-      const closeBtn = document.createElement("button");
-      closeBtn.className = "projectTabClose";
-      closeBtn.textContent = "×";
-      closeBtn.title = t('project.deleteConfirm', { name: p.name });
-      closeBtn.addEventListener("click", (e) => { e.stopPropagation(); deleteProject(idx); });
-      tab.appendChild(closeBtn);
-    }
-
-    tab.addEventListener("click", () => switchProject(idx));
-    bar.appendChild(tab);
-  });
-
-  // "+" button to create a new project
-  const addBtn = document.createElement("button");
-  addBtn.className = "projectTabAdd";
-  addBtn.textContent = "+";
-  addBtn.title = t('project.new');
-  addBtn.addEventListener("click", () => {
-    const name = prompt(
-      t('project.namePrompt'),
-      `${t('project.default')} ${state.projects.length + 1}`
-    );
-    if(name !== null) createProject(name);
-  });
-  bar.appendChild(addBtn);
-}
-
-// ── Auto-assignment ───────────────────────────────────────────────────────────
-
-/**
- * Called by processFiles() with an array of already-parsed doc objects.
- * Groups docs by sentence count. One group → current project.
- * Multiple groups → auto-assign to projects by matching maxSents.
- */
-function autoAssignToProjects(parsedDocs){
-  if(!parsedDocs.length) return;
-
-  // Group by sentence count
-  const groups = new Map(); // sentCount → [doc, ...]
-  for(const doc of parsedDocs){
-    const cnt = doc.sentences.length;
-    if(!groups.has(cnt)) groups.set(cnt, []);
-    groups.get(cnt).push(doc);
-  }
-
-  if(groups.size === 1){
-    const [[sentCount]] = groups.entries();
-    // Fast path: current project is empty or already has the same sentence count
-    if(state.docs.length === 0 || state.maxSents === sentCount){
-      for(const doc of parsedDocs){
-        if(!state.docs.some(d => d.key === doc.key)) state.docs.push(doc);
-      }
-      recomputeMaxSents();
-      state.currentSent = 0;
-      renderFiles();
-      renderSentSelect();
-      renderSentence();
-      return;
-    }
-    // Mismatch with current project → fall through to distribution logic below
-  }
-
-  // Multiple groups OR sentence count differs from current project → distribute
-  _saveActiveProject();
-
-  const newProjectNames = [];
-
-  for(const [sentCount, docs] of groups.entries()){
-    let targetIdx = -1;
-
-    // Prefer the active project if it is empty or already has matching sentence count
-    const ap = state.projects[state.activeProjectIdx];
-    if((ap.docs.length === 0 || ap.maxSents === sentCount) &&
-       !docs.some(d => ap.docs.some(pd => pd.key === d.key))){
-      targetIdx = state.activeProjectIdx;
-    }
-
-    if(targetIdx === -1){
-      // Second: any other project with a matching sentence count
-      targetIdx = state.projects.findIndex((p, i) =>
-        i !== state.activeProjectIdx &&
-        p.docs.length > 0 && p.maxSents === sentCount &&
-        !docs.some(d => p.docs.some(pd => pd.key === d.key))
-      );
-    }
-
-    if(targetIdx === -1){
-      // Third: any other empty project (last resort before creating a new one)
-      targetIdx = state.projects.findIndex((p, i) =>
-        i !== state.activeProjectIdx && p.docs.length === 0
-      );
-    }
-
-    if(targetIdx === -1){
-      // Create a new project and record its name for the notification
-      const name = `${t('project.default')} ${state.projects.length + 1}`;
-      state.projects.push(_emptyProject(name));
-      targetIdx = state.projects.length - 1;
-      newProjectNames.push(name);
-    }
-
-    const p = state.projects[targetIdx];
-    for(const doc of docs){
-      if(!p.docs.some(d => d.key === doc.key)) p.docs.push(doc);
-    }
-    p.maxSents = Math.max(0, ...p.docs.map(d => d.sentences.length), 0);
-  }
-
-  // Reload the active project
-  _loadActiveProject();
-  renderProjectTabs();
-  renderFiles();
-  renderSentSelect();
-  renderSentence();
-
-  // Notify user about auto-created projects
-  if(newProjectNames.length === 1){
-    _showSessionMeta(t('project.autoCreated', { name: newProjectNames[0] }));
-  } else if(newProjectNames.length > 1){
-    _showSessionMeta(t('project.autoCreatedN', { n: newProjectNames.length }));
-  }
-}
 
 </script> <script>
 // ---------- Data structures ----------
@@ -2031,25 +1528,14 @@ const colToggleBar = document.getElementById("colToggleBar");
 const customInitBtns  = document.getElementById("customInitBtns");
 const customClearBtn  = document.getElementById("customClearBtn");
 const confirmBtn      = document.getElementById("confirmBtn");
-const copyConlluBtn   = document.getElementById("copyConlluBtn");
 const progressMeta    = document.getElementById("progressMeta");
 const dropOverlay     = document.getElementById("dropOverlay");
 const textWarn        = document.getElementById("textWarn");
 const sentMap         = document.getElementById("sentMap");
-const sentNoteRow     = document.getElementById("sentNoteRow");
-const sentNote        = document.getElementById("sentNote");
 
 // ---------- Events ----------
 fileInput.addEventListener("change", onFilesChosen);
 resetBtn.addEventListener("click", resetAll);
-
-if(sentNote){
-  sentNote.addEventListener("input", () => {
-    const val = sentNote.value;
-    if(val.trim()) state.notes[state.currentSent] = val;
-    else           delete state.notes[state.currentSent];
-  });
-}
 
 sentSelect.addEventListener("change", () => {
   state.currentSent = parseInt(sentSelect.value, 10) || 0;
@@ -2066,7 +1552,6 @@ nextBtn.addEventListener("click", () => {
 
 customClearBtn.addEventListener("click", clearCustomForSentence);
 confirmBtn.addEventListener("click", toggleConfirm);
-if(copyConlluBtn) copyConlluBtn.addEventListener("click", copySentenceConllu);
 
 // Klick auf Token im Satztext → Tabellenzeile fokussieren + scrollen
 sentText.addEventListener("click", (e) => {
@@ -2127,99 +1612,16 @@ function renderFiles(){
   state.docs.forEach((d, idx) => {
     const div = document.createElement("div");
     div.className = "fileItem";
-
-    // Info column
-    const left = document.createElement("div");
-    left.className = "left";
-    const nameDiv = document.createElement("div");
-    nameDiv.className = "name";
-    nameDiv.textContent = d.name;
-    if(warnedIndices.has(idx)){
-      const badge = document.createElement("span");
-      badge.className = "fileWarnIcon";
-      badge.title = t('files.warnBadge');
-      badge.textContent = "⚠️";
-      nameDiv.appendChild(badge);
-    }
-    const metaDiv = document.createElement("div");
-    metaDiv.className = "meta";
-    metaDiv.textContent = t('files.sentences', { n: d.sentences.length });
-    left.appendChild(nameDiv);
-    left.appendChild(metaDiv);
-    div.appendChild(left);
-
-    // Actions column
-    const actions = document.createElement("div");
-    actions.className = "fileActions";
-
-    // Download button
-    const dlBtn = document.createElement("button");
-    dlBtn.title = t('files.download');
-    dlBtn.textContent = "⬇";
-    dlBtn.addEventListener("click", () => downloadText(d.content || "", d.name));
-    actions.appendChild(dlBtn);
-
-    // Move-to-project select (always shown so new project can be created)
-    {
-      const sel = document.createElement("select");
-      sel.className = "moveToProjectSel";
-      sel.title = t('files.moveToProject');
-      state.projects.forEach((p, pi) => {
-        const opt = document.createElement("option");
-        opt.value = pi;
-        opt.textContent = p.name;
-        if(pi === state.activeProjectIdx) opt.selected = true;
-        sel.appendChild(opt);
-      });
-      // "New project…" sentinel option
-      const newOpt = document.createElement("option");
-      newOpt.value = "__new__";
-      newOpt.textContent = t('files.moveToNewProject');
-      sel.appendChild(newOpt);
-
-      sel.addEventListener("change", () => {
-        if(sel.value === "__new__"){
-          const name = prompt(t('project.namePrompt'),
-            `${t('project.default')} ${state.projects.length + 1}`);
-          if(!name){ sel.value = String(state.activeProjectIdx); return; }
-          // Push new project WITHOUT switching — active project stays the source
-          const newIdx = state.projects.length;
-          _saveActiveProject();
-          state.projects.push(_emptyProject(name));
-          // Now move the doc; moveDocToProject handles all re-renders
-          moveDocToProject(idx, newIdx);
-        } else {
-          moveDocToProject(idx, parseInt(sel.value, 10));
-        }
-      });
-      actions.appendChild(sel);
-    }
-
-    // Move up / down
-    const upBtn = document.createElement("button");
-    upBtn.className = "moveUpBtn";
-    upBtn.title = t('files.moveUp');
-    upBtn.textContent = "▲";
-    upBtn.disabled = idx === 0;
-    upBtn.addEventListener("click", () => moveDoc(idx, -1));
-    actions.appendChild(upBtn);
-
-    const downBtn = document.createElement("button");
-    downBtn.className = "moveDownBtn";
-    downBtn.title = t('files.moveDown');
-    downBtn.textContent = "▼";
-    downBtn.disabled = idx === state.docs.length - 1;
-    downBtn.addEventListener("click", () => moveDoc(idx, +1));
-    actions.appendChild(downBtn);
-
-    // Delete
-    const delBtn = document.createElement("button");
-    delBtn.className = "danger";
-    delBtn.textContent = t('files.delete');
-    delBtn.addEventListener("click", () => removeDoc(idx));
-    actions.appendChild(delBtn);
-
-    div.appendChild(actions);
+    const warnBadge = warnedIndices.has(idx)
+      ? ` <span class="fileWarnIcon" title="${escapeHtml(t('files.warnBadge'))}">⚠️</span>` : "";
+    div.innerHTML = `
+      <div class="left">
+        <div class="name">${escapeHtml(d.name)}${warnBadge}</div>
+        <div class="meta">${escapeHtml(t('files.sentences', { n: d.sentences.length }))}</div>
+      </div>
+      <button class="danger">${escapeHtml(t('files.delete'))}</button>
+    `;
+    div.querySelector("button").addEventListener("click", () => removeDoc(idx));
     fileList.appendChild(div);
   });
 
@@ -2279,7 +1681,6 @@ function renderSentSelect(){
   }
   customClearBtn.disabled = !ok;
   confirmBtn.disabled = !ok;
-  if(copyConlluBtn) copyConlluBtn.disabled = !ok;
   sentSelect.innerHTML = "";
   if(!ok){ sentStats.textContent = ""; if(progressMeta) progressMeta.textContent = ""; return; }
   renderSentSelectOptions();
@@ -2363,16 +1764,6 @@ function _updateProgressMeta(){
   });
 }
 
-function _updateSentNote(){
-  if(!sentNote || !sentNoteRow) return;
-  const ok = state.docs.length >= 2 && state.maxSents > 0;
-  sentNoteRow.style.display = ok ? "" : "none";
-  if(ok){
-    sentNote.value = state.notes[state.currentSent] ?? "";
-    sentNote.placeholder = t('note.placeholder');
-  }
-}
-
 function renderSentMap(){
   if(!sentMap) return;
   if(state.docs.length < 2 || state.maxSents === 0){ sentMap.innerHTML = ""; return; }
@@ -2452,7 +1843,6 @@ function renderSentence(){
     treeGrid.innerHTML = "";
     cmpTable.innerHTML = "";
     colToggleBar.innerHTML = "";
-    _updateSentNote();
     return;
   }
 
@@ -2473,58 +1863,6 @@ function renderSentence(){
   renderCompareTable();
   renderSentSelectOptions();
   renderPreview();
-  _updateSentNote();
-}
-
-// ---------- Clipboard copy ----------
-function copySentenceConllu(){
-  if(state.docs.length < 1 || state.maxSents === 0) return;
-  const sentIdx = state.currentSent;
-  const docMaps = state.docs.map(d => {
-    const s = d.sentences[sentIdx];
-    const m = new Map();
-    if(s) for(const tk of s.tokens) m.set(tk.id, tk);
-    return m;
-  });
-  const ids = new Set();
-  for(const m of docMaps) for(const id of m.keys()) ids.add(id);
-  const customSent = state.custom[sentIdx] || {};
-  for(const idStr of Object.keys(customSent)) ids.add(parseInt(idStr, 10));
-  const idList = Array.from(ids).sort((a,b) => a - b);
-  const goldMap = buildGoldTokenMap(sentIdx, idList, docMaps);
-
-  const lines = [];
-  let sentTextStr = "";
-  for(const d of state.docs){
-    const s = d.sentences[sentIdx];
-    if(s && s.text){ sentTextStr = s.text; break; }
-  }
-  if(sentTextStr) lines.push(`# text = ${sentTextStr}`);
-
-  for(const id of idList){
-    let base = null;
-    for(const m of docMaps){ const tk = m.get(id); if(tk){ base = tk; break; } }
-    if(!base) continue;
-    const goldTok = goldMap.get(id);
-    const head   = goldTok?.head   ?? null;
-    const deprel = goldTok?.deprel ?? "_";
-    const upos   = goldTok?.upos   ?? "_";
-    const xpos   = goldTok?.xpos   ?? "_";
-    lines.push([
-      id, base.form || "_", base.lemma || "_",
-      upos || "_", xpos || "_", base.feats || "_",
-      head === null ? "_" : String(head), deprel,
-      base.deps || "_", base.misc || "_",
-    ].join("\t"));
-  }
-
-  const text = lines.join("\n");
-  navigator.clipboard.writeText(text).then(() => {
-    if(!copyConlluBtn) return;
-    const orig = copyConlluBtn.textContent;
-    copyConlluBtn.textContent = t('copy.done');
-    setTimeout(() => { if(copyConlluBtn) copyConlluBtn.textContent = t('copy.btn'); }, 1500);
-  }).catch(() => {});
 }
 
 // ---------- Demo ----------
@@ -2535,7 +1873,6 @@ async function loadExamples(){
 
 // ---------- Init ----------
 buildDeprelOptionsCache();
-initProjects();
 renderFiles();
 renderSentSelect();
 renderSentence();
@@ -2543,43 +1880,29 @@ renderSentence();
 </script> <script>
 // ---------- Export buttons ----------
 const exportConlluBtn    = document.getElementById("exportConlluBtn");
-const exportAllConlluBtn = document.getElementById("exportAllConlluBtn");
 const exportTreeBtn      = document.getElementById("exportTreeBtn");
-const exportAllTreeBtn   = document.getElementById("exportAllTreeBtn");
 const exportSessionBtn   = document.getElementById("exportSessionBtn");
 const importSessionInput = document.getElementById("importSessionInput");
 const sessionMeta        = document.getElementById("sessionMeta");
 
-exportConlluBtn.addEventListener("click",    exportGoldConllu);
-exportAllConlluBtn.addEventListener("click", exportAllProjectsConllu);
-exportTreeBtn.addEventListener("click",      exportTreesTxt);
-exportAllTreeBtn.addEventListener("click",   exportAllProjectsTrees);
-exportSessionBtn.addEventListener("click",   exportSession);
+exportConlluBtn.addEventListener("click", exportGoldConllu);
+exportTreeBtn.addEventListener("click",   exportTreesTxt);
+exportSessionBtn.addEventListener("click", exportSession);
 importSessionInput.addEventListener("change", () => {
-  const files = Array.from(importSessionInput.files || []);
-  if(!files.length) return;
-  importSessionInput.value = "";
-
-  // If a CoNLL-U / txt file was chosen via the session input, load it as data
-  const conlluFiles = files.filter(f => /\.(conllu|conll|txt)$/i.test(f.name));
-  if(conlluFiles.length > 0){
-    processFiles(conlluFiles);
-    return;
-  }
-  const f = files[0];
+  const f = importSessionInput.files?.[0];
   if(!f) return;
   const fr = new FileReader();
-  fr.onload = () => importSession(fr.result);
+  fr.onload = () => {
+    importSession(fr.result);
+    importSessionInput.value = "";
+  };
   fr.readAsText(f, "utf-8");
 });
 
 function updateExportButtons(){
-  const ok   = state.docs.length >= 1;
-  const tree = ok && state.maxSents > 0;
-  exportConlluBtn.disabled    = !ok;
-  exportAllConlluBtn.disabled = !ok;
-  exportTreeBtn.disabled      = !tree;
-  exportAllTreeBtn.disabled   = !tree;
+  const ok = state.docs.length >= 1;
+  exportConlluBtn.disabled = !ok;
+  exportTreeBtn.disabled   = !(ok && state.maxSents > 0);
 }
 
 // ---------- Download helper ----------
@@ -2593,9 +1916,11 @@ function downloadText(content, filename){
   URL.revokeObjectURL(url);
 }
 
-// ---------- Gold CoNLL-U Kernlogik (nutzt state.* direkt) ----------
-function _buildConlluText(){
+// ---------- Gold CoNLL-U (alle Sätze) ----------
+function exportGoldConllu(){
+  if(state.docs.length < 1) return;
   const out = [];
+
   for(let sentIdx = 0; sentIdx < state.maxSents; sentIdx++){
     const docMaps = state.docs.map(d => {
       const s = d.sentences[sentIdx];
@@ -2612,6 +1937,7 @@ function _buildConlluText(){
 
     const goldMap = buildGoldTokenMap(sentIdx, idList, docMaps);
 
+    // # text header
     let sentText = "";
     for(const d of state.docs){
       const s = d.sentences[sentIdx];
@@ -2624,11 +1950,13 @@ function _buildConlluText(){
       for(const m of docMaps){ const t = m.get(id); if(t){ base = t; break; } }
       if(!base) continue;
 
-      const goldTok = goldMap.get(id);
-      const head    = goldTok?.head   ?? null;
-      const deprel  = goldTok?.deprel ?? "_";
-      const upos    = goldTok?.upos   ?? "_";
-      const xpos    = goldTok?.xpos   ?? "_";
+      const goldTok     = goldMap.get(id);
+      const customEntry = getCustomEntry(sentIdx, id);
+
+      const head   = goldTok?.head   ?? null;
+      const deprel = goldTok?.deprel ?? "_";
+      const upos   = goldTok?.upos ?? "_";
+      const xpos   = goldTok?.xpos ?? "_";
 
       out.push([
         id,
@@ -2643,56 +1971,28 @@ function _buildConlluText(){
         base.misc   || "_",
       ].join("\t"));
     }
-    out.push("");
-  }
-  return out.join("\n");
-}
-
-// ---------- Gold CoNLL-U — aktives Projekt ----------
-function exportGoldConllu(){
-  if(state.docs.length < 1) return;
-  const name = state.projects.length > 1
-    ? `gold_${state.projects[state.activeProjectIdx].name}.conllu`
-    : "gold_annotation.conllu";
-  downloadText(_buildConlluText(), name);
-}
-
-// ---------- Gold CoNLL-U — alle Projekte (je eine Datei) ----------
-function exportAllProjectsConllu(){
-  if(!state.projects.length) return;
-  _saveActiveProject(); // aktiven Stand einfrieren
-
-  // Originale state-Felder sichern
-  const origDocs     = state.docs;
-  const origMaxSents = state.maxSents;
-  const origCustom   = state.custom;
-  const origGoldPick = state.goldPick;
-
-  for(const p of state.projects){
-    if(!p.docs.length) continue;
-    // Temporären State einspielen
-    state.docs     = p.docs;
-    state.maxSents = p.maxSents;
-    state.custom   = p.custom;
-    state.goldPick = p.goldPick;
-
-    downloadText(_buildConlluText(), `gold_${p.name}.conllu`);
+    out.push(""); // Leerzeile zwischen Sätzen
   }
 
-  // State wiederherstellen (kein Re-Render nötig)
-  state.docs     = origDocs;
-  state.maxSents = origMaxSents;
-  state.custom   = origCustom;
-  state.goldPick = origGoldPick;
+  downloadText(out.join("\n"), "gold_annotation.conllu");
 }
 
 // ---------- Session Export ----------
 function exportSession(){
-  const session = _buildSessionObject();
+  const session = {
+    version:    1,
+    savedAt:    new Date().toISOString(),
+    currentSent: state.currentSent,
+    docs: state.docs.map(d => ({ name: d.name, content: d.content || "" })),
+    custom:    JSON.parse(JSON.stringify(state.custom)),
+    goldPick:  JSON.parse(JSON.stringify(state.goldPick)),
+    confirmed: Array.from(state.confirmed),
+    labels:    JSON.parse(JSON.stringify(LABELS)),
+    ...getUndoState(),
+  };
   const ts = new Date().toISOString().slice(0, 19).replace(/[:T]/g, "-");
   downloadText(JSON.stringify(session, null, 2), `session_${ts}.json`);
-  const totalDocs = session.projects.reduce((s, p) => s + p.docs.length, 0);
-  _showSessionMeta(t('session.exported', { n: totalDocs, u: session.projects[session.activeProjectIdx].undo?.length || 0 }));
+  _showSessionMeta(t('session.exported', { n: session.docs.length, u: session.undo.length }));
 }
 
 // ---------- Session Import ----------
@@ -2700,46 +2000,6 @@ function importSession(jsonText){
   let data;
   try { data = JSON.parse(jsonText); }
   catch { alert(t('session.errJson')); return; }
-
-  // Labels wiederherstellen (vor buildDeprelOptionsCache)
-  if(data.labels && typeof data.labels === "object"){
-    LABELS = data.labels;
-    buildDeprelOptionsCache();
-  }
-
-  // ── v2: multi-project format ──────────────────────────────────────────────
-  if(data.version === 2 && Array.isArray(data.projects) && data.projects.length){
-    state.projects = data.projects.map(p => {
-      const docs = (p.docs || []).filter(d => typeof d.content === "string").map(d => {
-        const parsed = parseConllu(d.content);
-        return { key: `session::${d.name}`, name: d.name, content: d.content, sentences: parsed.sentences };
-      });
-      return {
-        name:        p.name || t('project.default'),
-        docs,
-        custom:      JSON.parse(JSON.stringify(p.custom    || {})),
-        goldPick:    JSON.parse(JSON.stringify(p.goldPick  || {})),
-        confirmed:   p.confirmed || [],
-        notes:       JSON.parse(JSON.stringify(p.notes     || {})),
-        currentSent: p.currentSent || 0,
-        maxSents:    Math.max(0, ...docs.map(d => d.sentences.length), 0),
-        hiddenCols:  p.hiddenCols  || [],
-        undoStack:   p.undo  || [],
-        redoStack:   p.redo  || [],
-      };
-    });
-    state.activeProjectIdx = Math.min(data.activeProjectIdx || 0, state.projects.length - 1);
-    _loadActiveProject();
-    renderProjectTabs();
-    renderFiles();
-    renderSentSelect();
-    renderSentence();
-    const totalDocs = state.projects.reduce((s, p) => s + p.docs.length, 0);
-    _showSessionMeta(t('session.loaded', { n: totalDocs, s: state.maxSents, u: data.projects[state.activeProjectIdx]?.undo?.length || 0 }));
-    return;
-  }
-
-  // ── v1: backward-compat single-project ───────────────────────────────────
   if(data.version !== 1 || !Array.isArray(data.docs)){
     alert(t('session.errFormat')); return;
   }
@@ -2747,35 +2007,34 @@ function importSession(jsonText){
     alert(t('session.errNoDocs')); return;
   }
 
-  const docs = [];
+  // Labels wiederherstellen (vor buildDeprelOptionsCache)
+  if(data.labels && typeof data.labels === "object"){
+    LABELS = data.labels;
+    buildDeprelOptionsCache();
+  }
+
+  // State zurücksetzen und neu befüllen
+  state.docs        = [];
+  state.custom      = data.custom   || {};
+  state.goldPick    = data.goldPick || {};
+  state.hiddenCols  = new Set();
+  state.confirmed   = new Set(data.confirmed || []);
+  state.currentSent = data.currentSent || 0;
+
   for(const d of data.docs){
     if(typeof d.content !== "string") continue;
     const parsed = parseConllu(d.content);
-    docs.push({ key: `session::${d.name}`, name: d.name, content: d.content, sentences: parsed.sentences });
+    state.docs.push({ key: `session::${d.name}`, name: d.name, content: d.content, sentences: parsed.sentences });
   }
-  const maxSents = Math.max(0, ...docs.map(d => d.sentences.length), 0);
-  const currentSent = Math.min(data.currentSent || 0, Math.max(0, maxSents - 1));
 
-  state.projects = [{
-    name:        `${t('project.default')} 1`,
-    docs,
-    custom:      JSON.parse(JSON.stringify(data.custom    || {})),
-    goldPick:    JSON.parse(JSON.stringify(data.goldPick  || {})),
-    confirmed:   data.confirmed || [],
-    notes:       JSON.parse(JSON.stringify(data.notes     || {})),
-    currentSent,
-    maxSents,
-    hiddenCols:  [],
-    undoStack:   data.undo || [],
-    redoStack:   data.redo || [],
-  }];
-  state.activeProjectIdx = 0;
-  _loadActiveProject();
-  renderProjectTabs();
+  recomputeMaxSents();
+  state.currentSent = Math.min(state.currentSent, Math.max(0, state.maxSents - 1));
+  loadUndoState({ undo: data.undo || [], redo: data.redo || [] });
+
   renderFiles();
   renderSentSelect();
   renderSentence();
-  _showSessionMeta(t('session.loaded', { n: docs.length, s: maxSents, u: data.undo?.length || 0 }));
+  _showSessionMeta(t('session.loaded', { n: state.docs.length, s: state.maxSents, u: data.undo?.length || 0 }));
 }
 
 function _showSessionMeta(msg){
@@ -2784,10 +2043,10 @@ function _showSessionMeta(msg){
   setTimeout(() => { sessionMeta.textContent = ""; }, 4000);
 }
 
-// ---------- Baumansicht Kernlogik (nutzt state.* direkt) ----------
-function _buildTreeText(){
+// ---------- Baumansicht als .txt (alle Sätze) ----------
+function exportTreesTxt(){
+  if(state.docs.length < 1) return;
   const parts = [];
-  const stripHeader = txt => txt.split("\n").slice(1).join("\n");
 
   for(let sentIdx = 0; sentIdx < state.maxSents; sentIdx++){
     const docMaps = state.docs.map(d => {
@@ -2804,6 +2063,9 @@ function _buildTreeText(){
     const goldMap  = buildGoldTokenMap(sentIdx, idList, docMaps);
     const sentText = getSentenceTextFallback(sentIdx);
 
+    // Hilfsfunktion: erste Zeile (📝 Satztext) abtrennen
+    const stripHeader = txt => txt.split("\n").slice(1).join("\n");
+
     let block = `${"=".repeat(60)}\n`;
     block += `📝 S${sentIdx + 1}: ${sentText}\n\n`;
     block += t('export.treeGold') + "\n";
@@ -2819,124 +2081,9 @@ function _buildTreeText(){
     }
     parts.push(block);
   }
-  return parts.join("\n");
+
+  downloadText(parts.join("\n"), "alle_baeume.txt");
 }
-
-// ---------- Baumansicht — aktives Projekt ----------
-function exportTreesTxt(){
-  if(state.docs.length < 1) return;
-  const name = state.projects.length > 1
-    ? `baeume_${state.projects[state.activeProjectIdx].name}.txt`
-    : "alle_baeume.txt";
-  downloadText(_buildTreeText(), name);
-}
-
-// ---------- Baumansicht — alle Projekte (je eine Datei) ----------
-function exportAllProjectsTrees(){
-  if(!state.projects.length) return;
-  _saveActiveProject();
-
-  const origDocs     = state.docs;
-  const origMaxSents = state.maxSents;
-  const origCustom   = state.custom;
-  const origGoldPick = state.goldPick;
-
-  for(const p of state.projects){
-    if(!p.docs.length) continue;
-    state.docs     = p.docs;
-    state.maxSents = p.maxSents;
-    state.custom   = p.custom;
-    state.goldPick = p.goldPick;
-
-    downloadText(_buildTreeText(), `baeume_${p.name}.txt`);
-  }
-
-  state.docs     = origDocs;
-  state.maxSents = origMaxSents;
-  state.custom   = origCustom;
-  state.goldPick = origGoldPick;
-}
-
-// ---------- LocalStorage Autosave ----------
-const AUTOSAVE_KEY = "conllu_autosave";
-
-function _buildSessionObject(){
-  // Snapshot active project before serialising
-  _saveActiveProject();
-  return {
-    version:          2,
-    savedAt:          new Date().toISOString(),
-    activeProjectIdx: state.activeProjectIdx,
-    projects: state.projects.map(p => ({
-      name:        p.name,
-      docs:        p.docs.map(d => ({ name: d.name, content: d.content || "" })),
-      custom:      JSON.parse(JSON.stringify(p.custom    || {})),
-      goldPick:    JSON.parse(JSON.stringify(p.goldPick  || {})),
-      confirmed:   p.confirmed instanceof Set ? Array.from(p.confirmed) : (p.confirmed || []),
-      notes:       JSON.parse(JSON.stringify(p.notes     || {})),
-      currentSent: p.currentSent || 0,
-      hiddenCols:  p.hiddenCols instanceof Set ? Array.from(p.hiddenCols) : (p.hiddenCols || []),
-      undo:        p.undoStack || [],
-      redo:        p.redoStack || [],
-    })),
-    labels: JSON.parse(JSON.stringify(LABELS)),
-  };
-}
-
-function _autoSave(){
-  if(!state.projects.some(p => p.docs.length > 0) && state.docs.length === 0) return;
-  try {
-    localStorage.setItem(AUTOSAVE_KEY, JSON.stringify(_buildSessionObject()));
-  } catch { /* storage full or unavailable */ }
-}
-
-setInterval(_autoSave, 30_000);
-
-function _tryAutoSaveRestore(){
-  let raw;
-  try { raw = localStorage.getItem(AUTOSAVE_KEY); } catch { return; }
-  if(!raw) return;
-
-  let data;
-  try { data = JSON.parse(raw); } catch { return; }
-  if(!data || data.version !== 1 || !Array.isArray(data.docs) || !data.docs.length) return;
-
-  // Format the saved date for display
-  let dateStr = data.savedAt || "";
-  try {
-    dateStr = new Date(dateStr).toLocaleString();
-  } catch { /* keep raw */ }
-
-  const banner = document.getElementById("autosaveBanner");
-  if(!banner) return;
-
-  banner.innerHTML = "";
-  const msg = document.createElement("span");
-  msg.textContent = t("autosave.found", { date: dateStr }) + " ";
-
-  const restoreBtn = document.createElement("button");
-  restoreBtn.textContent = t("autosave.restore");
-  restoreBtn.addEventListener("click", () => {
-    importSession(raw);
-    banner.style.display = "none";
-    try { localStorage.removeItem(AUTOSAVE_KEY); } catch {}
-  });
-
-  const dismissBtn = document.createElement("button");
-  dismissBtn.textContent = t("autosave.dismiss");
-  dismissBtn.addEventListener("click", () => {
-    banner.style.display = "none";
-    try { localStorage.removeItem(AUTOSAVE_KEY); } catch {}
-  });
-
-  banner.appendChild(msg);
-  banner.appendChild(restoreBtn);
-  banner.appendChild(dismissBtn);
-  banner.style.display = "";
-}
-
-// Scripts are loaded at end of body, so DOM is ready — call directly
-_tryAutoSaveRestore();
 
 </script> <script>
 // ---------- Keyboard navigation ----------
@@ -3079,24 +2226,6 @@ document.addEventListener("keydown", (e) => {
       break;
     }
 
-    // ── Projekt wechseln ─────────────────────────────────────────────────────
-    case "[":
-      e.preventDefault();
-      if(state.activeProjectIdx > 0) switchProject(state.activeProjectIdx - 1);
-      break;
-
-    case "]":
-      e.preventDefault();
-      if(state.activeProjectIdx < state.projects.length - 1)
-        switchProject(state.activeProjectIdx + 1);
-      break;
-
-    // ── Clipboard copy ───────────────────────────────────────────────────────
-    case "c":
-      e.preventDefault();
-      copySentenceConllu();
-      break;
-
     // ── Export ───────────────────────────────────────────────────────────────
     case "e":
       e.preventDefault();
@@ -3168,65 +2297,18 @@ Läuft vollständig lokal ohne Server — einfach \`index.html\` im Browser öff
 
 ---
 
-## Projekte
-
-Das Tool unterstützt mehrere **Projekte** gleichzeitig — jedes mit eigenen Dateien, Annotationen und Undo-Verlauf.
-
-### Projekt-Tab-Leiste
-
-Die Tab-Leiste erscheint direkt unterhalb des Headers. Jeder Tab hat:
-
-| Schaltfläche | Funktion |
-|---|---|
-| **◀ / ▶** | Projekt in der Reihenfolge verschieben |
-| **✎** | Projekt umbenennen |
-| **×** | Projekt löschen (nur wenn mehr als 1 Projekt vorhanden) |
-| **+** (rechts außen) | Neues leeres Projekt anlegen |
-
-Klick auf einen Tab → wechselt zum Projekt. Der Zustand (Dateien, Satzposition, Undo-Stack) wird beim Wechsel automatisch gespeichert und wiederhergestellt.
-
-### Tastaturkürzel für Projekte
-
-| Taste | Funktion |
-|---|---|
-| \`[\` | Vorheriges Projekt |
-| \`]\` | Nächstes Projekt |
-
-### Automatische Zuweisung beim Laden
-
-Werden Dateien mit **unterschiedlichen Satzzahlen** geladen, ordnet das Tool sie automatisch den passenden Projekten zu:
-
-1. **Eigenes Projekt** (aktiv) — wenn leer oder passende Satzzahl
-2. **Anderes bestehendes Projekt** — mit übereinstimmender Satzzahl
-3. **Anderes leeres Projekt** — als letzter Ausweg
-4. **Neues Projekt anlegen** — nur wenn kein passendes gefunden
-
-Wenn ein neues Projekt automatisch angelegt wurde, erscheint kurz eine Hinweismeldung.
-
----
-
 ## 1) Dateien laden
 
 | Aktion | Beschreibung |
 |--------|-------------|
-| **„Dateien hinzufügen"** | Öffnet den Datei-Dialog; \`.conllu\`, \`.conll\`, \`.txt\` und \`.json\` wählbar |
-| **Drag & Drop** | Dateien direkt auf die Seite ziehen |
+| **„Dateien hinzufügen"** | Öffnet den Datei-Dialog; mehrere Dateien gleichzeitig wählbar |
+| **Drag & Drop** | \`.conllu\`/\`.conll\`/\`.txt\`-Dateien direkt auf die Seite ziehen |
 | **Drag & Drop (Session)** | \`.json\`-Session-Datei auf die Seite ziehen → wird automatisch importiert |
 | **„Demo laden"** | Drei vorgefertigte Beispieldateien, die alle Vergleichsfälle abdecken |
+| **„Löschen"** | Einzelne Datei aus der Liste entfernen |
 | **„Reset"** | Alle Dateien und Annotationen zurücksetzen |
 
-Unterstützte Formate: \`.conllu\`, \`.conll\`, \`.txt\` (Daten) · \`.json\` (Session)
-
-### Datei-Aktionen pro Zeile
-
-Jede geladene Datei hat folgende Schaltflächen:
-
-| Schaltfläche | Funktion |
-|---|---|
-| **⬇** | Datei als CoNLL-U herunterladen (Original-Inhalt) |
-| **Projekt-Dropdown** | Datei in ein anderes Projekt verschieben; **＋ Neues Projekt …** legt ein neues an und verschiebt sofort |
-| **▲ / ▼** | Reihenfolge innerhalb des Projekts tauschen |
-| **Löschen** | Datei aus dem Projekt entfernen |
+Unterstützte Formate: \`.conllu\`, \`.conll\`, \`.txt\`
 
 ### Textkonsistenzwarnung
 
@@ -3280,14 +2362,6 @@ Klick auf einen Punkt springt direkt zu diesem Satz.
 Über **„✓ Bestätigen"** (oder \`Space\`) wird der aktuelle Satz als abgeschlossen markiert.
 Bestätigte Sätze werden gold eingefärbt (Dropdown, Satz-Map, Satztext-Rahmen, Button).
 Erneutes Drücken hebt die Bestätigung wieder auf.
-
-### Notiz pro Satz
-
-Unterhalb des Satztextes gibt es ein **Notizfeld** — freier Text, der pro Satz gespeichert und mit der Session exportiert wird.
-
-### CoNLL-U kopieren
-
-Der **„Copy CoNLL-U"-Button** (oder Taste \`c\`) kopiert die Gold-Annotation des aktuellen Satzes als CoNLL-U in die Zwischenablage.
 
 ---
 
@@ -3363,27 +2437,23 @@ In den Datei-Spalten werden HEAD/DEPREL und UPOS·XPOS jeweils einzeln hervorgeh
 
 ## 5) Export
 
-### Einzelne Datei
-
-Der **⬇-Button** neben jeder Datei lädt den Original-Inhalt der Datei als \`.conllu\` herunter.
-
-### Alle Sätze (Gold-Annotation)
+### CoNLL-U & Baumansicht
 
 | Button | Inhalt |
 |--------|--------|
 | **Gold CoNLL-U herunterladen** | Alle Sätze mit aktuellen Gold-Annotationen (HEAD, DEPREL, UPOS, XPOS); LEMMA/FEATS/DEPS/MISC aus Quelldatei |
 | **Baumansicht herunterladen** | Alle Sätze als Text-Bäume mit Gold-Baum und Diff-Bäumen pro Datei |
 
-Tastaturkürzel: \`e\` → CoNLL-U · \`E\` → Baumansicht · \`c\` → aktuellen Satz in Zwischenablage
+Tastaturkürzel: \`e\` → CoNLL-U · \`E\` → Baumansicht
 
 ### Session Export / Import
 
-Der **Session-Mechanismus** sichert den vollständigen Arbeitsstand aller Projekte:
+Der **Session-Mechanismus** sichert den vollständigen Arbeitsstand:
 
-- Alle Projekte mit Namen, Dateien und Annotationen
+- Alle geladenen CoNLL-U-Dateien (Inhalt)
 - Custom-Annotationen und Gold-Auswahl
-- Bestätigte Sätze und Notizen
-- Vollständiger Undo-/Redo-Verlauf pro Projekt
+- Bestätigte Sätze
+- Vollständiger Undo-/Redo-Verlauf
 - Labelkonfiguration (\`labels.js\`)
 
 | Aktion | Beschreibung |
@@ -3392,24 +2462,20 @@ Der **Session-Mechanismus** sichert den vollständigen Arbeitsstand aller Projek
 | **📂 Session laden** | Importiert eine gespeicherte Session-Datei |
 | **Drag & Drop** | \`.json\`-Datei auf die Seite ziehen → wird automatisch als Session erkannt |
 
-Das Session-Format ist versioniert (\`version: 2\`) und als JSON lesbar. Ältere Sessions (\`version: 1\`) werden automatisch als einzelnes Projekt importiert.
-
-### Autosave
-
-Der Arbeitsstand wird alle **30 Sekunden** automatisch im Browser-LocalStorage gesichert. Beim nächsten Öffnen der Seite erscheint ein Banner mit der Option, den Stand wiederherzustellen oder zu verwerfen.
+Das Session-Format ist versioniert (\`version: 1\`) und als JSON lesbar.
 
 ---
 
 ## 6) Undo / Redo
 
-Alle Annotationsänderungen (Datei-Auswahl, Custom-Popup, Bestätigen, Teilbaum-Übernahme) sind rückgängig machbar. Jedes Projekt hat seinen eigenen Undo-Stack.
+Alle Annotationsänderungen (Datei-Auswahl, Custom-Popup, Bestätigen, Teilbaum-Übernahme) sind rückgängig machbar.
 
 | Aktion | Beschreibung |
 |--------|-------------|
 | **↩ Undo** / \`Ctrl+Z\` | Letzte Änderung rückgängig |
 | **↪ Redo** / \`Ctrl+Y\` | Rückgängige Änderung wiederherstellen |
 
-Der Verlauf wird in der Session mitgespeichert (bis zu 80 Schritte pro Projekt).
+Der Verlauf wird in der Session mitgespeichert (bis zu 80 Schritte).
 
 ---
 
@@ -3420,7 +2486,6 @@ Der Verlauf wird in der Session mitgespeichert (bis zu 80 Schritte pro Projekt).
 | \`←\` / \`→\` | Vorheriger / nächster Satz |
 | \`Ctrl+←\` / \`Ctrl+→\` | Erster / letzter Satz |
 | \`n\` / \`N\` | Nächster / vorheriger Satz mit Diffs |
-| \`[\` / \`]\` | Vorheriges / nächstes Projekt |
 | \`↑\` / \`↓\` | Tabellenzeile navigieren |
 | \`Enter\` | Gold-Popup für fokussierte Zeile öffnen |
 | \`Space\` | Satz bestätigen / Bestätigung aufheben |
@@ -3429,7 +2494,6 @@ Der Verlauf wird in der Session mitgespeichert (bis zu 80 Schritte pro Projekt).
 | \`Ctrl+Z\` | Undo |
 | \`Ctrl+Y\` | Redo |
 | \`Del\` / \`Backspace\` | Custom des aktuellen Satzes löschen |
-| \`c\` | Aktuellen Satz als CoNLL-U in Zwischenablage kopieren |
 | \`e\` | Gold CoNLL-U exportieren |
 | \`E\` (Shift+e) | Baumansicht exportieren |
 | \`?\` | Hilfe öffnen / schließen |
@@ -3535,65 +2599,18 @@ Runs entirely locally without a server — simply open \`index.html\` in your br
 
 ---
 
-## Projects
-
-The tool supports multiple **projects** simultaneously — each with its own files, annotations, and undo history.
-
-### Project Tab Bar
-
-The tab bar appears directly below the header. Each tab has:
-
-| Button | Function |
-|---|---|
-| **◀ / ▶** | Reorder projects |
-| **✎** | Rename project |
-| **×** | Delete project (only when more than one project exists) |
-| **+** (far right) | Create a new empty project |
-
-Click a tab to switch to that project. State (files, sentence position, undo stack) is automatically saved and restored on switch.
-
-### Keyboard Shortcuts for Projects
-
-| Key | Function |
-|---|---|
-| \`[\` | Previous project |
-| \`]\` | Next project |
-
-### Automatic Assignment on Load
-
-When files with **different sentence counts** are loaded, the tool assigns them to projects automatically:
-
-1. **Own project** (active) — if empty or matching sentence count
-2. **Other existing project** — with matching sentence count
-3. **Other empty project** — as a last resort
-4. **Create new project** — only if no match found
-
-A brief notification appears when a new project is created automatically.
-
----
-
 ## 1) Load Files
 
 | Action | Description |
 |--------|-------------|
-| **"Add files"** | Opens the file dialog; \`.conllu\`, \`.conll\`, \`.txt\` and \`.json\` files selectable |
-| **Drag & Drop** | Drop files directly onto the page |
+| **"Add files"** | Opens the file dialog; multiple files can be selected at once |
+| **Drag & Drop** | Drop \`.conllu\`/\`.conll\`/\`.txt\` files directly onto the page |
 | **Drag & Drop (Session)** | Drop a \`.json\` session file onto the page → imported automatically |
 | **"Load demo"** | Three pre-built example files covering all comparison cases |
+| **"Remove"** | Remove an individual file from the list |
 | **"Reset"** | Reset all files and annotations |
 
-Supported formats: \`.conllu\`, \`.conll\`, \`.txt\` (data) · \`.json\` (session)
-
-### Per-File Actions
-
-Each loaded file has the following buttons:
-
-| Button | Function |
-|---|---|
-| **⬇** | Download file as CoNLL-U (original content) |
-| **Project dropdown** | Move file to another project; **＋ New project …** creates one and moves the file immediately |
-| **▲ / ▼** | Change order within the project |
-| **Remove** | Remove file from the project |
+Supported formats: \`.conllu\`, \`.conll\`, \`.txt\`
 
 ### Text Consistency Warning
 
@@ -3647,14 +2664,6 @@ Click a dot to jump directly to that sentence.
 Use **"✓ Confirm"** (or \`Space\`) to mark the current sentence as finished.
 Confirmed sentences are coloured gold (dropdown, sentence map, sentence text border, button).
 Pressing again removes the confirmation.
-
-### Note per Sentence
-
-Below the sentence text there is a **note field** — free text, saved per sentence and exported with the session.
-
-### Copy CoNLL-U
-
-The **"Copy CoNLL-U" button** (or key \`c\`) copies the Gold annotation of the current sentence as CoNLL-U to the clipboard.
 
 ---
 
@@ -3730,27 +2739,23 @@ Use the **column toggle bar** to show or hide individual file columns.
 
 ## 5) Export
 
-### Individual File
-
-The **⬇ button** next to each file downloads the original file content as \`.conllu\`.
-
-### All Sentences (Gold Annotation)
+### CoNLL-U & Tree View
 
 | Button | Content |
 |--------|---------|
 | **Download Gold CoNLL-U** | All sentences with current Gold annotations (HEAD, DEPREL, UPOS, XPOS); LEMMA/FEATS/DEPS/MISC from source file |
 | **Download tree view** | All sentences as plain-text trees with Gold tree and diff trees per file |
 
-Keyboard shortcuts: \`e\` → CoNLL-U · \`E\` → tree view · \`c\` → copy current sentence to clipboard
+Keyboard shortcuts: \`e\` → CoNLL-U · \`E\` → tree view
 
 ### Session Export / Import
 
-The **session mechanism** saves the complete working state of all projects:
+The **session mechanism** saves the complete working state:
 
-- All projects with names, files, and annotations
+- All loaded CoNLL-U files (content)
 - Custom annotations and Gold selection
-- Confirmed sentences and notes
-- Full undo/redo history per project
+- Confirmed sentences
+- Full undo/redo history
 - Label configuration (\`labels.js\`)
 
 | Action | Description |
@@ -3759,24 +2764,20 @@ The **session mechanism** saves the complete working state of all projects:
 | **📂 Load session** | Imports a saved session file |
 | **Drag & Drop** | Drop a \`.json\` file onto the page → automatically recognised as a session |
 
-The session format is versioned (\`version: 2\`) and human-readable JSON. Older sessions (\`version: 1\`) are automatically imported as a single project.
-
-### Autosave
-
-The working state is automatically saved to the browser's LocalStorage every **30 seconds**. On the next page load, a banner offers the option to restore or dismiss the saved state.
+The session format is versioned (\`version: 1\`) and human-readable JSON.
 
 ---
 
 ## 6) Undo / Redo
 
-All annotation changes (file selection, custom popup, confirm, subtree adoption) can be undone. Each project has its own undo stack.
+All annotation changes (file selection, custom popup, confirm, subtree adoption) can be undone.
 
 | Action | Description |
 |--------|-------------|
 | **↩ Undo** / \`Ctrl+Z\` | Undo last change |
 | **↪ Redo** / \`Ctrl+Y\` | Redo undone change |
 
-The history is saved with the session (up to 80 steps per project).
+The history is saved with the session (up to 80 steps).
 
 ---
 
@@ -3787,7 +2788,6 @@ The history is saved with the session (up to 80 steps per project).
 | \`←\` / \`→\` | Previous / next sentence |
 | \`Ctrl+←\` / \`Ctrl+→\` | First / last sentence |
 | \`n\` / \`N\` | Next / previous sentence with diffs |
-| \`[\` / \`]\` | Previous / next project |
 | \`↑\` / \`↓\` | Navigate table rows |
 | \`Enter\` | Open Gold popup for focused row |
 | \`Space\` | Confirm / unconfirm sentence |
@@ -3796,7 +2796,6 @@ The history is saved with the session (up to 80 steps per project).
 | \`Ctrl+Z\` | Undo |
 | \`Ctrl+Y\` | Redo |
 | \`Del\` / \`Backspace\` | Delete custom for current sentence |
-| \`c\` | Copy current sentence as CoNLL-U to clipboard |
 | \`e\` | Export Gold CoNLL-U |
 | \`E\` (Shift+e) | Export tree view |
 | \`?\` | Open / close help |

@@ -179,7 +179,20 @@ function hasSubtreeDiff(rootId, goldMap, otherMap){
   return false;
 }
 
-function buildTreeSection(title, sub, text, onAdoptSubtree, subtreeDiffCheck){
+/**
+ * Build a tree section DOM element.
+ * @param {string} title
+ * @param {string|null} sub
+ * @param {string} text  — plain-text tree output from _buildTree
+ * @param {object} [opts]
+ *   opts.onAdoptSubtree(rootId)  — called when "→ Gold" subtree button clicked
+ *   opts.subtreeDiffCheck(rootId) — returns true if subtree has diffs (button shown)
+ *   opts.onAdoptToken(tokId)     — called when single-token "→" button clicked
+ *   opts.tokenList               — [{id, form}] for clickable sentence header
+ */
+function buildTreeSection(title, sub, text, opts = {}){
+  const { onAdoptSubtree, subtreeDiffCheck, onAdoptToken, tokenList } = opts;
+
   const section = document.createElement("div");
   section.className = "treeSection";
 
@@ -193,24 +206,64 @@ function buildTreeSection(title, sub, text, onAdoptSubtree, subtreeDiffCheck){
   `;
   section.appendChild(head);
 
+  // ── Clickable token-chip header ────────────────────────────────────────────
+  if(tokenList && tokenList.length > 0){
+    const chipRow = document.createElement("div");
+    chipRow.className = "treeTokenHeader";
+
+    // Extract sentence label (S1, S2 …) from the 📝 line in the tree text
+    const headerLine = text.split("\n").find(l => l.startsWith("📝"));
+    const sentLabel  = headerLine?.match(/^📝\s*(S\d+):/)?.[1];
+    if(sentLabel){
+      const lbl = document.createElement("span");
+      lbl.className = "treeTokenSentLabel";
+      lbl.textContent = sentLabel + ":";
+      chipRow.appendChild(lbl);
+    }
+
+    for(const tok of tokenList){
+      const chip = document.createElement("span");
+      chip.className = "treeTokenChip";
+      chip.textContent = `${tok.id}:${tok.form}`;
+      chip.title = t('tree.jumpTitle', { id: tok.id });
+      chip.addEventListener("click", () => scrollToToken(tok.id));
+      chipRow.appendChild(chip);
+    }
+    section.appendChild(chipRow);
+  }
+
   const pre = document.createElement("pre");
   pre.className = "treePre";
 
   const lines = text.split("\n");
   for(const line of lines){
-    const rootMatch = onAdoptSubtree && line.match(/^🌱\s*(\d+):/);
+    // The "📝 S…" header line is shown as the chip row above — skip it here.
+    // Only render it as a fallback when no tokenList / chip row was built.
+    if(line.startsWith("📝")){
+      if(!tokenList || tokenList.length === 0){
+        const span = document.createElement("span");
+        span.className = "treeLine treeLineHeader";
+        span.textContent = line + "\n";
+        pre.appendChild(span);
+      }
+      continue;
+    }
+
+    const rootMatch = line.match(/^🌱\s*(\d+):/);
     const tokMatch  = line.match(/→\s*(\d+):/);
 
     if(rootMatch){
       const rootId = parseInt(rootMatch[1], 10);
       const wrapper = document.createElement("span");
-      wrapper.className = "treeLine treeLineRoot";
+      wrapper.className = "treeLine treeLineRoot treeLineClickable";
+      wrapper.title = t('tree.rootJumpTitle', { id: rootId });
 
       const txt = document.createElement("span");
       txt.textContent = line;
       wrapper.appendChild(txt);
 
-      if(!subtreeDiffCheck || subtreeDiffCheck(rootId)){
+      // "→ Gold" subtree button
+      if(onAdoptSubtree && (!subtreeDiffCheck || subtreeDiffCheck(rootId))){
         const btn = document.createElement("button");
         btn.textContent = t('tree.toGold');
         btn.className = "treeSubtreeBtn";
@@ -219,26 +272,49 @@ function buildTreeSection(title, sub, text, onAdoptSubtree, subtreeDiffCheck){
         wrapper.appendChild(btn);
       }
 
+      wrapper.addEventListener("click", (e) => {
+        if(e.target.closest("button")) return;
+        scrollToToken(rootId);
+      });
       pre.appendChild(wrapper);
     } else if(tokMatch){
       const tokId = parseInt(tokMatch[1], 10);
-      const span = document.createElement("span");
       const hasOk   = line.includes("✅");
       const hasWarn = line.includes("⚠");
       const hasG    = line.includes("🅶");
       const hasF    = line.includes("🅵");
       let colorClass = "";
-      // ✅ edge but UPOS/XPOS differs → show as warning
       if     (hasOk && !hasG && !hasF)  colorClass = "treeLineOk";
       else if(hasOk && (hasG || hasF))  colorClass = "treeLineWarn";
       else if(hasWarn)                   colorClass = "treeLineWarn";
       else if(hasG && !hasF)             colorClass = "treeLineGold";
       else if(hasF && !hasG)             colorClass = "treeLineFileOnly";
-      span.className = `treeLine treeLineClickable${colorClass ? " "+colorClass : ""}`;
-      span.textContent = line + "\n";
-      span.title = t('tree.jumpTitle', { id: tokId });
-      span.addEventListener("click", () => scrollToToken(tokId));
-      pre.appendChild(span);
+
+      const hasDiff = colorClass !== "treeLineOk";
+
+      const wrapper = document.createElement("span");
+      wrapper.className = `treeLine treeLineClickable${colorClass ? " "+colorClass : ""}`;
+      wrapper.title = t('tree.jumpTitle', { id: tokId });
+
+      const txt = document.createElement("span");
+      txt.textContent = line + "\n";
+      wrapper.appendChild(txt);
+
+      // Single-token "→" adoption button (only on diff lines, only for file diff trees)
+      if(hasDiff && onAdoptToken){
+        const btn = document.createElement("button");
+        btn.textContent = t('tree.adoptToken');
+        btn.className = "treeSingleBtn";
+        btn.title = t('tree.adoptTokenTitle', { id: tokId });
+        btn.addEventListener("click", (e) => { e.stopPropagation(); onAdoptToken(tokId); });
+        wrapper.appendChild(btn);
+      }
+
+      wrapper.addEventListener("click", (e) => {
+        if(e.target.closest("button")) return;
+        scrollToToken(tokId);
+      });
+      pre.appendChild(wrapper);
     } else {
       const span = document.createElement("span");
       span.className = "treeLine";
@@ -264,32 +340,55 @@ function renderPreview(){
   const wrap = document.createElement("div");
   wrap.className = "treeBlock treeBlockStacked";
 
-  const goldSection = buildTreeSection("⭐ GOLD", null, renderTreePlain(sentIndex, goldMap, sentenceText));
+  const tokenList = Array.from(goldMap.values()).map(tk => ({ id: tk.id, form: tk.form }));
+
+  const goldSection = buildTreeSection("⭐ GOLD", null, renderTreePlain(sentIndex, goldMap, sentenceText), {
+    tokenList,
+  });
   wrap.appendChild(goldSection);
 
   for(let i=0; i<state.docs.length; i++){
-    const name   = state.docs[i]?.name ?? t('tree.fileDefault', { n: i+1 });
+    const name     = state.docs[i]?.name ?? t('tree.fileDefault', { n: i+1 });
     const otherMap = docMaps[i];
-    const diff   = renderTreeDiff(sentIndex, goldMap, otherMap, sentenceText);
-    const docIdx = i;
-    const section = buildTreeSection(name, t('tree.vsGold'), diff, (rootId) => {
-      const subIds = new Set([
-        ...getSubtreeIds(rootId, goldMap),
-        ...getSubtreeIds(rootId, otherMap),
-      ]);
-      for(const id of subIds){
-        const e = state.custom[sentIndex]?.[id];
+    const diff     = renderTreeDiff(sentIndex, goldMap, otherMap, sentenceText);
+    const docIdx   = i;
+
+    const section = buildTreeSection(name, t('tree.vsGold'), diff, {
+      tokenList,
+      onAdoptSubtree: (rootId) => {
+        pushUndo();
+        const subIds = new Set([
+          ...getSubtreeIds(rootId, goldMap),
+          ...getSubtreeIds(rootId, otherMap),
+        ]);
+        for(const id of subIds){
+          const e = state.custom[sentIndex]?.[id];
+          if(e){
+            e.head   = null;
+            e.deprel = null;
+            if(!getCustomEntry(sentIndex, id)) delete state.custom[sentIndex][id];
+          }
+          setDocChoice(sentIndex, id, docIdx);
+        }
+        if(state.custom[sentIndex] && !Object.keys(state.custom[sentIndex]).length)
+          delete state.custom[sentIndex];
+        renderSentence();
+      },
+      subtreeDiffCheck: (rootId) => hasSubtreeDiff(rootId, goldMap, otherMap),
+      onAdoptToken: (tokId) => {
+        pushUndo();
+        const e = state.custom[sentIndex]?.[tokId];
         if(e){
           e.head   = null;
           e.deprel = null;
-          if(!getCustomEntry(sentIndex, id)) delete state.custom[sentIndex][id];
+          if(!getCustomEntry(sentIndex, tokId)) delete state.custom[sentIndex][tokId];
+          if(state.custom[sentIndex] && !Object.keys(state.custom[sentIndex]).length)
+            delete state.custom[sentIndex];
         }
-        setDocChoice(sentIndex, id, docIdx);
-      }
-      if(state.custom[sentIndex] && !Object.keys(state.custom[sentIndex]).length)
-        delete state.custom[sentIndex];
-      renderSentence();
-    }, (rootId) => hasSubtreeDiff(rootId, goldMap, otherMap));
+        setDocChoice(sentIndex, tokId, docIdx);
+        renderSentence();
+      },
+    });
     wrap.appendChild(section);
   }
 

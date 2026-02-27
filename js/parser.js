@@ -151,20 +151,42 @@ function moveDoc(idx, dir){
   renderSentence();
 }
 
-function resetAll(){
+/** Reset only the current project (docs, annotations, undo). Other projects untouched. */
+function resetProject(){
   if(!confirm(t('files.resetConfirm'))) return;
-  // Reset to a single empty project
-  state.docs = [];
-  state.custom = {};
-  state.goldPick = {};
-  state.notes = {};
-  state.hiddenCols = new Set();
+  state.docs        = [];
+  state.custom      = {};
+  state.goldPick    = {};
+  state.notes       = {};
+  state.flags       = {};
+  state.hiddenCols  = new Set();
+  state.confirmed   = new Set();
   state.currentSent = 0;
-  state.maxSents = 0;
-  state.projects = [_emptyProject(`${t('project.default')} 1`)];
+  state.maxSents    = 0;
+  loadUndoState({ undo: [], redo: [] });
+  fileInput.value   = "";
+  _saveActiveProject();
+  renderFiles();
+  renderSentSelect();
+  renderSentence();
+}
+
+/** Reset ALL projects — full application reset. */
+function resetAll(){
+  if(!confirm(t('files.globalResetConfirm'))) return;
+  state.docs        = [];
+  state.custom      = {};
+  state.goldPick    = {};
+  state.notes       = {};
+  state.flags       = {};
+  state.hiddenCols  = new Set();
+  state.confirmed   = new Set();
+  state.currentSent = 0;
+  state.maxSents    = 0;
+  state.projects    = [_emptyProject(`${t('project.default')} 1`)];
   state.activeProjectIdx = 0;
   loadUndoState({ undo: [], redo: [] });
-  fileInput.value = "";
+  fileInput.value   = "";
   renderProjectTabs();
   renderFiles();
   renderSentSelect();
