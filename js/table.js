@@ -164,8 +164,10 @@ function renderCompareTable(){
         const v          = allVals[i];
         const clsDisabled = customExists ? "disabledPick" : "";
         const clsPicked   = (!customExists && i === getDocChoice(sentIndex, id)) ? "picked" : "";
+        const editBtn = anyUnlocked ? `<button class="fileEditBtn" data-doc-idx="${i}" title="${escapeHtml(t('popup.editTitle'))}">✎</button>` : '';
         if(v === null){
-          html += `<td data-col="doc${i}" data-doc-idx="${i}" class="pickable ${clsDisabled} ${clsPicked}">—</td>`;
+          html += `<td data-col="doc${i}" data-doc-idx="${i}" class="pickable ${clsDisabled} ${clsPicked}">` +
+            `<div class="docCellHead">—${editBtn}</div></td>`;
         } else {
           const hdOk      = goldTok && v.hd === goldVal;
           const labelsOk  = LABEL_COLS.every(col => !goldTok || v[col.key] === (goldTok[col.key] ?? "_"));
@@ -176,7 +178,7 @@ function renderCompareTable(){
             return `<span class="${ok ? '' : 'fDiff'}">${escapeHtml(v[col.key] ?? "_")}</span>`;
           }).join('·');
           html += `<td data-col="doc${i}" data-doc-idx="${i}" class="pickable ${clsCmp} ${clsDisabled} ${clsPicked}">` +
-            `<div class="${hdOk ? '' : 'fDiff'}">${escapeHtml(v.hd)}</div>` +
+            `<div class="docCellHead ${hdOk ? '' : 'fDiff'}">${escapeHtml(v.hd)}${editBtn}</div>` +
             `<div class="posLine">${labelSpans}</div></td>`;
         }
       }
@@ -187,6 +189,7 @@ function renderCompareTable(){
 
   html += "</tbody>";
   cmpTable.innerHTML = html;
+  cmpTable.classList.toggle('tableUnlocked', anyUnlocked);
 
   // Set label-col select values after render (can't use 'selected' in innerHTML efficiently)
   for(const tr of cmpTable.querySelectorAll("tr[data-id]")){
@@ -212,7 +215,7 @@ let _popup      = null;
 let _popupTokId = null;
 
 // Called by i18n.js setLang() to force popup recreation with new language strings.
-function _resetPopup(){ _popup?.remove(); _popup = null; }
+function _resetPopup(){ _popup?.remove(); _popup = null; _resetFilePopup?.(); }
 // Cached token list and doc maps from the last renderCompareTable() call.
 let _lastIdList  = [];
 let _lastDocMaps = [];
@@ -447,20 +450,22 @@ function _openPopup(tokId, cellEl){
 }
 
 // Position the popup below (or above if clipped) the triggering table cell.
-function _positionPopup(cellEl){
-  if(!_popup) return;
-  _popup.classList.add("active");
+// Pass an optional popupEl to reuse for the file popup.
+function _positionPopup(cellEl, popupEl){
+  const p = popupEl || _popup;
+  if(!p) return;
+  p.classList.add("active");
   const rect = cellEl.getBoundingClientRect();
-  const pw = _popup.offsetWidth  || 240;
-  const ph = _popup.offsetHeight || 220;
+  const pw = p.offsetWidth  || 240;
+  const ph = p.offsetHeight || 220;
   let top  = rect.bottom + 4;
   let left = rect.left;
   if(top  + ph > window.innerHeight - 8) top  = rect.top - ph - 4;
   if(left + pw > window.innerWidth  - 8) left = window.innerWidth - pw - 8;
   if(left < 8) left = 8;
   if(top  < 8) top  = 8;
-  _popup.style.top  = `${top}px`;
-  _popup.style.left = `${left}px`;
+  p.style.top  = `${top}px`;
+  p.style.left = `${left}px`;
 }
 
 // Click on flag button → toggle flag for that token row.
@@ -542,4 +547,145 @@ cmpTable.addEventListener("keydown", (e) => {
     e.stopPropagation();
     el.blur();
   }
+});
+
+// ── Per-file cell popup (unlocked mode) ───────────────────────────────────────
+// Allows editing HEAD, DEPREL, UPOS, XPOS etc. of a specific file's token directly.
+
+let _filePopup      = null;
+let _filePopupDocIdx = null;
+let _filePopupTokId  = null;
+
+/** Force recreation of the file popup (called on tagset/project change). */
+function _resetFilePopup(){ _filePopup?.remove(); _filePopup = null; }
+
+function _ensureFilePopup(){
+  if(_filePopup) return _filePopup;
+  _filePopup = document.createElement("div");
+  _filePopup.className = "goldPopup";
+
+  let html = `<div class="gpTitle">Token <b id="fpNum"></b>: <span id="fpForm"></span>` +
+    ` <span id="fpFileName" style="color:var(--muted);font-size:11px"></span></div>`;
+  html += `<div class="gpRow"><label>${t('popup.head')}</label><select id="fpHead"></select></div>`;
+  html += `<div class="gpRow"><label>${t('popup.deprel')}</label><select id="fpDeprel">${DEPREL_OPTIONS_HTML}</select></div>`;
+  for(const col of LABEL_COLS){
+    const fieldEl = col.optionsHtml
+      ? `<select id="fpCol_${escapeHtml(col.key)}">${col.optionsHtml}</select>`
+      : `<input id="fpCol_${escapeHtml(col.key)}" type="text" class="gpTextInput" placeholder="${escapeHtml(col.name)}">`;
+    html += `<div class="gpRow"><label>${escapeHtml(col.name)}</label>${fieldEl}</div>`;
+  }
+  html += `<div class="gpHint">${t('popup.hint')}</div>`;
+  _filePopup.innerHTML = html;
+  document.body.appendChild(_filePopup);
+
+  // Write changed field value directly to the file's token data.
+  const _onFileChange = (e) => {
+    if(_filePopupDocIdx === null || _filePopupTokId === null) return;
+    const si  = state.currentSent;
+    const s   = state.docs[_filePopupDocIdx]?.sentences[si];
+    if(!s) return;
+    const tok = s.tokens.find(t => t.id === _filePopupTokId);
+    if(!tok) return;
+    const eid = e.target.id;
+    if(eid === 'fpHead'){
+      const raw = e.target.value.trim();
+      tok.head = raw === "" ? null : parseInt(raw, 10);
+    } else if(eid === 'fpDeprel'){
+      tok.deprel = e.target.value || '_';
+    } else {
+      for(const col of LABEL_COLS){
+        if(eid === `fpCol_${col.key}`){ tok[col.key] = e.target.value || '_'; break; }
+      }
+    }
+    renderSentence();
+  };
+
+  document.getElementById('fpHead')?.addEventListener('change', _onFileChange);
+  document.getElementById('fpDeprel')?.addEventListener('change', _onFileChange);
+  for(const col of LABEL_COLS){
+    const el = document.getElementById(`fpCol_${col.key}`);
+    el?.addEventListener(el.tagName === 'SELECT' ? 'change' : 'input', _onFileChange);
+  }
+
+  // Close on outside click
+  document.addEventListener('mousedown', (e) => {
+    if(!_filePopup?.classList.contains('active')) return;
+    if(_filePopup.contains(e.target)) return;
+    if(e.target.closest?.('.fileEditBtn')) return;
+    _closeFilePopup();
+  });
+
+  // Keyboard: Escape / Enter close; Tab traps focus inside popup
+  document.addEventListener('keydown', (e) => {
+    if(!_filePopup?.classList.contains('active')) return;
+    if(e.key === 'Escape'){ e.stopPropagation(); _closeFilePopup(); return; }
+    if(e.key === 'Enter'){ e.preventDefault(); e.stopPropagation(); _closeFilePopup(); return; }
+    if(e.key === 'Tab'){
+      const focusable = Array.from(_filePopup.querySelectorAll('select, input, button'));
+      if(!focusable.length) return;
+      const idx = focusable.indexOf(document.activeElement);
+      e.preventDefault();
+      focusable[e.shiftKey ? (idx <= 0 ? focusable.length-1 : idx-1) : (idx+1) % focusable.length].focus();
+    }
+  }, true);
+
+  return _filePopup;
+}
+
+function _closeFilePopup(){
+  _filePopup?.classList.remove('active');
+  _filePopupDocIdx = null;
+  _filePopupTokId  = null;
+}
+
+function _openFilePopup(docIdx, tokId, cellEl){
+  pushUndo();
+  _filePopupDocIdx = docIdx;
+  _filePopupTokId  = tokId;
+  const popup = _ensureFilePopup();
+
+  const si  = state.currentSent;
+  const s   = state.docs[docIdx]?.sentences[si];
+  const tok = s?.tokens.find(t => t.id === tokId);
+
+  document.getElementById('fpNum').textContent      = tokId;
+  document.getElementById('fpForm').textContent     = tok?.form ?? '?';
+  document.getElementById('fpFileName').textContent = state.docs[docIdx]?.name ?? `D${docIdx+1}`;
+
+  // Build HEAD dropdown from current sentence tokens
+  const headSel = document.getElementById('fpHead');
+  headSel.innerHTML = `<option value="">${t('popup.unset')}</option><option value="0">0 — ${t('popup.root')}</option>`;
+  for(const id of _lastIdList){
+    let f = '?';
+    for(const m of _lastDocMaps){ const t2 = m.get(id); if(t2){ f = t2.form; break; } }
+    const opt = document.createElement('option');
+    opt.value = String(id); opt.textContent = `${id}: ${f}`;
+    headSel.appendChild(opt);
+  }
+  headSel.value = tok?.head != null ? String(tok.head) : '';
+
+  _setSelectOrInput('fpDeprel', tok?.deprel ?? '');
+  for(const col of LABEL_COLS){
+    const cv = tok?.[col.key];
+    _setSelectOrInput(`fpCol_${col.key}`, (cv == null || cv === '_') ? '' : cv);
+  }
+
+  _positionPopup(cellEl, popup);
+  setTimeout(() => document.getElementById('fpHead')?.focus(), 0);
+}
+
+// Click on ✎ button inside a per-file cell → open file-edit popup.
+cmpTable.addEventListener('click', (e) => {
+  const btn = e.target.closest?.('.fileEditBtn');
+  if(!btn) return;
+  const td = btn.closest('td[data-doc-idx]');
+  if(!td) return;
+  const tr = td.closest('tr[data-id]');
+  if(!tr) return;
+  const tokId  = parseInt(tr.dataset.id, 10);
+  const docIdx = parseInt(btn.dataset.docIdx, 10);
+  if(_filePopupDocIdx === docIdx && _filePopupTokId === tokId && _filePopup?.classList.contains('active')){
+    _closeFilePopup(); return;
+  }
+  _openFilePopup(docIdx, tokId, btn);
 });

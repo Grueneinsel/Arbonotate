@@ -15,7 +15,8 @@ window.LANG_DE = {
   'files.drop':         'Dateien hier ablegen oder Schaltfläche nutzen · .conllu / .conll / .txt',
   'files.dropOverlay':  'Dateien hier ablegen',
   'help.btnTitle':      'Hilfe / README anzeigen',
-  'files.demo':         'Demo laden (3 Beispieldateien)',
+  'files.demo':    'Demo laden',
+  'files.demoAll': 'Alle Projekte laden',
   'files.delete':        'Löschen',
   'files.download':      'CoNLL-U herunterladen',
   'files.moveToProject':    'In Projekt verschieben …',
@@ -225,4 +226,10 @@ window.LANG_DE = {
   'sent.addSentPrompt':  'Satztext (optional):',
   'sent.delSentBtn':     '🗑 Satz löschen',
   'sent.delSentConfirm': 'Aktuellen Satz wirklich löschen?',
+
+  // Dev mode
+  'devMode.label':    '🔄 Dev-Modus: Auto-Reload bei Neubundle',
+  'devMode.on':       'aktiv',
+  'devMode.off':      'inaktiv',
+  'devMode.reloaded': 'Neu geladen um',
 };

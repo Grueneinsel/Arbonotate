@@ -15,7 +15,8 @@ window.LANG_EN = {
   'files.drop':         'Drop files here or use the button · .conllu / .conll / .txt',
   'files.dropOverlay':  'Drop files here',
   'help.btnTitle':      'Help / show README',
-  'files.demo':         'Load demo (3 example files)',
+  'files.demo':    'Load demo',
+  'files.demoAll': 'Load all projects',
   'files.delete':        'Remove',
   'files.download':      'Download CoNLL-U',
   'files.moveToProject':    'Move to project …',
@@ -225,4 +226,10 @@ window.LANG_EN = {
   'sent.addSentPrompt':  'Sentence text (optional):',
   'sent.delSentBtn':     '🗑 Delete sentence',
   'sent.delSentConfirm': 'Really delete this sentence?',
+
+  // Dev mode
+  'devMode.label':    '🔄 Dev mode: Auto-reload on rebuild',
+  'devMode.on':       'active',
+  'devMode.off':      'inactive',
+  'devMode.reloaded': 'Reloaded at',
 };

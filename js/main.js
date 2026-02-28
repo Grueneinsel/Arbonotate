@@ -143,17 +143,17 @@ if(sentNote){
 
 sentSelect.addEventListener("change", () => {
   state.currentSent = parseInt(sentSelect.value, 10) || 0;
-  _sentEditOpen = false;
+  _sentEditOpen = false; _sentListOpen = false;
   renderSentence();
 });
 prevBtn.addEventListener("click", () => {
   state.currentSent = Math.max(0, state.currentSent - 1);
-  _sentEditOpen = false;
+  _sentEditOpen = false; _sentListOpen = false;
   renderSentence();
 });
 nextBtn.addEventListener("click", () => {
   state.currentSent = Math.min(state.maxSents - 1, state.currentSent + 1);
-  _sentEditOpen = false;
+  _sentEditOpen = false; _sentListOpen = false;
   renderSentence();
 });
 
@@ -180,26 +180,30 @@ sentText.addEventListener("click", (e) => {
   cmpTable.closest(".card")?.scrollIntoView({ block: "nearest", behavior: "smooth" });
 });
 
-// Auto-resize token form input as the user types.
+// Push undo once when the user focuses a token form input (before first keystroke).
+sentText.addEventListener("focusin", (e) => {
+  if(!e.target.classList.contains("sentFormInput") || !state.unlocked) return;
+  pushUndo();
+});
+
+// Live update: resize input + write form into all docs + debounced partial re-render.
+let _formInputTimer = null;
 sentText.addEventListener("input", (e) => {
   const inp = e.target.closest(".sentFormInput");
   if(!inp) return;
   inp.size = Math.max(1, inp.value.length || 1);
-});
-
-// On blur (change): write the new form into ALL docs for the current sentence.
-sentText.addEventListener("change", (e) => {
-  const inp = e.target.closest(".sentFormInput");
-  if(!inp || !state.unlocked) return;
-  const tokId  = parseInt(inp.dataset.id, 10);
+  if(!state.unlocked) return;
+  const tokId   = parseInt(inp.dataset.id, 10);
   const newForm = inp.value;
-  pushUndo();
   for(const d of state.docs){
     const s = d.sentences[state.currentSent];
     if(!s) continue;
     const tok = s.tokens.find(t => t.id === tokId);
     if(tok) tok.form = newForm;
   }
+  // Re-render dependent views without destroying the focused input
+  clearTimeout(_formInputTimer);
+  _formInputTimer = setTimeout(() => { renderCompareTable(); renderPreview(); renderPlainView(); }, 180);
 });
 
 // Click on a file cell in the comparison table → choose that doc as gold for the token.
@@ -247,11 +251,7 @@ function renderFiles(){
     : t('files.none');
   if(state.docs.length === 0){
     fileList.innerHTML = `<div class="muted small">${escapeHtml(t('files.drop'))}</div>`;
-    const demoBtn = document.createElement("button");
-    demoBtn.textContent = t('files.demo');
-    demoBtn.style.marginTop = "8px";
-    demoBtn.addEventListener("click", loadExamples);
-    fileList.appendChild(demoBtn);
+    fileList.appendChild(_buildDemoMenu());
     return;
   }
   const warnedIndices = getWarnedDocIndices();
@@ -732,7 +732,8 @@ function _deleteToken(tokId){
 
 // ── Sentence management ────────────────────────────────────────────────────────
 
-let _sentEditOpen = false;
+let _sentEditOpen    = false;
+let _sentListOpen    = false;
 
 // Render sentence edit/insert/delete controls into #sentManageBar.
 function renderSentManage(){
@@ -837,6 +838,84 @@ function renderSentManage(){
     panel.appendChild(btnRow);
     bar.appendChild(panel);
   }
+
+  // 📋 Sentence list toggle button
+  const listToggleBtn = document.createElement("button");
+  listToggleBtn.className = "sentManageBtn" + (_sentListOpen ? " sentManageBtnActive" : "");
+  listToggleBtn.textContent = "📋 Alle Sätze";
+  listToggleBtn.addEventListener("click", () => {
+    _sentListOpen = !_sentListOpen;
+    renderSentManage();
+  });
+  bar.appendChild(listToggleBtn);
+
+  // Sentence list panel (all sentences in a scrollable list)
+  if(_sentListOpen){
+    const listPanel = document.createElement("div");
+    listPanel.className = "sentListPanel";
+
+    for(let si = 0; si < state.maxSents; si++){
+      const row = document.createElement("div");
+      row.className = "sentListRow" + (si === state.currentSent ? " sentListRowActive" : "");
+
+      // Sentence number
+      const numSpan = document.createElement("span");
+      numSpan.className = "sentListNum";
+      numSpan.textContent = si + 1;
+      row.appendChild(numSpan);
+
+      // Sentence text preview (from first doc that has it)
+      let preview = "";
+      for(const d of state.docs){
+        const s = d.sentences[si];
+        if(s){
+          preview = s.text || s.tokens.map(t => t.form).join(" ");
+          break;
+        }
+      }
+      const textSpan = document.createElement("span");
+      textSpan.className = "sentListText";
+      textSpan.textContent = preview || t('sent.missing');
+      row.appendChild(textSpan);
+
+      // Status icons
+      const iconsSpan = document.createElement("span");
+      iconsSpan.className = "sentListIcons";
+      if(state.confirmed.has(si)) iconsSpan.appendChild(Object.assign(document.createElement("span"), { textContent: "✓", title: t('sent.confirmed') }));
+      const hasFlagsForSent = state.flags[si] && state.flags[si].size > 0;
+      if(hasFlagsForSent)       iconsSpan.appendChild(Object.assign(document.createElement("span"), { textContent: "⚑" }));
+      row.appendChild(iconsSpan);
+
+      // ✎ Edit button
+      const editBtn2 = document.createElement("button");
+      editBtn2.className = "sentListEditBtn";
+      editBtn2.textContent = "✎";
+      editBtn2.title = t('sent.editSentBtn');
+      editBtn2.addEventListener("click", (e) => {
+        e.stopPropagation();
+        state.currentSent = si;
+        _sentEditOpen = true;
+        _sentListOpen = false;
+        renderSentSelect();
+        renderSentence();
+      });
+      row.appendChild(editBtn2);
+
+      // Click row → navigate to that sentence
+      row.addEventListener("click", () => {
+        state.currentSent = si;
+        renderSentSelect();
+        renderSentence();
+      });
+
+      listPanel.appendChild(row);
+    }
+
+    // Scroll active row into view after append
+    bar.appendChild(listPanel);
+    const activeRow = listPanel.querySelector(".sentListRowActive");
+    if(activeRow) activeRow.scrollIntoView({ block: "nearest" });
+  }
 }
 
 // ── Custom annotations ─────────────────────────────────────────────────────────
@@ -890,21 +969,26 @@ function renderSentence(){
   // Render clickable token spans (or editable inputs when project is unlocked)
   const s0 = state.docs[0].sentences[state.currentSent];
   if(s0){
+    const sentIdx = state.currentSent;
     if(state.unlocked){
       // Insert button before each token + one at the end; delete button on each token
       const insertBtn = id => `<button class="sentInsertBtn" data-before="${id}" title="Wort einfügen">+</button>`;
       sentText.innerHTML =
         s0.tokens.map(tk => {
           const form = tk.form || '';
+          const flagCls = state.flags[sentIdx]?.has(tk.id) ? ' sentTokenFlagged' : '';
           return insertBtn(tk.id) +
-            `<span class="sentTokenEdit" data-id="${tk.id}">` +
+            `<span class="sentTokenEdit${flagCls}" data-id="${tk.id}">` +
               `<input type="text" class="sentFormInput" data-id="${tk.id}" value="${escapeHtml(form)}" size="${Math.max(1, form.length)}" spellcheck="false" autocomplete="off">` +
               `<button class="sentDeleteBtn" data-id="${tk.id}" title="Wort löschen">×</button>` +
             `</span>`;
         }).join('') + insertBtn(0);
     } else {
       sentText.innerHTML = s0.tokens
-        .map(tk => `<span class="sentToken" data-id="${tk.id}">${escapeHtml(tk.form)}</span>`)
+        .map(tk => {
+          const flagCls = state.flags[sentIdx]?.has(tk.id) ? ' sentTokenFlagged' : '';
+          return `<span class="sentToken${flagCls}" data-id="${tk.id}">${escapeHtml(tk.form)}</span>`;
+        })
         .join(' ');
     }
   } else {
@@ -1029,7 +1113,6 @@ function copySentenceConllu(){
   const text = lines.join("\n");
   navigator.clipboard.writeText(text).then(() => {
     if(!copyConlluBtn) return;
-    const orig = copyConlluBtn.textContent;
     copyConlluBtn.textContent = t('copy.done');
     setTimeout(() => { if(copyConlluBtn) copyConlluBtn.textContent = t('copy.btn'); }, 1500);
   }).catch(() => {});
@@ -1037,10 +1120,77 @@ function copySentenceConllu(){
 
 // ── Demo ───────────────────────────────────────────────────────────────────────
 
-// Load the built-in example files (defined in the EXAMPLES global constant).
-async function loadExamples(){
+// Load the built-in demo session (all projects at once).
+// Falls back to single-project EXAMPLES if DEMO_SESSION is unavailable.
+function loadExamples(){
+  if(typeof DEMO_SESSION !== 'undefined' && typeof importSession === 'function'){
+    importSession(DEMO_SESSION);
+    return;
+  }
+  // Fallback: load three German example files into the current project
   const files = EXAMPLES.map(e => new File([e.content], e.name, { type: "text/plain" }));
-  await processFiles(files);
+  processFiles(files);
+}
+
+// Load a single demo project by index from DEMO_SESSION into the app.
+function _loadDemoProject(idx){
+  if(typeof DEMO_SESSION === 'undefined' || typeof importSession !== 'function') return;
+  const parsed = JSON.parse(DEMO_SESSION);
+  if(!parsed.projects[idx]) return;
+  const single = JSON.stringify({ version: 2, activeProjectIdx: 0, projects: [parsed.projects[idx]] });
+  importSession(single);
+}
+
+// Build the demo-picker button with an expandable per-project menu.
+function _buildDemoMenu(){
+  const wrap = document.createElement('div');
+  wrap.className = 'demoMenuWrap';
+  wrap.style.marginTop = '8px';
+
+  const toggle = document.createElement('button');
+  toggle.className = 'demoMenuToggle';
+  toggle.textContent = t('files.demo') + ' ▾';
+
+  const menu = document.createElement('div');
+  menu.className = 'demoMenu';
+  menu.hidden = true;
+
+  // "All projects" entry at the top
+  const allBtn = document.createElement('button');
+  allBtn.className = 'demoMenuItem';
+  allBtn.textContent = t('files.demoAll');
+  allBtn.addEventListener('click', () => { menu.hidden = true; loadExamples(); });
+  menu.appendChild(allBtn);
+
+  // One entry per project in DEMO_SESSION
+  if(typeof DEMO_SESSION !== 'undefined'){
+    try {
+      JSON.parse(DEMO_SESSION).projects.forEach((p, i) => {
+        const btn = document.createElement('button');
+        btn.className = 'demoMenuItem';
+        btn.textContent = p.name;
+        btn.addEventListener('click', () => { menu.hidden = true; _loadDemoProject(i); });
+        menu.appendChild(btn);
+      });
+    } catch(_){}
+  }
+
+  toggle.addEventListener('click', () => {
+    menu.hidden = !menu.hidden;
+    if(!menu.hidden){
+      // Defer so this same click event doesn't immediately trigger the outside-click handler
+      setTimeout(() => {
+        function closer(e){
+          if(!wrap.contains(e.target)){ menu.hidden = true; document.removeEventListener('click', closer); }
+        }
+        document.addEventListener('click', closer);
+      }, 0);
+    }
+  });
+
+  wrap.appendChild(toggle);
+  wrap.appendChild(menu);
+  return wrap;
 }
 
 // ── TTS (Browser Text-To-Speech) ───────────────────────────────────────────────
@@ -1138,6 +1288,121 @@ if(confirmAllBtn) confirmAllBtn.addEventListener('click', confirmAllMatching);
 if(flagDiffsBtn)  flagDiffsBtn.addEventListener('click',  flagAllDiffs);
 if(unflagAllBtn)  unflagAllBtn.addEventListener('click',  unflagAll);
 
+// ── Dev mode (auto-reload on bundler rebuild) ──────────────────────────────────
+
+const _DEV_MODE_KEY       = 'devMode';
+const _DEV_SESSION_KEY    = 'devModeSession';
+const _DEV_RELOADED_KEY   = 'devModeReloadedAt';
+let   _devModeTimer    = null;
+let   _devModeVersion  = null;   // last seen build version token
+
+function _devModePoll(){
+  fetch('version.txt?_=' + Date.now(), { cache: 'no-store' })
+    .then(r => r.ok ? r.text() : null)
+    .then(ver => {
+      if(!ver) return;
+      ver = ver.trim();
+      if(_devModeVersion === null){ _devModeVersion = ver; _devModeUpdateBadge(ver); return; }
+      if(ver !== _devModeVersion){
+        try {
+          const snap = JSON.stringify(_buildSessionObject());
+          sessionStorage.setItem(_DEV_SESSION_KEY, snap);
+          sessionStorage.setItem(_DEV_RELOADED_KEY, String(Date.now()));
+        } catch(_){}
+        window.location.reload();
+      }
+    })
+    .catch(() => {});
+}
+
+function _devModeStart(){
+  if(_devModeTimer) return;
+  _devModeVersion = null;
+  _devModeTimer = setInterval(_devModePoll, 2000);
+  _devModePoll(); // immediate first check to set baseline version
+}
+
+function _devModeStop(){
+  clearInterval(_devModeTimer);
+  _devModeTimer   = null;
+  _devModeVersion = null;
+  _devModeUpdateBadge(null);
+}
+
+function _devModeUpdateBadge(ver){
+  const badge = document.getElementById('devVersionBadge');
+  if(!badge) return;
+  if(!ver){ badge.hidden = true; return; }
+  const ts = new Date(parseInt(ver, 10) * 1000).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit', second:'2-digit'});
+  badge.innerHTML =
+    `<span class="devBadgeLabel">🔨 ${ts}</span>` +
+    `<button class="devBadgeClose" title="Dev-Modus beenden">✕</button>`;
+  badge.querySelector('.devBadgeClose').addEventListener('click', () => {
+    localStorage.setItem(_DEV_MODE_KEY, '0');
+    _devModeStop();
+    renderDevModeBar();
+  });
+  badge.hidden = false;
+}
+
+function renderDevModeBar(){
+  const bar = document.getElementById('devModeBar');
+  if(!bar) return;
+  const on = localStorage.getItem(_DEV_MODE_KEY) === '1';
+  bar.innerHTML =
+    `<label class="devModeLabel">
+      <input type="checkbox" id="devModeCb"${on ? ' checked' : ''}>
+      <span data-i18n="devMode.label">${t('devMode.label')}</span>
+    </label>
+    <span class="devModeStatus ${on ? 'devModeOn' : ''}">
+      ${on ? t('devMode.on') : t('devMode.off')}
+    </span>`;
+  document.getElementById('devModeCb').addEventListener('change', (e) => {
+    const enabled = e.target.checked;
+    localStorage.setItem(_DEV_MODE_KEY, enabled ? '1' : '0');
+    if(enabled) _devModeStart(); else _devModeStop();
+    renderDevModeBar();
+  });
+  if(on) _devModeStart();
+}
+
+// Restore session if we reloaded due to a build change, then show reload toast.
+function _devModeRestoreSession(){
+  const snap       = sessionStorage.getItem(_DEV_SESSION_KEY);
+  const reloadedAt = sessionStorage.getItem(_DEV_RELOADED_KEY);
+  if(snap){
+    sessionStorage.removeItem(_DEV_SESSION_KEY);
+    try { importSession(snap); } catch(_){}
+  }
+  if(reloadedAt){
+    sessionStorage.removeItem(_DEV_RELOADED_KEY);
+    _devModeShowReloadToast(parseInt(reloadedAt, 10));
+  }
+}
+
+// Show a brief toast notification that the page was auto-reloaded by dev mode.
+function _devModeShowReloadToast(reloadedAt){
+  const existing = document.getElementById('devReloadToast');
+  if(existing) existing.remove();
+
+  const toast = document.createElement('div');
+  toast.id = 'devReloadToast';
+  toast.className = 'devReloadToast';
+
+  const ts = new Date(reloadedAt).toLocaleTimeString([], { hour:'2-digit', minute:'2-digit', second:'2-digit' });
+  toast.innerHTML =
+    `<span class="devReloadIcon">🔄</span>` +
+    `<span>${t('devMode.reloaded')} <span class="devReloadTime">${ts}</span></span>` +
+    `<button class="devReloadClose" title="${t('kbd.close')}">✕</button>`;
+
+  toast.querySelector('.devReloadClose').addEventListener('click', () => toast.remove());
+  document.body.appendChild(toast);
+
+  // Auto-dismiss after 4 s
+  setTimeout(() => { toast.classList.add('devReloadToastFade'); }, 3500);
+  setTimeout(() => { toast.remove(); }, 4200);
+}
+
 // ── Init ───────────────────────────────────────────────────────────────────────
 buildDeprelOptionsCache();
 DEFAULT_LABELS = JSON.parse(JSON.stringify(LABELS)); // snapshot before any project overrides
@@ -1146,3 +1411,10 @@ _initAutoAdvance();   // restore auto-advance checkbox from localStorage
 renderFiles();
 renderSentSelect();
 renderSentence();
+// ?dev in URL → force-enable dev mode (persisted to localStorage)
+if(new URLSearchParams(location.search).has('dev')){
+  localStorage.setItem(_DEV_MODE_KEY, '1');
+}
+renderDevModeBar();
+// Restore session saved before auto-reload (deferred so export.js is loaded first)
+window.addEventListener('load', _devModeRestoreSession, { once: true });

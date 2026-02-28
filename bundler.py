@@ -136,6 +136,7 @@ def main() -> int:
         print(f"Missing entry: {ENTRY}", file=sys.stderr); return 2
 
     if MAKE_README_JS.exists():
+        print("Running make_readme_js.py …")
         subprocess.run([sys.executable, str(MAKE_README_JS)], cwd=str(ROOT), check=False)
 
     html = read(ENTRY)
@@ -145,9 +146,47 @@ def main() -> int:
 
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     OUT_HTML.write_text(html, encoding="utf-8")
+    # Write a version file so the browser can detect rebuilds.
+    import time as _time
+    (OUT_DIR / "version.txt").write_text(str(int(_time.time())), encoding="utf-8")
     size = OUT_HTML.stat().st_size
     print(f"OK  {OUT_HTML}  ({size:,} bytes)")
     return 0
 
+# ── Watch mode ────────────────────────────────────────────────────────────────────
+def _source_files():
+    """Return all source files that should trigger a rebuild when modified."""
+    files = [ENTRY, MAKE_README_JS]
+    for pattern in ("js/*.js", "css/*.css", "lang/*.js"):
+        files.extend(ROOT.glob(pattern))
+    return [f for f in files if f.exists()]
+
+def _mtimes(files):
+    out = {}
+    for f in files:
+        try: out[f] = f.stat().st_mtime
+        except OSError: pass
+    return out
+
+def watch() -> int:
+    import time
+    print("Bundler watch mode — rebuilding on file changes (Ctrl+C to stop)")
+    main()
+    last = _mtimes(_source_files())
+    while True:
+        time.sleep(1)
+        curr = _mtimes(_source_files())
+        changed = [f for f in set(last) | set(curr) if last.get(f) != curr.get(f)]
+        if changed:
+            print(f"\nChanged: {', '.join(f.name for f in changed)}")
+            main()
+            last = _mtimes(_source_files())
+
 if __name__ == "__main__":
+    if len(sys.argv) > 1 and sys.argv[1] == "--watch":
+        try:
+            raise SystemExit(watch())
+        except KeyboardInterrupt:
+            print("\nWatch stopped.")
+            raise SystemExit(0)
     raise SystemExit(main())

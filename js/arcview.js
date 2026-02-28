@@ -10,14 +10,17 @@
 // Read-only (file views): click on token box scrolls to table row only.
 // ─────────────────────────────────────────────────────────────────────────────
 
-const _ARC_THRESH = 5; // px movement required to promote a mousedown to a real drag
+const _ARC_THRESH = 5; // px movement required to promote a pointerdown to a real drag
 
-let _arcPreDrag = null; // pending drag state set on mousedown, before threshold is crossed
+let _arcPreDrag = null; // pending drag state set on pointerdown, before threshold is crossed
 let _arcDrag    = null; // active drag state after threshold has been crossed
 
-// Global mousemove: promote pre-drag to real drag once the movement threshold is exceeded,
+// Global pointermove: promote pre-drag to real drag once the movement threshold is exceeded,
 // then update the drag line and drop-target highlight while dragging.
-window.addEventListener('mousemove', e => {
+window.addEventListener('pointermove', e => {
+  // Only track the pointer that started the drag
+  if (_arcPreDrag && e.pointerId !== _arcPreDrag.pointerId) return;
+  if (_arcDrag    && e.pointerId !== _arcDrag.pointerId)    return;
   // Promote pre-drag to real drag once threshold is crossed
   if (_arcPreDrag && !_arcDrag) {
     const dx = e.clientX - _arcPreDrag.startX;
@@ -37,8 +40,10 @@ window.addEventListener('mousemove', e => {
   _arcHighlightDrop(mx, my);
 });
 
-// Global mouseup: handle drop — either a plain click (no threshold crossed) or a real drag.
-window.addEventListener('mouseup', e => {
+// Global pointerup: handle drop — either a plain click (no threshold crossed) or a real drag.
+window.addEventListener('pointerup', e => {
+  if (_arcPreDrag && e.pointerId !== _arcPreDrag.pointerId) return;
+  if (_arcDrag    && e.pointerId !== _arcDrag.pointerId)    return;
   if (_arcPreDrag && !_arcDrag) {
     // Was a plain click — scroll to token in the comparison table
     const pd = _arcPreDrag; _arcPreDrag = null;
@@ -221,12 +226,12 @@ function _arcShowDeprelPopup(screenX, screenY, depId, currentDeprel, onSetDeprel
 
   sel.focus();
 
-  // Close on outside click (delay avoids closing on the same mousedown that opened it)
+  // Close on outside tap/click (delay avoids closing on the same event that opened it)
   setTimeout(() => {
     function outside(ev) {
-      if (!popup.contains(ev.target)) { popup.remove(); document.removeEventListener('mousedown', outside); }
+      if (!popup.contains(ev.target)) { popup.remove(); document.removeEventListener('pointerdown', outside); }
     }
-    document.addEventListener('mousedown', outside);
+    document.addEventListener('pointerdown', outside);
   }, 120);
 }
 
@@ -292,7 +297,7 @@ function buildArcDiagram(tokMap, { onSetHead = null, onDeleteArc = null, onSetDe
   };
 
   const svg = mk('svg', { width:svgW, height:svgH });
-  svg.style.cssText = 'display:block; overflow:visible; cursor:default;';
+  svg.style.cssText = 'display:block; overflow:visible; cursor:default; touch-action:none;';
 
   mc.font = '10px sans-serif';
 
@@ -338,12 +343,19 @@ function buildArcDiagram(tokMap, { onSetHead = null, onDeleteArc = null, onSetDe
 
       const lw = mc.measureText(e.label).width;
 
-      // Invisible hit rect that covers the full arc+label+button area for reliable hover
-      const hLeft  = Math.min(x1, x2) - 8;
-      const hRight = Math.max(x1, x2) + lw / 2 + 26;
+      // Fat invisible stroke along the arc curve — used for hover detection without
+      // creating a large rectangle that would block clicks on labels of other arcs.
+      g.appendChild(mk('path', {
+        d:`M ${x1} ${wordY} C ${x1} ${apex} ${x2} ${apex} ${x2} ${wordY}`,
+        stroke:'rgba(128,128,128,0.01)', 'stroke-width':14, fill:'none',
+        'pointer-events':'stroke' }));
+
+      // Small hit rect around the label + delete button only (no overlap with arc body)
+      const lblHx = mid - lw/2 - 8;
+      const lblHw = lw + 10 + (editable ? 30 : 8);
       g.appendChild(mk('rect', {
-        x: hLeft, y: apex - 22, width: hRight - hLeft, height: wordY - apex + 22,
-        fill: 'transparent', 'pointer-events': 'all' }));
+        x:lblHx, y:apex-22, width:lblHw, height:22,
+        fill:'transparent', 'pointer-events':'all' }));
 
       // Visible cubic Bezier arc curve
       g.appendChild(mk('path', {
@@ -391,11 +403,11 @@ function buildArcDiagram(tokMap, { onSetHead = null, onDeleteArc = null, onSetDe
         btnG.addEventListener('click', ev => { ev.stopPropagation(); onDeleteArc(depId); });
         g.appendChild(btnG);
 
-        // Small delay before hiding to prevent button vanishing during mouse travel
+        // Small delay before hiding to prevent button vanishing during pointer travel
         let hideTimer = null;
-        g.addEventListener('mouseenter', () => { clearTimeout(hideTimer); btnG.style.opacity = '1'; });
-        g.addEventListener('mouseleave', () => { hideTimer = setTimeout(() => { btnG.style.opacity = '0'; }, 300); });
-        btnG.addEventListener('mouseenter', () => clearTimeout(hideTimer));
+        g.addEventListener('pointerenter', () => { clearTimeout(hideTimer); btnG.style.opacity = '1'; });
+        g.addEventListener('pointerleave', () => { hideTimer = setTimeout(() => { btnG.style.opacity = '0'; }, 300); });
+        btnG.addEventListener('pointerenter', () => clearTimeout(hideTimer));
       }
     }
     svg.appendChild(g);
@@ -429,24 +441,28 @@ function buildArcDiagram(tokMap, { onSetHead = null, onDeleteArc = null, onSetDe
     overlay.dataset.arctokid = t.id;
 
     if (editable) {
-      overlay.addEventListener('mousedown', ev => {
-        if (ev.button !== 0) return;
+      overlay.addEventListener('pointerdown', ev => {
+        // Ignore right-clicks on mouse; accept all buttons for stylus/touch
+        if (ev.pointerType === 'mouse' && ev.button !== 0) return;
         ev.preventDefault();
+        // Capture pointer so pointermove/pointerup stay reliable even outside the element
+        overlay.setPointerCapture(ev.pointerId);
         // Record pre-drag state; actual drag starts only after _ARC_THRESH movement
         _arcPreDrag = {
           startX: ev.clientX, startY: ev.clientY,
+          pointerId: ev.pointerId,
           tokIdx: i, depId: t.id,
           svg, centers, wordY, cellH: CELL_H, toks,
           onSetHead, onSetDeprel, onScrollTok: scrollToTok,
           _hovId: null, _hovEl: null, _hovBad: false,
         };
       });
-      overlay.addEventListener('mouseenter', () => { overlay.style.fill = 'rgba(74,158,255,0.10)'; });
-      overlay.addEventListener('mouseleave', () => { overlay.style.fill = 'transparent'; });
+      overlay.addEventListener('pointerenter', () => { overlay.style.fill = 'rgba(74,158,255,0.10)'; });
+      overlay.addEventListener('pointerleave', () => { overlay.style.fill = 'transparent'; });
     } else if (scrollToTok) {
       overlay.addEventListener('click', () => scrollToTok(t.id));
-      overlay.addEventListener('mouseenter', () => { overlay.style.fill = 'rgba(255,255,255,0.06)'; });
-      overlay.addEventListener('mouseleave', () => { overlay.style.fill = 'transparent'; });
+      overlay.addEventListener('pointerenter', () => { overlay.style.fill = 'rgba(255,255,255,0.06)'; });
+      overlay.addEventListener('pointerleave', () => { overlay.style.fill = 'transparent'; });
     }
     svg.appendChild(overlay);
   }
