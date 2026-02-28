@@ -50,7 +50,6 @@ function _buildTree(sentIndex, goldMap, otherMap, edgesG, edgesO, sentenceText, 
   const roots = rootsArr.length ? rootsArr : (nodes.size ? [Math.min(...nodes)] : []);
 
   const lines = [];
-  lines.push(`📝 S${sentIndex+1}: ${sentenceText}`);
 
   function rec(head, prefix, path){
     const deps = children.get(head) || [];
@@ -224,49 +223,11 @@ function buildTreeSection(title, sub, text, opts = {}){
     if(arcWrap) section.appendChild(arcWrap);
   }
 
-  // ── Clickable token-chip row (below arc diagram) ───────────────────────────
-  if(tokenList && tokenList.length > 0){
-    const chipRow = document.createElement("div");
-    chipRow.className = "treeTokenHeader";
-
-    // Extract sentence label (S1, S2 …) from the 📝 line in the tree text
-    const headerLine = text.split("\n").find(l => l.startsWith("📝"));
-    const sentLabel  = headerLine?.match(/^📝\s*(S\d+):/)?.[1];
-    if(sentLabel){
-      const lbl = document.createElement("span");
-      lbl.className = "treeTokenSentLabel";
-      lbl.textContent = sentLabel + ":";
-      chipRow.appendChild(lbl);
-    }
-
-    for(const tok of tokenList){
-      const chip = document.createElement("span");
-      chip.className = "treeTokenChip";
-      chip.textContent = `${tok.id}:${tok.form}`;
-      chip.title = t('tree.jumpTitle', { id: tok.id });
-      chip.addEventListener("click", () => scrollToToken(tok.id));
-      chipRow.appendChild(chip);
-    }
-    section.appendChild(chipRow);
-  }
-
   const pre = document.createElement("pre");
   pre.className = "treePre";
 
   const lines = text.split("\n");
   for(const line of lines){
-    // The "📝 S…" header line is shown as the chip row above — skip it here.
-    // Only render it as a fallback when no tokenList / chip row was built.
-    if(line.startsWith("📝")){
-      if(!tokenList || tokenList.length === 0){
-        const span = document.createElement("span");
-        span.className = "treeLine treeLineHeader";
-        span.textContent = line + "\n";
-        pre.appendChild(span);
-      }
-      continue;
-    }
-
     const rootMatch = line.match(/^🌱\s*(\d+):/);
     const tokMatch  = line.match(/→\s*(\d+):/);
 
@@ -383,7 +344,7 @@ function renderPreview(){
   // goldEdges cached for file-arc comparisons
   const goldEdges = edgesFromMap(goldMap);
 
-  const goldSection = buildTreeSection("⭐ GOLD", null, renderTreePlain(sentIndex, goldMap, sentenceText), {
+  const goldSection = buildTreeSection(`S${sentIndex + 1}: ⭐ GOLD`, null, renderTreePlain(sentIndex, goldMap, sentenceText), {
     tokenList,
     arcMap: goldMap,
     arcEdgeColors: goldArcColors,
@@ -432,7 +393,7 @@ function renderPreview(){
         fileArcColors.set(id, 'var(--file)');
     }
 
-    const section = buildTreeSection(name, t('tree.vsGold'), diff, {
+    const section = buildTreeSection(`S${sentIndex + 1}: ${name}`, t('tree.vsGold'), diff, {
       tokenList,
       arcMap: otherMap,
       arcEdgeColors: fileArcColors,

@@ -229,7 +229,7 @@ function renderFiles(){
     // Download button
     const dlBtn = document.createElement("button");
     dlBtn.title = t('files.download');
-    dlBtn.textContent = "⬇";
+    dlBtn.textContent = "⬇ Download";
     dlBtn.addEventListener("click", () => downloadText(d.content || "", d.name));
     actions.appendChild(dlBtn);
 
