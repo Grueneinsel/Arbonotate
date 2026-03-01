@@ -8,13 +8,15 @@
 //    Single-file-Modus; Entsperren → Baumbearbeitung ausprobieren
 
 // ── Tagset für Projekt 2 (Penn POS + UD-Deprels) ─────────────────────────────
+// UPOS = Universal POS tags; XPOS = Penn Treebank POS tags
 const _PENN_LABELS = {
   "Core arguments":      ["nsubj", "obj", "iobj", "csubj", "ccomp", "xcomp"],
   "Non-core dependents": ["obl", "vocative", "expl", "dislocated"],
   "Modifiers":           ["advcl", "advmod", "amod", "det", "case", "mark", "nmod", "nummod", "acl", "appos"],
   "Function Words":      ["aux", "cop"],
   "Other":               ["conj", "cc", "compound", "flat", "fixed", "list", "parataxis", "punct", "root", "dep"],
-  "__upos__": [
+  "__upos__": ["ADJ", "ADP", "ADV", "AUX", "CCONJ", "DET", "INTJ", "NOUN", "NUM", "PART", "PRON", "PROPN", "PUNCT", "SCONJ", "SYM", "VERB", "X"],
+  "__xpos__": [
     "NN", "NNS", "NNP", "NNPS",
     "VB", "VBD", "VBZ", "VBP", "VBG", "VBN",
     "JJ", "JJR", "JJS",
@@ -23,8 +25,7 @@ const _PENN_LABELS = {
     "MD", "PRP", "PRP$", "WDT", "WP", "WP$", "WRB",
     "EX", "RP", "UH", "SYM", "FW", "LS", "POS",
     "``", "''", ".", ",", ":", "-LRB-", "-RRB-"
-  ],
-  "__xpos__": []
+  ]
 };
 
 // ── CoNLL-U Inhalte ────────────────────────────────────────────────────────────
@@ -103,60 +104,61 @@ const _DE_FILE3 = [
 ].join("\n");
 
 // Projekt 2: Englisch, zwei Annotator-Dateien, Penn-POS-Tagset
+// UPOS = Universal POS, XPOS = Penn POS
 // S1: "The quick brown fox jumps over the lazy dog ."
 // S2: "Time flies like an arrow ."  (garden-path Ambiguität)
 const _EN_FILE_A = [
   "# sent_id = en-1",
   "# text = The quick brown fox jumps over the lazy dog .",
-  "1\tThe\tthe\tDT\tDT\t_\t4\tdet\t_\t_",
-  "2\tquick\tquick\tJJ\tJJ\t_\t4\tamod\t_\t_",
-  "3\tbrown\tbrown\tJJ\tJJ\t_\t4\tamod\t_\t_",
-  "4\tfox\tfox\tNN\tNN\t_\t5\tnsubj\t_\t_",
-  "5\tjumps\tjump\tVBZ\tVBZ\t_\t0\troot\t_\t_",
-  "6\tover\tover\tIN\tIN\t_\t9\tcase\t_\t_",
-  "7\tthe\tthe\tDT\tDT\t_\t9\tdet\t_\t_",
-  "8\tlazy\tlazy\tJJ\tJJ\t_\t9\tamod\t_\t_",
-  "9\tdog\tdog\tNN\tNN\t_\t5\tobl\t_\t_",
-  "10\t.\t.\t.\t.\t_\t5\tpunct\t_\t_",
+  "1\tThe\tthe\tDET\tDT\t_\t4\tdet\t_\t_",
+  "2\tquick\tquick\tADJ\tJJ\t_\t4\tamod\t_\t_",
+  "3\tbrown\tbrown\tADJ\tJJ\t_\t4\tamod\t_\t_",
+  "4\tfox\tfox\tNOUN\tNN\t_\t5\tnsubj\t_\t_",
+  "5\tjumps\tjump\tVERB\tVBZ\t_\t0\troot\t_\t_",
+  "6\tover\tover\tADP\tIN\t_\t9\tcase\t_\t_",
+  "7\tthe\tthe\tDET\tDT\t_\t9\tdet\t_\t_",
+  "8\tlazy\tlazy\tADJ\tJJ\t_\t9\tamod\t_\t_",
+  "9\tdog\tdog\tNOUN\tNN\t_\t5\tobl\t_\t_",
+  "10\t.\t.\tPUNCT\t.\t_\t5\tpunct\t_\t_",
   "",
   "# sent_id = en-2",
   "# text = Time flies like an arrow .",
-  "1\tTime\ttime\tNN\tNN\t_\t2\tnsubj\t_\t_",
-  "2\tflies\tfly\tVBZ\tVBZ\t_\t0\troot\t_\t_",
-  "3\tlike\tlike\tIN\tIN\t_\t5\tcase\t_\t_",
-  "4\tan\tan\tDT\tDT\t_\t5\tdet\t_\t_",
-  "5\tarrow\tarrow\tNN\tNN\t_\t2\tobl\t_\t_",
-  "6\t.\t.\t.\t.\t_\t2\tpunct\t_\t_",
+  "1\tTime\ttime\tNOUN\tNN\t_\t2\tnsubj\t_\t_",
+  "2\tflies\tfly\tVERB\tVBZ\t_\t0\troot\t_\t_",
+  "3\tlike\tlike\tADP\tIN\t_\t5\tcase\t_\t_",
+  "4\tan\tan\tDET\tDT\t_\t5\tdet\t_\t_",
+  "5\tarrow\tarrow\tNOUN\tNN\t_\t2\tobl\t_\t_",
+  "6\t.\t.\tPUNCT\t.\t_\t2\tpunct\t_\t_",
   "",
 ].join("\n");
 
 // Annotator B: abweichende Annotationen
-//   S1: Token 2 JJ→JJR (falsche Komparativform), Token 6 case→prep,
-//       Token 9 head 5→6 + obl→dobj (Fehler: hängt an Präposition)
-//   S2: garden-path Lesart — Token 1 NN→VB + nsubj→root (Time = Verb),
-//       Token 2 VBZ→NNS + root→nsubj (flies = Substantiv)
+//   S1: Token 2 XPOS JJ→JJR (falsche Komparativform), Token 6 deprel case→prep,
+//       Token 9 head 5→6 + deprel obl→dobj (Fehler: hängt an Präposition)
+//   S2: garden-path Lesart — Token 1 UPOS NOUN→VERB, XPOS NN→VB, deprel nsubj→root,
+//       Token 2 UPOS VERB→NOUN, XPOS VBZ→NNS, deprel root→nsubj
 const _EN_FILE_B = [
   "# sent_id = en-1",
   "# text = The quick brown fox jumps over the lazy dog .",
-  "1\tThe\tthe\tDT\tDT\t_\t4\tdet\t_\t_",
-  "2\tquick\tquick\tJJR\tJJR\t_\t4\tamod\t_\t_",  // UPOS JJ→JJR
-  "3\tbrown\tbrown\tJJ\tJJ\t_\t4\tamod\t_\t_",
-  "4\tfox\tfox\tNN\tNN\t_\t5\tnsubj\t_\t_",
-  "5\tjumps\tjump\tVBZ\tVBZ\t_\t0\troot\t_\t_",
-  "6\tover\tover\tIN\tIN\t_\t9\tprep\t_\t_",       // deprel case→prep
-  "7\tthe\tthe\tDT\tDT\t_\t9\tdet\t_\t_",
-  "8\tlazy\tlazy\tJJ\tJJ\t_\t9\tamod\t_\t_",
-  "9\tdog\tdog\tNN\tNN\t_\t6\tdobj\t_\t_",          // head 5→6 + obl→dobj
-  "10\t.\t.\t.\t.\t_\t5\tpunct\t_\t_",
+  "1\tThe\tthe\tDET\tDT\t_\t4\tdet\t_\t_",
+  "2\tquick\tquick\tADJ\tJJR\t_\t4\tamod\t_\t_",  // XPOS JJ→JJR
+  "3\tbrown\tbrown\tADJ\tJJ\t_\t4\tamod\t_\t_",
+  "4\tfox\tfox\tNOUN\tNN\t_\t5\tnsubj\t_\t_",
+  "5\tjumps\tjump\tVERB\tVBZ\t_\t0\troot\t_\t_",
+  "6\tover\tover\tADP\tIN\t_\t9\tprep\t_\t_",      // deprel case→prep
+  "7\tthe\tthe\tDET\tDT\t_\t9\tdet\t_\t_",
+  "8\tlazy\tlazy\tADJ\tJJ\t_\t9\tamod\t_\t_",
+  "9\tdog\tdog\tNOUN\tNN\t_\t6\tdobj\t_\t_",        // head 5→6 + deprel obl→dobj
+  "10\t.\t.\tPUNCT\t.\t_\t5\tpunct\t_\t_",
   "",
   "# sent_id = en-2",
   "# text = Time flies like an arrow .",
-  "1\tTime\ttime\tVB\tVB\t_\t0\troot\t_\t_",       // NN→VB + nsubj→root (garden-path)
-  "2\tflies\tfly\tNNS\tNNS\t_\t1\tnsubj\t_\t_",    // VBZ→NNS + root→nsubj
-  "3\tlike\tlike\tIN\tIN\t_\t5\tcase\t_\t_",
-  "4\tan\tan\tDT\tDT\t_\t5\tdet\t_\t_",
-  "5\tarrow\tarrow\tNN\tNN\t_\t1\tobl\t_\t_",       // head 2→1
-  "6\t.\t.\t.\t.\t_\t1\tpunct\t_\t_",              // head 2→1
+  "1\tTime\ttime\tVERB\tVB\t_\t0\troot\t_\t_",     // UPOS NOUN→VERB, XPOS NN→VB, deprel nsubj→root
+  "2\tflies\tfly\tNOUN\tNNS\t_\t1\tnsubj\t_\t_",   // UPOS VERB→NOUN, XPOS VBZ→NNS, deprel root→nsubj
+  "3\tlike\tlike\tADP\tIN\t_\t5\tcase\t_\t_",
+  "4\tan\tan\tDET\tDT\t_\t5\tdet\t_\t_",
+  "5\tarrow\tarrow\tNOUN\tNN\t_\t1\tobl\t_\t_",    // head 2→1
+  "6\t.\t.\tPUNCT\t.\t_\t1\tpunct\t_\t_",          // head 2→1
   "",
 ].join("\n");
 

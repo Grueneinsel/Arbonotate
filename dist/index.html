@@ -2355,13 +2355,15 @@ LABELS = {
 //    Single-file-Modus; Entsperren → Baumbearbeitung ausprobieren
 
 // ── Tagset für Projekt 2 (Penn POS + UD-Deprels) ─────────────────────────────
+// UPOS = Universal POS tags; XPOS = Penn Treebank POS tags
 const _PENN_LABELS = {
   "Core arguments":      ["nsubj", "obj", "iobj", "csubj", "ccomp", "xcomp"],
   "Non-core dependents": ["obl", "vocative", "expl", "dislocated"],
   "Modifiers":           ["advcl", "advmod", "amod", "det", "case", "mark", "nmod", "nummod", "acl", "appos"],
   "Function Words":      ["aux", "cop"],
   "Other":               ["conj", "cc", "compound", "flat", "fixed", "list", "parataxis", "punct", "root", "dep"],
-  "__upos__": [
+  "__upos__": ["ADJ", "ADP", "ADV", "AUX", "CCONJ", "DET", "INTJ", "NOUN", "NUM", "PART", "PRON", "PROPN", "PUNCT", "SCONJ", "SYM", "VERB", "X"],
+  "__xpos__": [
     "NN", "NNS", "NNP", "NNPS",
     "VB", "VBD", "VBZ", "VBP", "VBG", "VBN",
     "JJ", "JJR", "JJS",
@@ -2370,8 +2372,7 @@ const _PENN_LABELS = {
     "MD", "PRP", "PRP$", "WDT", "WP", "WP$", "WRB",
     "EX", "RP", "UH", "SYM", "FW", "LS", "POS",
     "``", "''", ".", ",", ":", "-LRB-", "-RRB-"
-  ],
-  "__xpos__": []
+  ]
 };
 
 // ── CoNLL-U Inhalte ────────────────────────────────────────────────────────────
@@ -2450,60 +2451,61 @@ const _DE_FILE3 = [
 ].join("\n");
 
 // Projekt 2: Englisch, zwei Annotator-Dateien, Penn-POS-Tagset
+// UPOS = Universal POS, XPOS = Penn POS
 // S1: "The quick brown fox jumps over the lazy dog ."
 // S2: "Time flies like an arrow ."  (garden-path Ambiguität)
 const _EN_FILE_A = [
   "# sent_id = en-1",
   "# text = The quick brown fox jumps over the lazy dog .",
-  "1\tThe\tthe\tDT\tDT\t_\t4\tdet\t_\t_",
-  "2\tquick\tquick\tJJ\tJJ\t_\t4\tamod\t_\t_",
-  "3\tbrown\tbrown\tJJ\tJJ\t_\t4\tamod\t_\t_",
-  "4\tfox\tfox\tNN\tNN\t_\t5\tnsubj\t_\t_",
-  "5\tjumps\tjump\tVBZ\tVBZ\t_\t0\troot\t_\t_",
-  "6\tover\tover\tIN\tIN\t_\t9\tcase\t_\t_",
-  "7\tthe\tthe\tDT\tDT\t_\t9\tdet\t_\t_",
-  "8\tlazy\tlazy\tJJ\tJJ\t_\t9\tamod\t_\t_",
-  "9\tdog\tdog\tNN\tNN\t_\t5\tobl\t_\t_",
-  "10\t.\t.\t.\t.\t_\t5\tpunct\t_\t_",
+  "1\tThe\tthe\tDET\tDT\t_\t4\tdet\t_\t_",
+  "2\tquick\tquick\tADJ\tJJ\t_\t4\tamod\t_\t_",
+  "3\tbrown\tbrown\tADJ\tJJ\t_\t4\tamod\t_\t_",
+  "4\tfox\tfox\tNOUN\tNN\t_\t5\tnsubj\t_\t_",
+  "5\tjumps\tjump\tVERB\tVBZ\t_\t0\troot\t_\t_",
+  "6\tover\tover\tADP\tIN\t_\t9\tcase\t_\t_",
+  "7\tthe\tthe\tDET\tDT\t_\t9\tdet\t_\t_",
+  "8\tlazy\tlazy\tADJ\tJJ\t_\t9\tamod\t_\t_",
+  "9\tdog\tdog\tNOUN\tNN\t_\t5\tobl\t_\t_",
+  "10\t.\t.\tPUNCT\t.\t_\t5\tpunct\t_\t_",
   "",
   "# sent_id = en-2",
   "# text = Time flies like an arrow .",
-  "1\tTime\ttime\tNN\tNN\t_\t2\tnsubj\t_\t_",
-  "2\tflies\tfly\tVBZ\tVBZ\t_\t0\troot\t_\t_",
-  "3\tlike\tlike\tIN\tIN\t_\t5\tcase\t_\t_",
-  "4\tan\tan\tDT\tDT\t_\t5\tdet\t_\t_",
-  "5\tarrow\tarrow\tNN\tNN\t_\t2\tobl\t_\t_",
-  "6\t.\t.\t.\t.\t_\t2\tpunct\t_\t_",
+  "1\tTime\ttime\tNOUN\tNN\t_\t2\tnsubj\t_\t_",
+  "2\tflies\tfly\tVERB\tVBZ\t_\t0\troot\t_\t_",
+  "3\tlike\tlike\tADP\tIN\t_\t5\tcase\t_\t_",
+  "4\tan\tan\tDET\tDT\t_\t5\tdet\t_\t_",
+  "5\tarrow\tarrow\tNOUN\tNN\t_\t2\tobl\t_\t_",
+  "6\t.\t.\tPUNCT\t.\t_\t2\tpunct\t_\t_",
   "",
 ].join("\n");
 
 // Annotator B: abweichende Annotationen
-//   S1: Token 2 JJ→JJR (falsche Komparativform), Token 6 case→prep,
-//       Token 9 head 5→6 + obl→dobj (Fehler: hängt an Präposition)
-//   S2: garden-path Lesart — Token 1 NN→VB + nsubj→root (Time = Verb),
-//       Token 2 VBZ→NNS + root→nsubj (flies = Substantiv)
+//   S1: Token 2 XPOS JJ→JJR (falsche Komparativform), Token 6 deprel case→prep,
+//       Token 9 head 5→6 + deprel obl→dobj (Fehler: hängt an Präposition)
+//   S2: garden-path Lesart — Token 1 UPOS NOUN→VERB, XPOS NN→VB, deprel nsubj→root,
+//       Token 2 UPOS VERB→NOUN, XPOS VBZ→NNS, deprel root→nsubj
 const _EN_FILE_B = [
   "# sent_id = en-1",
   "# text = The quick brown fox jumps over the lazy dog .",
-  "1\tThe\tthe\tDT\tDT\t_\t4\tdet\t_\t_",
-  "2\tquick\tquick\tJJR\tJJR\t_\t4\tamod\t_\t_",  // UPOS JJ→JJR
-  "3\tbrown\tbrown\tJJ\tJJ\t_\t4\tamod\t_\t_",
-  "4\tfox\tfox\tNN\tNN\t_\t5\tnsubj\t_\t_",
-  "5\tjumps\tjump\tVBZ\tVBZ\t_\t0\troot\t_\t_",
-  "6\tover\tover\tIN\tIN\t_\t9\tprep\t_\t_",       // deprel case→prep
-  "7\tthe\tthe\tDT\tDT\t_\t9\tdet\t_\t_",
-  "8\tlazy\tlazy\tJJ\tJJ\t_\t9\tamod\t_\t_",
-  "9\tdog\tdog\tNN\tNN\t_\t6\tdobj\t_\t_",          // head 5→6 + obl→dobj
-  "10\t.\t.\t.\t.\t_\t5\tpunct\t_\t_",
+  "1\tThe\tthe\tDET\tDT\t_\t4\tdet\t_\t_",
+  "2\tquick\tquick\tADJ\tJJR\t_\t4\tamod\t_\t_",  // XPOS JJ→JJR
+  "3\tbrown\tbrown\tADJ\tJJ\t_\t4\tamod\t_\t_",
+  "4\tfox\tfox\tNOUN\tNN\t_\t5\tnsubj\t_\t_",
+  "5\tjumps\tjump\tVERB\tVBZ\t_\t0\troot\t_\t_",
+  "6\tover\tover\tADP\tIN\t_\t9\tprep\t_\t_",      // deprel case→prep
+  "7\tthe\tthe\tDET\tDT\t_\t9\tdet\t_\t_",
+  "8\tlazy\tlazy\tADJ\tJJ\t_\t9\tamod\t_\t_",
+  "9\tdog\tdog\tNOUN\tNN\t_\t6\tdobj\t_\t_",        // head 5→6 + deprel obl→dobj
+  "10\t.\t.\tPUNCT\t.\t_\t5\tpunct\t_\t_",
   "",
   "# sent_id = en-2",
   "# text = Time flies like an arrow .",
-  "1\tTime\ttime\tVB\tVB\t_\t0\troot\t_\t_",       // NN→VB + nsubj→root (garden-path)
-  "2\tflies\tfly\tNNS\tNNS\t_\t1\tnsubj\t_\t_",    // VBZ→NNS + root→nsubj
-  "3\tlike\tlike\tIN\tIN\t_\t5\tcase\t_\t_",
-  "4\tan\tan\tDT\tDT\t_\t5\tdet\t_\t_",
-  "5\tarrow\tarrow\tNN\tNN\t_\t1\tobl\t_\t_",       // head 2→1
-  "6\t.\t.\t.\t.\t_\t1\tpunct\t_\t_",              // head 2→1
+  "1\tTime\ttime\tVERB\tVB\t_\t0\troot\t_\t_",     // UPOS NOUN→VERB, XPOS NN→VB, deprel nsubj→root
+  "2\tflies\tfly\tNOUN\tNNS\t_\t1\tnsubj\t_\t_",   // UPOS VERB→NOUN, XPOS VBZ→NNS, deprel root→nsubj
+  "3\tlike\tlike\tADP\tIN\t_\t5\tcase\t_\t_",
+  "4\tan\tan\tDET\tDT\t_\t5\tdet\t_\t_",
+  "5\tarrow\tarrow\tNOUN\tNN\t_\t1\tobl\t_\t_",    // head 2→1
+  "6\t.\t.\tPUNCT\t.\t_\t1\tpunct\t_\t_",          // head 2→1
   "",
 ].join("\n");
 
@@ -4316,6 +4318,8 @@ function buildArcDiagram(tokMap, { onSetHead = null, onDeleteArc = null, onSetDe
     for (const [k, v] of Object.entries(attrs)) el.setAttribute(k, String(v));
     return el;
   };
+  // On touch/tablet (coarse pointer) show delete buttons permanently instead of hover-only.
+  const _touchMode = window.matchMedia('(pointer: coarse)').matches;
 
   const svg = mk('svg', { width:svgW, height:svgH });
   // Allow vertical page-scroll over the diagram; touch-action:none is applied
@@ -4363,13 +4367,16 @@ function buildArcDiagram(tokMap, { onSetHead = null, onDeleteArc = null, onSetDe
         });
       }
 
-      // Root ✕ delete button (shown on hover)
+      // Root ✕ delete button (shown on hover; always visible on touch devices)
       let rootBtnG = null;
       if (editable && onDeleteArc) {
         rootBtnG = mk('g');
-        rootBtnG.style.cssText = 'cursor:pointer; opacity:0; pointer-events:none; transition:opacity .12s;';
+        const _rInit = _touchMode ? 'opacity:0.7; pointer-events:all;' : 'opacity:0; pointer-events:none;';
+        rootBtnG.style.cssText = `cursor:pointer; ${_rInit} transition:opacity .12s;`;
         const bx = dx + lw + 22;
         const by = ty + 7;
+        // Transparent hit-area circle (large touch target)
+        rootBtnG.appendChild(mk('circle', { cx:bx, cy:by, r:18, fill:'transparent' }));
         rootBtnG.appendChild(mk('circle', { cx:bx, cy:by, r:7, fill:'var(--bad)', opacity:0.9 }));
         const rxt = mk('text', { x:bx, y:by+4, 'text-anchor':'middle',
           'font-size':11, 'font-weight':900, fill:'#fff', 'pointer-events':'none' });
@@ -4441,13 +4448,16 @@ function buildArcDiagram(tokMap, { onSetHead = null, onDeleteArc = null, onSetDe
         });
       }
 
-      // ✕ delete button — rendered in top layer, initially hidden
+      // ✕ delete button — rendered in top layer; hover-only on mouse, always visible on touch
       let btnG = null;
       if (editable && onDeleteArc) {
         btnG = mk('g');
-        btnG.style.cssText = 'cursor:pointer; opacity:0; pointer-events:none; transition:opacity .12s;';
+        const _bInit = _touchMode ? 'opacity:0.7; pointer-events:all;' : 'opacity:0; pointer-events:none;';
+        btnG.style.cssText = `cursor:pointer; ${_bInit} transition:opacity .12s;`;
         const bx = mid + lw/2 + 14;
         const by = apex - 7;
+        // Transparent hit-area circle (large touch target)
+        btnG.appendChild(mk('circle', { cx:bx, cy:by, r:18, fill:'transparent' }));
         btnG.appendChild(mk('circle', { cx:bx, cy:by, r:7, fill:'var(--bad)', opacity:0.9 }));
         const xt = mk('text', { x:bx, y:by+4, 'text-anchor':'middle',
           'font-size':11, 'font-weight':900, fill:'#fff', 'pointer-events':'none' });
@@ -5061,6 +5071,638 @@ function renderPreview(){
 
 </script>
   <script>
+// Smart file dispatch (shared by all upload paths and drag & drop) + tagset management.
+
+/** Returns true if parsed JSON looks like a saved session. */
+function _isSessionJson(data){
+  if(!data || typeof data !== "object" || Array.isArray(data)) return false;
+  return (data.version === 1 || data.version === 2) &&
+         (Array.isArray(data.docs) || Array.isArray(data.projects));
+}
+
+/** Apply a parsed tagset object (LABELS) to the active project only. */
+function applyTagsetJson(data){
+  if(typeof data !== "object" || Array.isArray(data) || !data){
+    alert(t("tagset.errFormat")); return;
+  }
+  LABELS = data;
+  buildDeprelOptionsCache();
+  if(typeof _resetPopup === "function") _resetPopup();
+  // Persist tagset in the active project snapshot (not globally)
+  const p = state.projects[state.activeProjectIdx];
+  if(p) p.labels = JSON.parse(JSON.stringify(LABELS));
+  renderSentence();
+  _updateTagsetMeta();
+}
+
+// Update the tagset-meta display line with counts from the currently active LABELS.
+// Works for both old (__upos__/__xpos__) and new (__cols__/__dep_cols__) formats.
+function _updateTagsetMeta(){
+  const tagsetMeta = document.getElementById("tagsetMeta");
+  if(!tagsetMeta) return;
+  // Deprel count: sum of value-set sizes across all dep columns.
+  const totalDeprels = DEP_COLS.reduce((sum, dc) => sum + (dc.valueSet?.size ?? 0), 0);
+  // Label column counts: prefer __cols__ array, fall back to __upos__/__xpos__.
+  const cols = LABELS["__cols__"];
+  const col0 = Array.isArray(cols) ? (cols[0]?.values?.length ?? 0) : (LABELS["__upos__"]?.length ?? 0);
+  const col1 = Array.isArray(cols) ? (cols[1]?.values?.length ?? 0) : (LABELS["__xpos__"]?.length ?? 0);
+  if(totalDeprels === 0 && col0 === 0 && col1 === 0){ tagsetMeta.textContent = ""; return; }
+  tagsetMeta.textContent = t("tagset.loaded", { deprel: totalDeprels, upos: col0, xpos: col1 });
+}
+
+/**
+ * Smart dispatch for a JSON text string:
+ *  - Session JSON  → importSession()
+ *  - Everything else → applyTagsetJson()
+ */
+function _smartDispatchJson(jsonText){
+  let data;
+  try { data = JSON.parse(jsonText); }
+  catch { alert(t("tagset.errJson")); return; }
+  if(_isSessionJson(data)) importSession(jsonText);
+  else                     applyTagsetJson(data);
+}
+
+/**
+ * Universal file dispatcher: handles .json (smart), .conllu/.conll/.txt.
+ * Returns a Promise so callers can await if needed.
+ */
+async function _dispatchFiles(files){
+  const jsonFiles   = files.filter(f => /\.json$/i.test(f.name));
+  const conlluFiles = files.filter(f => /\.(conllu|conll|txt)$/i.test(f.name));
+  for(const f of jsonFiles){
+    const text = await f.text();
+    _smartDispatchJson(text);
+  }
+  if(conlluFiles.length > 0) await processFiles(conlluFiles);
+}
+
+// ── Tagset upload ──────────────────────────────────────────────────────────────
+{
+  const _tagsetInputEl = document.getElementById("tagsetInput");
+  if(_tagsetInputEl){
+    _tagsetInputEl.addEventListener("change", async (e) => {
+      const files = Array.from(e.target.files || []);
+      e.target.value = "";
+      if(!files.length) return;
+      await _dispatchFiles(files);
+    });
+  }
+}
+
+// ── Tagset download ────────────────────────────────────────────────────────────
+{
+  const _tagsetDownloadBtnEl = document.getElementById("tagsetDownloadBtn");
+  if(_tagsetDownloadBtnEl){
+    _tagsetDownloadBtnEl.addEventListener("click", () => {
+      const json = JSON.stringify(LABELS, null, 2);
+      const blob = new Blob([json], { type: "application/json" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "tagset.json";
+      a.click();
+      URL.revokeObjectURL(a.href);
+    });
+  }
+}
+
+</script>
+  <script>
+// Sentence selector, sentence minimap, flags, and confirmation state.
+
+// Rebuild the sentence navigation controls and "init custom from doc" buttons.
+function renderSentSelect(){
+  const ok = state.docs.length >= 1 && state.maxSents > 0;
+  sentSelect.disabled = !ok;
+  prevBtn.disabled = !ok;
+  nextBtn.disabled = !ok;
+  customInitBtns.innerHTML = "";
+  if(ok){
+    state.docs.forEach((d, idx) => {
+      const btn = document.createElement("button");
+      btn.textContent = t('custom.initBtn', { name: d.name });
+      btn.addEventListener("click", () => initCustomFromDoc(idx));
+      customInitBtns.appendChild(btn);
+    });
+  }
+  customClearBtn.disabled = !ok;
+  confirmBtn.disabled = !ok;
+  if(copyConlluBtn) copyConlluBtn.disabled = !ok;
+  sentSelect.innerHTML = "";
+  if(!ok){ sentStats.textContent = ""; if(progressMeta) progressMeta.textContent = ""; renderSentManage(); return; }
+  renderSentSelectOptions();
+  updateExportButtons();
+}
+
+// Compute diff/token statistics for a sentence index (reusable across renders).
+function _sentStats(i){
+  const docMaps = state.docs.map(d => {
+    const s = d.sentences[i];
+    const m = new Map();
+    if(s) for(const tk of s.tokens) m.set(tk.id, tk);
+    return m;
+  });
+  const ids = new Set();
+  for(const m of docMaps) for(const id of m.keys()) ids.add(id);
+  const customSent = state.custom[i] || {};
+  for(const idStr of Object.keys(customSent)) ids.add(parseInt(idStr, 10));
+  const idList = Array.from(ids).sort((a,b) => a - b);
+  const goldMap = buildGoldTokenMap(i, idList, docMaps);
+  return computeStats(i, idList, docMaps, goldMap);
+}
+
+// Toggle the confirmed state for the current sentence.
+// When confirming (not unconfirming) and auto-advance is on, jump to the next
+// unconfirmed sentence automatically.
+function toggleConfirm(){
+  if(state.docs.length < 1) return;
+  pushUndo();
+  const i = state.currentSent;
+  const wasConfirmed = state.confirmed.has(i);
+  if(wasConfirmed){
+    state.confirmed.delete(i);
+  } else {
+    state.confirmed.add(i);
+  }
+  updateConfirmBtn();
+  renderSentSelectOptions();
+  // Auto-advance: after confirming, jump to the next unconfirmed sentence.
+  if(!wasConfirmed && _autoAdvance){
+    for(let j = state.currentSent + 1; j < state.maxSents; j++){
+      if(!state.confirmed.has(j)){
+        state.currentSent = j;
+        renderSentence();
+        return;
+      }
+    }
+  }
+}
+
+// Update the confirm button's label and active CSS class to reflect current state.
+function updateConfirmBtn(){
+  if(!confirmBtn) return;
+  const isConfirmed = state.confirmed.has(state.currentSent);
+  confirmBtn.textContent  = isConfirmed ? t('sent.confirmed') : t('sent.confirm');
+  confirmBtn.classList.toggle("confirmBtnActive", isConfirmed);
+}
+
+// Rebuild all <option> elements in the sentence <select> dropdown with diff/flag styling.
+function renderSentSelectOptions(){
+  if(state.docs.length < 1 || state.maxSents === 0) return;
+  sentSelect.innerHTML = "";
+  for(let i=0;i<state.maxSents;i++){
+    const stats = _sentStats(i);
+    const hasDiff   = stats.diffCount > 0;
+    const confirmed = state.confirmed.has(i);
+    const hasFlags  = state.flags[i]?.size > 0;
+    const opt = document.createElement("option");
+    opt.value = String(i);
+    const diffPart = hasDiff
+      ? ` ${t(stats.diffCount !== 1 ? 'sent.optDiffs' : 'sent.optDiff', { n: stats.diffCount })}`
+      : ` ${t('sent.optOk')}`;
+    const flagPart = hasFlags ? t('flag.sentOpt') : '';
+    opt.textContent = `${t('sent.optLabel', { n: i+1 })}${confirmed ? ' ★' : ''}${flagPart}  (${stats.totalTokens} Tok${diffPart})`;
+    // Color-code options: confirmed (gold), flagged (orange), diff (red), ok (green)
+    if(confirmed && hasFlags){
+      opt.style.background = '#1a0c00';
+      opt.style.color = '#ffcc44';   // gold + slight warm tint to show both
+    } else if(confirmed){
+      opt.style.background = '#1a1000';
+      opt.style.color = '#ffb347';   // gold
+    } else if(hasFlags){
+      opt.style.background = '#1c0e00';
+      opt.style.color = '#ff9100';   // orange — clearly distinct from gold and red/green
+    } else {
+      opt.style.background = hasDiff ? '#1f0b0b' : '#091a10';
+      opt.style.color = hasDiff ? '#ff9090' : '#6fe8a8';
+    }
+    sentSelect.appendChild(opt);
+  }
+  sentSelect.value = String(state.currentSent);
+
+  // Update the select border color to reflect the current sentence's status
+  const curConfirmed = state.confirmed.has(state.currentSent);
+  const curFlagged   = state.flags[state.currentSent]?.size > 0;
+  const curStats = _sentStats(state.currentSent);
+  sentSelect.style.borderColor = curConfirmed ? '#ff9f43'
+    : curFlagged              ? '#ff9100'
+    : curStats.diffCount > 0  ? '#ff5f5f'
+    : '#3de89a';
+
+  updateConfirmBtn();
+  renderSentMap();
+  _updateProgressMeta();
+}
+
+// Update the progress counter showing how many sentences are confirmed.
+function _updateProgressMeta(){
+  if(!progressMeta) return;
+  if(state.docs.length < 1 || state.maxSents === 0){ progressMeta.textContent = ""; return; }
+  progressMeta.textContent = t('sent.progress', {
+    done:  state.confirmed.size,
+    total: state.maxSents,
+  });
+}
+
+// Show or hide the sentence note textarea and load the note for the current sentence.
+function _updateSentNote(){
+  if(!sentNote || !sentNoteRow) return;
+  const ok = state.docs.length >= 1 && state.maxSents > 0;
+  sentNoteRow.style.display = ok ? "" : "none";
+  if(ok){
+    sentNote.value = state.notes[state.currentSent] ?? "";
+    sentNote.placeholder = t('note.placeholder');
+  }
+}
+
+// Re-render the minimap of sentence dots below the sentence selector.
+function renderSentMap(){
+  if(!sentMap) return;
+  if(state.docs.length < 1 || state.maxSents === 0){ sentMap.innerHTML = ""; return; }
+  sentMap.innerHTML = "";
+  for(let i=0;i<state.maxSents;i++){
+    const stats = _sentStats(i);
+    const hasDiff   = stats.diffCount > 0;
+    const confirmed = state.confirmed.has(i);
+    const hasFlags  = state.flags[i]?.size > 0;
+    const isCurrent = i === state.currentSent;
+    const dot = document.createElement("button");
+    let cls = "sentDot ";
+    if(confirmed)    cls += "sentDotConfirmed";
+    else if(hasDiff) cls += "sentDotDiff";
+    else             cls += "sentDotOk";
+    if(isCurrent)    cls += " sentDotCurrent";
+    if(hasFlags)     cls += " sentDotFlagged";
+    dot.className = cls;
+    dot.title = t(confirmed ? 'sent.dotTitleConf' : (hasFlags ? 'flag.sentDot' : 'sent.dotTitle'), {
+      n: i + 1, toks: stats.totalTokens, diffs: stats.diffCount
+    });
+    // Accessibility: text symbol inside dot conveys state independently of color
+    if     (confirmed && hasFlags)        dot.textContent = "★!";
+    else if(confirmed)                    dot.textContent = "★";
+    else if(hasFlags   && hasDiff)        dot.textContent = "×!";
+    else if(hasFlags)                     dot.textContent = "!";
+    else if(!hasDiff)                     dot.textContent = "✓";
+    else                                  dot.textContent = "×";
+    dot.addEventListener("click", () => {
+      state.currentSent = i;
+      renderSentence();
+    });
+    sentMap.appendChild(dot);
+  }
+}
+
+// ── Flags ──────────────────────────────────────────────────────────────────────
+
+// Toggle the flag for a single token and update the row, minimap, and selector in place.
+function toggleFlag(sentIdx, tokId){
+  if(!state.flags[sentIdx]) state.flags[sentIdx] = new Set();
+  const s = state.flags[sentIdx];
+  if(s.has(tokId)){
+    s.delete(tokId);
+    if(s.size === 0) delete state.flags[sentIdx];
+  } else {
+    s.add(tokId);
+  }
+  // Update row, button, and sentText span in-place (no full re-render needed)
+  const tr  = cmpTable.querySelector(`tr[data-id="${tokId}"]`);
+  const btn = tr?.querySelector(".flagBtn");
+  const isFlagged = !!state.flags[sentIdx]?.has(tokId);
+  if(btn)  btn.classList.toggle("flagBtnActive", isFlagged);
+  if(tr)   tr.classList.toggle("rowFlagged", isFlagged);
+  // Also update sentText token spans (both read-only and editable modes)
+  const span = sentText.querySelector(`[data-id="${tokId}"]`);
+  if(span) span.classList.toggle("sentTokenFlagged", isFlagged);
+  // Reflect flag change in the minimap and dropdown without a full re-render
+  renderSentMap();
+  renderSentSelectOptions();
+}
+
+</script>
+  <script>
+// Token insert/delete helpers, sentence management, and custom annotation utilities.
+
+// ── Token insert / delete helpers ─────────────────────────────────────────────
+
+// Re-assign IDs 1..n to all tokens in a sentence and update HEAD references.
+// Returns the Map<oldId, newId> used for annotation remapping.
+function _renumberTokens(sent){
+  const map = new Map();
+  sent.tokens.forEach((tk, i) => map.set(tk.id, i + 1));
+  sent.tokens.forEach((tk, i) => {
+    tk.id = i + 1;
+    if(tk.head != null && tk.head !== 0)
+      tk.head = map.has(tk.head) ? map.get(tk.head) : null;
+  });
+  return map;
+}
+
+// Remap token IDs in state.custom and state.goldPick after renumbering.
+function _remapAnnotations(si, oldToNew){
+  const remapObj = (obj, remapVals) => {
+    if(!obj) return;
+    const next = {};
+    for(const [k, v] of Object.entries(obj)){
+      const nk = oldToNew.get(parseInt(k, 10));
+      if(nk == null) continue;
+      next[nk] = remapVals ? Object.fromEntries(
+        Object.entries(v).map(([fk, fv]) => [
+          fk,
+          (fk === 'head' && fv != null && fv !== 0)
+            ? (oldToNew.get(fv) ?? null)
+            : fv
+        ])
+      ) : v;
+    }
+    return next;
+  };
+  const nc = remapObj(state.custom[si], true);
+  if(nc && Object.keys(nc).length) state.custom[si] = nc;
+  else delete state.custom[si];
+  const ng = remapObj(state.goldPick[si], false);
+  if(ng && Object.keys(ng).length) state.goldPick[si] = ng;
+  else delete state.goldPick[si];
+}
+
+// Insert a blank token before the token with `beforeId` in all docs (0 = append).
+// Focuses the new input after re-render.
+function _insertToken(beforeId){
+  pushUndo();
+  const si = state.currentSent;
+  let newId = 1;
+  for(const d of state.docs){
+    const s = d.sentences[si];
+    if(!s) continue;
+    let pos = beforeId === 0
+      ? s.tokens.length
+      : s.tokens.findIndex(t => t.id === beforeId);
+    if(pos < 0) pos = s.tokens.length;
+    s.tokens.splice(pos, 0, { id: 0, form: '_', lemma: '_', upos: '_', xpos: '_', feats: '_', head: null, deprel: '_', deps: '_', misc: '_' });
+    const map = _renumberTokens(s);
+    if(d === state.docs[0]){ _remapAnnotations(si, map); newId = pos + 1; }
+  }
+  renderSentence();
+  // Focus the new token's input after the DOM has been repainted
+  setTimeout(() => {
+    const inp = sentText.querySelector(`.sentFormInput[data-id="${newId}"]`);
+    if(inp){ inp.focus(); inp.select(); }
+  }, 0);
+}
+
+// Delete the token with the given ID from all docs.
+function _deleteToken(tokId){
+  const s0tok = state.docs[0]?.sentences?.[state.currentSent]?.tokens;
+  if(s0tok && s0tok.length <= 1) return; // keep at least one token
+  pushUndo();
+  const si = state.currentSent;
+  for(const d of state.docs){
+    const s = d.sentences[si];
+    if(!s) continue;
+    const idx = s.tokens.findIndex(t => t.id === tokId);
+    if(idx < 0) continue;
+    s.tokens.splice(idx, 1);
+    const map = _renumberTokens(s);
+    if(d === state.docs[0]) _remapAnnotations(si, map);
+  }
+  renderSentence();
+}
+
+// ── Sentence management ────────────────────────────────────────────────────────
+
+// Render sentence add/delete controls + sentence list into #sentManageBar.
+function renderSentManage(){
+  const bar = document.getElementById("sentManageBar");
+  if(!bar) return;
+  if(!state.unlocked || state.maxSents === 0){ bar.innerHTML = ""; return; }
+
+  bar.innerHTML = "";
+
+  // ➕ Insert new sentence after current
+  const addBtn = document.createElement("button");
+  addBtn.className = "sentManageBtn";
+  addBtn.textContent = t('sent.addSentBtn');
+  addBtn.addEventListener("click", () => {
+    pushUndo();
+    const newSent = { text: "", tokens: [], comments: [], extras: [] };
+    for(const d of state.docs) d.sentences.splice(state.currentSent + 1, 0, JSON.parse(JSON.stringify(newSent)));
+    recomputeMaxSents();
+    state.currentSent = state.currentSent + 1;
+    renderSentSelect();
+    renderSentence();
+    renderConlluEditor(true);
+  });
+  bar.appendChild(addBtn);
+
+  // 🗑 Delete current sentence
+  const delBtn = document.createElement("button");
+  delBtn.className = "sentManageBtn danger";
+  delBtn.textContent = t('sent.delSentBtn');
+  delBtn.addEventListener("click", () => {
+    if(!confirm(t('sent.delSentConfirm'))) return;
+    pushUndo();
+    for(const d of state.docs) d.sentences.splice(state.currentSent, 1);
+    recomputeMaxSents();
+    state.currentSent = Math.min(state.currentSent, Math.max(0, state.maxSents - 1));
+    renderSentSelect();
+    renderSentence();
+    renderConlluEditor(true);
+  });
+  bar.appendChild(delBtn);
+
+  // Sentence list — always visible, active sentence highlighted with accent color
+  const listPanel = document.createElement("div");
+  listPanel.className = "sentListPanel";
+
+  for(let si = 0; si < state.maxSents; si++){
+    const row = document.createElement("div");
+    row.className = "sentListRow" + (si === state.currentSent ? " sentListRowActive" : "");
+
+    // Sentence number
+    const numSpan = document.createElement("span");
+    numSpan.className = "sentListNum";
+    numSpan.textContent = si + 1;
+    row.appendChild(numSpan);
+
+    // Sentence text preview (from first doc that has it)
+    let preview = "";
+    for(const d of state.docs){
+      const s = d.sentences[si];
+      if(s){ preview = s.text || s.tokens.map(t => t.form).join(" "); break; }
+    }
+    const textSpan = document.createElement("span");
+    textSpan.className = "sentListText";
+    textSpan.textContent = preview || t('sent.missing');
+    row.appendChild(textSpan);
+
+    // Status icons
+    const iconsSpan = document.createElement("span");
+    iconsSpan.className = "sentListIcons";
+    if(state.confirmed.has(si)) iconsSpan.appendChild(Object.assign(document.createElement("span"), { textContent: "✓", title: t('sent.confirmed') }));
+    if(state.flags[si]?.size > 0) iconsSpan.appendChild(Object.assign(document.createElement("span"), { textContent: "⚑" }));
+    row.appendChild(iconsSpan);
+
+    // Click row → navigate to that sentence
+    row.addEventListener("click", () => {
+      state.currentSent = si;
+      renderSentSelect();
+      renderSentence();
+    });
+
+    listPanel.appendChild(row);
+  }
+
+  // Scroll active row into view within the panel — use scrollTop directly
+  // to avoid scrollIntoView() propagating up and moving the window scroll position.
+  bar.appendChild(listPanel);
+  const activeRow = listPanel.querySelector(".sentListRowActive");
+  if(activeRow) requestAnimationFrame(() => {
+    const top = activeRow.offsetTop;
+    const bot = top + activeRow.offsetHeight;
+    if(bot > listPanel.scrollTop + listPanel.clientHeight)
+      listPanel.scrollTop = bot - listPanel.clientHeight;
+    else if(top < listPanel.scrollTop)
+      listPanel.scrollTop = top;
+  });
+}
+
+// ── Custom annotations ─────────────────────────────────────────────────────────
+
+// Copy all annotations from document docIdx into custom for the current sentence.
+function initCustomFromDoc(docIdx){
+  const s = state.docs[docIdx]?.sentences?.[state.currentSent];
+  if(!s) return;
+  pushUndo();
+  const sent = ensureCustomSent(state.currentSent);
+  for(const tk of s.tokens){
+    sent[tk.id] = { head: tk.head ?? null, deprel: tk.deprel ?? null, upos: tk.upos ?? null, xpos: tk.xpos ?? null };
+  }
+  renderSentence();
+}
+
+// Remove all custom overrides for the current sentence after user confirmation.
+function clearCustomForSentence(){
+  if(!confirm(t('sent.clearConfirm'))) return;
+  pushUndo();
+  delete state.custom[state.currentSent];
+  renderSentence();
+}
+
+</script>
+  <script>
+// Dev mode: auto-reload on bundler rebuild, session restore after hot-reload.
+
+const _DEV_MODE_KEY       = 'devMode';
+const _DEV_SESSION_KEY    = 'devModeSession';
+const _DEV_RELOADED_KEY   = 'devModeReloadedAt';
+let   _devModeTimer    = null;
+let   _devModeVersion  = null;   // last seen build version token
+let   _devModeFails    = 0;      // consecutive fetch failures
+
+function _devModePoll(){
+  fetch('version.txt?_=' + Date.now(), { cache: 'no-store' })
+    .then(r => r.ok ? r.text() : Promise.reject())
+    .then(ver => {
+      _devModeFails = 0;
+      ver = ver.trim();
+      if(_devModeVersion === null){ _devModeVersion = ver; _devModeUpdateBadge(ver); return; }
+      if(ver !== _devModeVersion){
+        try {
+          const snap = JSON.stringify(_buildSessionObject());
+          sessionStorage.setItem(_DEV_SESSION_KEY, snap);
+          sessionStorage.setItem(_DEV_RELOADED_KEY, String(Date.now()));
+        } catch(_){}
+        window.location.reload();
+      }
+    })
+    .catch(() => {
+      _devModeFails++;
+      if(_devModeFails >= 3){
+        // version.txt not reachable — auto-disable dev mode
+        localStorage.setItem(_DEV_MODE_KEY, '0');
+        _devModeStop();
+        renderDevModeBar();
+      }
+    });
+}
+
+function _devModeStart(){
+  if(_devModeTimer) return;
+  _devModeVersion = null;
+  _devModeFails   = 0;
+  _devModeTimer = setInterval(_devModePoll, 2000);
+  _devModePoll(); // immediate first check to set baseline version
+}
+
+function _devModeStop(){
+  clearInterval(_devModeTimer);
+  _devModeTimer   = null;
+  _devModeVersion = null;
+  _devModeUpdateBadge(null);
+}
+
+function _devModeUpdateBadge(ver){
+  const badge = document.getElementById('devVersionBadge');
+  if(!badge) return;
+  if(!ver){ badge.hidden = true; return; }
+  const ts = new Date(parseInt(ver, 10) * 1000).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit', second:'2-digit'});
+  badge.innerHTML =
+    `<span class="devBadgeLabel">🔨 ${ts}</span>` +
+    `<button class="devBadgeClose" title="Dev-Modus beenden">✕</button>`;
+  badge.querySelector('.devBadgeClose').addEventListener('click', () => {
+    localStorage.setItem(_DEV_MODE_KEY, '0');
+    _devModeStop();
+    renderDevModeBar();
+  });
+  badge.hidden = false;
+}
+
+function renderDevModeBar(){
+  const bar = document.getElementById('devModeBar');
+  if(!bar) return;
+  // Dev mode is activated only via ?dev URL param — no visible UI control
+  bar.innerHTML = '';
+  if(localStorage.getItem(_DEV_MODE_KEY) === '1') _devModeStart();
+}
+
+// Restore session if we reloaded due to a build change, then show reload toast.
+function _devModeRestoreSession(){
+  const snap       = sessionStorage.getItem(_DEV_SESSION_KEY);
+  const reloadedAt = sessionStorage.getItem(_DEV_RELOADED_KEY);
+  if(snap){
+    sessionStorage.removeItem(_DEV_SESSION_KEY);
+    try { importSession(snap); } catch(_){}
+  }
+  if(reloadedAt){
+    sessionStorage.removeItem(_DEV_RELOADED_KEY);
+    _devModeShowReloadToast(parseInt(reloadedAt, 10));
+  }
+}
+
+// Show a brief toast notification that the page was auto-reloaded by dev mode.
+function _devModeShowReloadToast(reloadedAt){
+  const existing = document.getElementById('devReloadToast');
+  if(existing) existing.remove();
+
+  const toast = document.createElement('div');
+  toast.id = 'devReloadToast';
+  toast.className = 'devReloadToast';
+
+  const ts = new Date(reloadedAt).toLocaleTimeString([], { hour:'2-digit', minute:'2-digit', second:'2-digit' });
+  toast.innerHTML =
+    `<span class="devReloadIcon">🔄</span>` +
+    `<span>${t('devMode.reloaded')} <span class="devReloadTime">${ts}</span></span>` +
+    `<button class="devReloadClose" title="${t('kbd.close')}">✕</button>`;
+
+  toast.querySelector('.devReloadClose').addEventListener('click', () => toast.remove());
+  document.body.appendChild(toast);
+
+  // Auto-dismiss after 4 s
+  setTimeout(() => { toast.classList.add('devReloadToastFade'); }, 3500);
+  setTimeout(() => { toast.remove(); }, 4200);
+}
+
+</script>
+  <script>
 // Application entry point: DOM references, event wiring, UI rendering, and initialisation.
 
 // ── DOM references ─────────────────────────────────────────────────────────────
@@ -5106,94 +5748,6 @@ const unflagAllBtn  = document.getElementById("unflagAllBtn");
 fileInput.addEventListener("change", onFilesChosen);
 resetBtn.addEventListener("click", resetProject);
 if(globalResetBtn) globalResetBtn.addEventListener("click", resetAll);
-
-// ── Smart file dispatch (shared by all upload paths and drag & drop) ───────────
-
-/** Returns true if parsed JSON looks like a saved session. */
-function _isSessionJson(data){
-  if(!data || typeof data !== "object" || Array.isArray(data)) return false;
-  return (data.version === 1 || data.version === 2) &&
-         (Array.isArray(data.docs) || Array.isArray(data.projects));
-}
-
-/** Apply a parsed tagset object (LABELS) to the active project only. */
-function applyTagsetJson(data){
-  if(typeof data !== "object" || Array.isArray(data) || !data){
-    alert(t("tagset.errFormat")); return;
-  }
-  LABELS = data;
-  buildDeprelOptionsCache();
-  if(typeof _resetPopup === "function") _resetPopup();
-  // Persist tagset in the active project snapshot (not globally)
-  const p = state.projects[state.activeProjectIdx];
-  if(p) p.labels = JSON.parse(JSON.stringify(LABELS));
-  renderSentence();
-  _updateTagsetMeta();
-}
-
-// Update the tagset-meta display line with counts from the currently active LABELS.
-// Works for both old (__upos__/__xpos__) and new (__cols__/__dep_cols__) formats.
-function _updateTagsetMeta(){
-  if(!tagsetMeta) return;
-  // Deprel count: sum of value-set sizes across all dep columns.
-  const totalDeprels = DEP_COLS.reduce((sum, dc) => sum + (dc.valueSet?.size ?? 0), 0);
-  // Label column counts: prefer __cols__ array, fall back to __upos__/__xpos__.
-  const cols = LABELS["__cols__"];
-  const col0 = Array.isArray(cols) ? (cols[0]?.values?.length ?? 0) : (LABELS["__upos__"]?.length ?? 0);
-  const col1 = Array.isArray(cols) ? (cols[1]?.values?.length ?? 0) : (LABELS["__xpos__"]?.length ?? 0);
-  if(totalDeprels === 0 && col0 === 0 && col1 === 0){ tagsetMeta.textContent = ""; return; }
-  tagsetMeta.textContent = t("tagset.loaded", { deprel: totalDeprels, upos: col0, xpos: col1 });
-}
-
-/**
- * Smart dispatch for a JSON text string:
- *  - Session JSON  → importSession()
- *  - Everything else → applyTagsetJson()
- */
-function _smartDispatchJson(jsonText){
-  let data;
-  try { data = JSON.parse(jsonText); }
-  catch { alert(t("tagset.errJson")); return; }
-  if(_isSessionJson(data)) importSession(jsonText);
-  else                     applyTagsetJson(data);
-}
-
-/**
- * Universal file dispatcher: handles .json (smart), .conllu/.conll/.txt.
- * Returns a Promise so callers can await if needed.
- */
-async function _dispatchFiles(files){
-  const jsonFiles   = files.filter(f => /\.json$/i.test(f.name));
-  const conlluFiles = files.filter(f => /\.(conllu|conll|txt)$/i.test(f.name));
-  for(const f of jsonFiles){
-    const text = await f.text();
-    _smartDispatchJson(text);
-  }
-  if(conlluFiles.length > 0) await processFiles(conlluFiles);
-}
-
-// ── Tagset upload ──────────────────────────────────────────────────────────────
-if(tagsetInput){
-  tagsetInput.addEventListener("change", async (e) => {
-    const files = Array.from(e.target.files || []);
-    e.target.value = "";
-    if(!files.length) return;
-    await _dispatchFiles(files);
-  });
-}
-
-// ── Tagset download ────────────────────────────────────────────────────────────
-if(tagsetDownloadBtn){
-  tagsetDownloadBtn.addEventListener("click", () => {
-    const json = JSON.stringify(LABELS, null, 2);
-    const blob = new Blob([json], { type: "application/json" });
-    const a = document.createElement("a");
-    a.href = URL.createObjectURL(blob);
-    a.download = "tagset.json";
-    a.click();
-    URL.revokeObjectURL(a.href);
-  });
-}
 
 // Persist the note for the current sentence as the user types.
 if(sentNote){
@@ -5455,216 +6009,6 @@ document.addEventListener("drop", (e) => {
   _dispatchFiles(allFiles);
 });
 
-// ── UI: Sentence selector ──────────────────────────────────────────────────────
-
-// Rebuild the sentence navigation controls and "init custom from doc" buttons.
-function renderSentSelect(){
-  const ok = state.docs.length >= 1 && state.maxSents > 0;
-  sentSelect.disabled = !ok;
-  prevBtn.disabled = !ok;
-  nextBtn.disabled = !ok;
-  customInitBtns.innerHTML = "";
-  if(ok){
-    state.docs.forEach((d, idx) => {
-      const btn = document.createElement("button");
-      btn.textContent = t('custom.initBtn', { name: d.name });
-      btn.addEventListener("click", () => initCustomFromDoc(idx));
-      customInitBtns.appendChild(btn);
-    });
-  }
-  customClearBtn.disabled = !ok;
-  confirmBtn.disabled = !ok;
-  if(copyConlluBtn) copyConlluBtn.disabled = !ok;
-  sentSelect.innerHTML = "";
-  if(!ok){ sentStats.textContent = ""; if(progressMeta) progressMeta.textContent = ""; renderSentManage(); return; }
-  renderSentSelectOptions();
-  updateExportButtons();
-}
-
-// Compute diff/token statistics for a sentence index (reusable across renders).
-function _sentStats(i){
-  const docMaps = state.docs.map(d => {
-    const s = d.sentences[i];
-    const m = new Map();
-    if(s) for(const tk of s.tokens) m.set(tk.id, tk);
-    return m;
-  });
-  const ids = new Set();
-  for(const m of docMaps) for(const id of m.keys()) ids.add(id);
-  const customSent = state.custom[i] || {};
-  for(const idStr of Object.keys(customSent)) ids.add(parseInt(idStr, 10));
-  const idList = Array.from(ids).sort((a,b) => a - b);
-  const goldMap = buildGoldTokenMap(i, idList, docMaps);
-  return computeStats(i, idList, docMaps, goldMap);
-}
-
-// Toggle the confirmed state for the current sentence.
-// When confirming (not unconfirming) and auto-advance is on, jump to the next
-// unconfirmed sentence automatically.
-function toggleConfirm(){
-  if(state.docs.length < 1) return;
-  pushUndo();
-  const i = state.currentSent;
-  const wasConfirmed = state.confirmed.has(i);
-  if(wasConfirmed){
-    state.confirmed.delete(i);
-  } else {
-    state.confirmed.add(i);
-  }
-  updateConfirmBtn();
-  renderSentSelectOptions();
-  // Auto-advance: after confirming, jump to the next unconfirmed sentence.
-  if(!wasConfirmed && _autoAdvance){
-    for(let j = state.currentSent + 1; j < state.maxSents; j++){
-      if(!state.confirmed.has(j)){
-        state.currentSent = j;
-        renderSentence();
-        return;
-      }
-    }
-  }
-}
-
-// Update the confirm button's label and active CSS class to reflect current state.
-function updateConfirmBtn(){
-  if(!confirmBtn) return;
-  const isConfirmed = state.confirmed.has(state.currentSent);
-  confirmBtn.textContent  = isConfirmed ? t('sent.confirmed') : t('sent.confirm');
-  confirmBtn.classList.toggle("confirmBtnActive", isConfirmed);
-}
-
-// Rebuild all <option> elements in the sentence <select> dropdown with diff/flag styling.
-function renderSentSelectOptions(){
-  if(state.docs.length < 1 || state.maxSents === 0) return;
-  sentSelect.innerHTML = "";
-  for(let i=0;i<state.maxSents;i++){
-    const stats = _sentStats(i);
-    const hasDiff   = stats.diffCount > 0;
-    const confirmed = state.confirmed.has(i);
-    const hasFlags  = state.flags[i]?.size > 0;
-    const opt = document.createElement("option");
-    opt.value = String(i);
-    const diffPart = hasDiff
-      ? ` ${t(stats.diffCount !== 1 ? 'sent.optDiffs' : 'sent.optDiff', { n: stats.diffCount })}`
-      : ` ${t('sent.optOk')}`;
-    const flagPart = hasFlags ? t('flag.sentOpt') : '';
-    opt.textContent = `${t('sent.optLabel', { n: i+1 })}${confirmed ? ' ★' : ''}${flagPart}  (${stats.totalTokens} Tok${diffPart})`;
-    // Color-code options: confirmed (gold), flagged (orange), diff (red), ok (green)
-    if(confirmed && hasFlags){
-      opt.style.background = '#1a0c00';
-      opt.style.color = '#ffcc44';   // gold + slight warm tint to show both
-    } else if(confirmed){
-      opt.style.background = '#1a1000';
-      opt.style.color = '#ffb347';   // gold
-    } else if(hasFlags){
-      opt.style.background = '#1c0e00';
-      opt.style.color = '#ff9100';   // orange — clearly distinct from gold and red/green
-    } else {
-      opt.style.background = hasDiff ? '#1f0b0b' : '#091a10';
-      opt.style.color = hasDiff ? '#ff9090' : '#6fe8a8';
-    }
-    sentSelect.appendChild(opt);
-  }
-  sentSelect.value = String(state.currentSent);
-
-  // Update the select border color to reflect the current sentence's status
-  const curConfirmed = state.confirmed.has(state.currentSent);
-  const curFlagged   = state.flags[state.currentSent]?.size > 0;
-  const curStats = _sentStats(state.currentSent);
-  sentSelect.style.borderColor = curConfirmed ? '#ff9f43'
-    : curFlagged              ? '#ff9100'
-    : curStats.diffCount > 0  ? '#ff5f5f'
-    : '#3de89a';
-
-  updateConfirmBtn();
-  renderSentMap();
-  _updateProgressMeta();
-}
-
-// Update the progress counter showing how many sentences are confirmed.
-function _updateProgressMeta(){
-  if(!progressMeta) return;
-  if(state.docs.length < 1 || state.maxSents === 0){ progressMeta.textContent = ""; return; }
-  progressMeta.textContent = t('sent.progress', {
-    done:  state.confirmed.size,
-    total: state.maxSents,
-  });
-}
-
-// Show or hide the sentence note textarea and load the note for the current sentence.
-function _updateSentNote(){
-  if(!sentNote || !sentNoteRow) return;
-  const ok = state.docs.length >= 1 && state.maxSents > 0;
-  sentNoteRow.style.display = ok ? "" : "none";
-  if(ok){
-    sentNote.value = state.notes[state.currentSent] ?? "";
-    sentNote.placeholder = t('note.placeholder');
-  }
-}
-
-// Re-render the minimap of sentence dots below the sentence selector.
-function renderSentMap(){
-  if(!sentMap) return;
-  if(state.docs.length < 1 || state.maxSents === 0){ sentMap.innerHTML = ""; return; }
-  sentMap.innerHTML = "";
-  for(let i=0;i<state.maxSents;i++){
-    const stats = _sentStats(i);
-    const hasDiff   = stats.diffCount > 0;
-    const confirmed = state.confirmed.has(i);
-    const hasFlags  = state.flags[i]?.size > 0;
-    const isCurrent = i === state.currentSent;
-    const dot = document.createElement("button");
-    let cls = "sentDot ";
-    if(confirmed)    cls += "sentDotConfirmed";
-    else if(hasDiff) cls += "sentDotDiff";
-    else             cls += "sentDotOk";
-    if(isCurrent)    cls += " sentDotCurrent";
-    if(hasFlags)     cls += " sentDotFlagged";
-    dot.className = cls;
-    dot.title = t(confirmed ? 'sent.dotTitleConf' : (hasFlags ? 'flag.sentDot' : 'sent.dotTitle'), {
-      n: i + 1, toks: stats.totalTokens, diffs: stats.diffCount
-    });
-    // Accessibility: text symbol inside dot conveys state independently of color
-    if     (confirmed && hasFlags)        dot.textContent = "★!";
-    else if(confirmed)                    dot.textContent = "★";
-    else if(hasFlags   && hasDiff)        dot.textContent = "×!";
-    else if(hasFlags)                     dot.textContent = "!";
-    else if(!hasDiff)                     dot.textContent = "✓";
-    else                                  dot.textContent = "×";
-    dot.addEventListener("click", () => {
-      state.currentSent = i;
-      renderSentence();
-    });
-    sentMap.appendChild(dot);
-  }
-}
-
-// ── Flags ──────────────────────────────────────────────────────────────────────
-
-// Toggle the flag for a single token and update the row, minimap, and selector in place.
-function toggleFlag(sentIdx, tokId){
-  if(!state.flags[sentIdx]) state.flags[sentIdx] = new Set();
-  const s = state.flags[sentIdx];
-  if(s.has(tokId)){
-    s.delete(tokId);
-    if(s.size === 0) delete state.flags[sentIdx];
-  } else {
-    s.add(tokId);
-  }
-  // Update row, button, and sentText span in-place (no full re-render needed)
-  const tr  = cmpTable.querySelector(`tr[data-id="${tokId}"]`);
-  const btn = tr?.querySelector(".flagBtn");
-  const isFlagged = !!state.flags[sentIdx]?.has(tokId);
-  if(btn)  btn.classList.toggle("flagBtnActive", isFlagged);
-  if(tr)   tr.classList.toggle("rowFlagged", isFlagged);
-  // Also update sentText token spans (both read-only and editable modes)
-  const span = sentText.querySelector(`[data-id="${tokId}"]`);
-  if(span) span.classList.toggle("sentTokenFlagged", isFlagged);
-  // Reflect flag change in the minimap and dropdown without a full re-render
-  renderSentMap();
-  renderSentSelectOptions();
-}
-
 // ── UI: Column toggle ──────────────────────────────────────────────────────────
 
 // Rebuild the column visibility toggle bar (shown when ≥2 documents are loaded, or project is unlocked).
@@ -5717,204 +6061,6 @@ function renderProjectLock(){
 
   bar.appendChild(status);
   bar.appendChild(btn);
-}
-
-// ── Token insert / delete helpers ─────────────────────────────────────────────
-
-// Re-assign IDs 1..n to all tokens in a sentence and update HEAD references.
-// Returns the Map<oldId, newId> used for annotation remapping.
-function _renumberTokens(sent){
-  const map = new Map();
-  sent.tokens.forEach((tk, i) => map.set(tk.id, i + 1));
-  sent.tokens.forEach((tk, i) => {
-    tk.id = i + 1;
-    if(tk.head != null && tk.head !== 0)
-      tk.head = map.has(tk.head) ? map.get(tk.head) : null;
-  });
-  return map;
-}
-
-// Remap token IDs in state.custom and state.goldPick after renumbering.
-function _remapAnnotations(si, oldToNew){
-  const remapObj = (obj, remapVals) => {
-    if(!obj) return;
-    const next = {};
-    for(const [k, v] of Object.entries(obj)){
-      const nk = oldToNew.get(parseInt(k, 10));
-      if(nk == null) continue;
-      next[nk] = remapVals ? Object.fromEntries(
-        Object.entries(v).map(([fk, fv]) => [
-          fk,
-          (fk === 'head' && fv != null && fv !== 0)
-            ? (oldToNew.get(fv) ?? null)
-            : fv
-        ])
-      ) : v;
-    }
-    return next;
-  };
-  const nc = remapObj(state.custom[si], true);
-  if(nc && Object.keys(nc).length) state.custom[si] = nc;
-  else delete state.custom[si];
-  const ng = remapObj(state.goldPick[si], false);
-  if(ng && Object.keys(ng).length) state.goldPick[si] = ng;
-  else delete state.goldPick[si];
-}
-
-// Insert a blank token before the token with `beforeId` in all docs (0 = append).
-// Focuses the new input after re-render.
-function _insertToken(beforeId){
-  pushUndo();
-  const si = state.currentSent;
-  let newId = 1;
-  for(const d of state.docs){
-    const s = d.sentences[si];
-    if(!s) continue;
-    let pos = beforeId === 0
-      ? s.tokens.length
-      : s.tokens.findIndex(t => t.id === beforeId);
-    if(pos < 0) pos = s.tokens.length;
-    s.tokens.splice(pos, 0, { id: 0, form: '_', lemma: '_', upos: '_', xpos: '_', feats: '_', head: null, deprel: '_', deps: '_', misc: '_' });
-    const map = _renumberTokens(s);
-    if(d === state.docs[0]){ _remapAnnotations(si, map); newId = pos + 1; }
-  }
-  renderSentence();
-  // Focus the new token's input after the DOM has been repainted
-  setTimeout(() => {
-    const inp = sentText.querySelector(`.sentFormInput[data-id="${newId}"]`);
-    if(inp){ inp.focus(); inp.select(); }
-  }, 0);
-}
-
-// Delete the token with the given ID from all docs.
-function _deleteToken(tokId){
-  const s0tok = state.docs[0]?.sentences?.[state.currentSent]?.tokens;
-  if(s0tok && s0tok.length <= 1) return; // keep at least one token
-  pushUndo();
-  const si = state.currentSent;
-  for(const d of state.docs){
-    const s = d.sentences[si];
-    if(!s) continue;
-    const idx = s.tokens.findIndex(t => t.id === tokId);
-    if(idx < 0) continue;
-    s.tokens.splice(idx, 1);
-    const map = _renumberTokens(s);
-    if(d === state.docs[0]) _remapAnnotations(si, map);
-  }
-  renderSentence();
-}
-
-// ── Sentence management ────────────────────────────────────────────────────────
-
-// Render sentence add/delete controls + sentence list into #sentManageBar.
-function renderSentManage(){
-  const bar = document.getElementById("sentManageBar");
-  if(!bar) return;
-  if(!state.unlocked || state.maxSents === 0){ bar.innerHTML = ""; return; }
-
-  bar.innerHTML = "";
-
-  // ➕ Insert new sentence after current
-  const addBtn = document.createElement("button");
-  addBtn.className = "sentManageBtn";
-  addBtn.textContent = t('sent.addSentBtn');
-  addBtn.addEventListener("click", () => {
-    const text = prompt(t('sent.addSentPrompt')) ?? "";
-    pushUndo();
-    const newSent = { text: text.trim(), tokens: [], comments: text.trim() ? [`# text = ${text.trim()}`] : [], extras: [] };
-    for(const d of state.docs) d.sentences.splice(state.currentSent + 1, 0, JSON.parse(JSON.stringify(newSent)));
-    recomputeMaxSents();
-    state.currentSent = state.currentSent + 1;
-    renderSentSelect();
-    renderSentence();
-    renderConlluEditor(true);
-  });
-  bar.appendChild(addBtn);
-
-  // 🗑 Delete current sentence
-  const delBtn = document.createElement("button");
-  delBtn.className = "sentManageBtn danger";
-  delBtn.textContent = t('sent.delSentBtn');
-  delBtn.addEventListener("click", () => {
-    if(!confirm(t('sent.delSentConfirm'))) return;
-    pushUndo();
-    for(const d of state.docs) d.sentences.splice(state.currentSent, 1);
-    recomputeMaxSents();
-    state.currentSent = Math.min(state.currentSent, Math.max(0, state.maxSents - 1));
-    renderSentSelect();
-    renderSentence();
-    renderConlluEditor(true);
-  });
-  bar.appendChild(delBtn);
-
-  // Sentence list — always visible, active sentence highlighted with accent color
-  const listPanel = document.createElement("div");
-  listPanel.className = "sentListPanel";
-
-  for(let si = 0; si < state.maxSents; si++){
-    const row = document.createElement("div");
-    row.className = "sentListRow" + (si === state.currentSent ? " sentListRowActive" : "");
-
-    // Sentence number
-    const numSpan = document.createElement("span");
-    numSpan.className = "sentListNum";
-    numSpan.textContent = si + 1;
-    row.appendChild(numSpan);
-
-    // Sentence text preview (from first doc that has it)
-    let preview = "";
-    for(const d of state.docs){
-      const s = d.sentences[si];
-      if(s){ preview = s.text || s.tokens.map(t => t.form).join(" "); break; }
-    }
-    const textSpan = document.createElement("span");
-    textSpan.className = "sentListText";
-    textSpan.textContent = preview || t('sent.missing');
-    row.appendChild(textSpan);
-
-    // Status icons
-    const iconsSpan = document.createElement("span");
-    iconsSpan.className = "sentListIcons";
-    if(state.confirmed.has(si)) iconsSpan.appendChild(Object.assign(document.createElement("span"), { textContent: "✓", title: t('sent.confirmed') }));
-    if(state.flags[si]?.size > 0) iconsSpan.appendChild(Object.assign(document.createElement("span"), { textContent: "⚑" }));
-    row.appendChild(iconsSpan);
-
-    // Click row → navigate to that sentence
-    row.addEventListener("click", () => {
-      state.currentSent = si;
-      renderSentSelect();
-      renderSentence();
-    });
-
-    listPanel.appendChild(row);
-  }
-
-  // Scroll active row into view after append
-  bar.appendChild(listPanel);
-  const activeRow = listPanel.querySelector(".sentListRowActive");
-  if(activeRow) requestAnimationFrame(() => activeRow.scrollIntoView({ block: "nearest" }));
-}
-
-// ── Custom annotations ─────────────────────────────────────────────────────────
-
-// Copy all annotations from document docIdx into custom for the current sentence.
-function initCustomFromDoc(docIdx){
-  const s = state.docs[docIdx]?.sentences?.[state.currentSent];
-  if(!s) return;
-  pushUndo();
-  const sent = ensureCustomSent(state.currentSent);
-  for(const tk of s.tokens){
-    sent[tk.id] = { head: tk.head ?? null, deprel: tk.deprel ?? null, upos: tk.upos ?? null, xpos: tk.xpos ?? null };
-  }
-  renderSentence();
-}
-
-// Remove all custom overrides for the current sentence after user confirmation.
-function clearCustomForSentence(){
-  if(!confirm(t('sent.clearConfirm'))) return;
-  pushUndo();
-  delete state.custom[state.currentSent];
-  renderSentence();
 }
 
 // ── Main render ────────────────────────────────────────────────────────────────
@@ -6089,7 +6235,9 @@ function renderConlluEditor(force){
   const cancelBtn = document.createElement('button');
   cancelBtn.textContent = t('sent.editSentCancel');
   cancelBtn.addEventListener('click', () => {
-    renderConlluEditor(true); // reset textareas to current data
+    _conlluEditorOpen = false;
+    localStorage.setItem('conllu-editor-open', 'false');
+    renderConlluEditor(false);
   });
   btnRow.appendChild(cancelBtn);
 
@@ -6325,118 +6473,6 @@ function unflagAll(){
 if(confirmAllBtn) confirmAllBtn.addEventListener('click', confirmAllMatching);
 if(flagDiffsBtn)  flagDiffsBtn.addEventListener('click',  flagAllDiffs);
 if(unflagAllBtn)  unflagAllBtn.addEventListener('click',  unflagAll);
-
-// ── Dev mode (auto-reload on bundler rebuild) ──────────────────────────────────
-
-const _DEV_MODE_KEY       = 'devMode';
-const _DEV_SESSION_KEY    = 'devModeSession';
-const _DEV_RELOADED_KEY   = 'devModeReloadedAt';
-let   _devModeTimer    = null;
-let   _devModeVersion  = null;   // last seen build version token
-let   _devModeFails    = 0;      // consecutive fetch failures
-
-function _devModePoll(){
-  fetch('version.txt?_=' + Date.now(), { cache: 'no-store' })
-    .then(r => r.ok ? r.text() : Promise.reject())
-    .then(ver => {
-      _devModeFails = 0;
-      ver = ver.trim();
-      if(_devModeVersion === null){ _devModeVersion = ver; _devModeUpdateBadge(ver); return; }
-      if(ver !== _devModeVersion){
-        try {
-          const snap = JSON.stringify(_buildSessionObject());
-          sessionStorage.setItem(_DEV_SESSION_KEY, snap);
-          sessionStorage.setItem(_DEV_RELOADED_KEY, String(Date.now()));
-        } catch(_){}
-        window.location.reload();
-      }
-    })
-    .catch(() => {
-      _devModeFails++;
-      if(_devModeFails >= 3){
-        // version.txt not reachable — auto-disable dev mode
-        localStorage.setItem(_DEV_MODE_KEY, '0');
-        _devModeStop();
-        renderDevModeBar();
-      }
-    });
-}
-
-function _devModeStart(){
-  if(_devModeTimer) return;
-  _devModeVersion = null;
-  _devModeFails   = 0;
-  _devModeTimer = setInterval(_devModePoll, 2000);
-  _devModePoll(); // immediate first check to set baseline version
-}
-
-function _devModeStop(){
-  clearInterval(_devModeTimer);
-  _devModeTimer   = null;
-  _devModeVersion = null;
-  _devModeUpdateBadge(null);
-}
-
-function _devModeUpdateBadge(ver){
-  const badge = document.getElementById('devVersionBadge');
-  if(!badge) return;
-  if(!ver){ badge.hidden = true; return; }
-  const ts = new Date(parseInt(ver, 10) * 1000).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit', second:'2-digit'});
-  badge.innerHTML =
-    `<span class="devBadgeLabel">🔨 ${ts}</span>` +
-    `<button class="devBadgeClose" title="Dev-Modus beenden">✕</button>`;
-  badge.querySelector('.devBadgeClose').addEventListener('click', () => {
-    localStorage.setItem(_DEV_MODE_KEY, '0');
-    _devModeStop();
-    renderDevModeBar();
-  });
-  badge.hidden = false;
-}
-
-function renderDevModeBar(){
-  const bar = document.getElementById('devModeBar');
-  if(!bar) return;
-  // Dev mode is activated only via ?dev URL param — no visible UI control
-  bar.innerHTML = '';
-  if(localStorage.getItem(_DEV_MODE_KEY) === '1') _devModeStart();
-}
-
-// Restore session if we reloaded due to a build change, then show reload toast.
-function _devModeRestoreSession(){
-  const snap       = sessionStorage.getItem(_DEV_SESSION_KEY);
-  const reloadedAt = sessionStorage.getItem(_DEV_RELOADED_KEY);
-  if(snap){
-    sessionStorage.removeItem(_DEV_SESSION_KEY);
-    try { importSession(snap); } catch(_){}
-  }
-  if(reloadedAt){
-    sessionStorage.removeItem(_DEV_RELOADED_KEY);
-    _devModeShowReloadToast(parseInt(reloadedAt, 10));
-  }
-}
-
-// Show a brief toast notification that the page was auto-reloaded by dev mode.
-function _devModeShowReloadToast(reloadedAt){
-  const existing = document.getElementById('devReloadToast');
-  if(existing) existing.remove();
-
-  const toast = document.createElement('div');
-  toast.id = 'devReloadToast';
-  toast.className = 'devReloadToast';
-
-  const ts = new Date(reloadedAt).toLocaleTimeString([], { hour:'2-digit', minute:'2-digit', second:'2-digit' });
-  toast.innerHTML =
-    `<span class="devReloadIcon">🔄</span>` +
-    `<span>${t('devMode.reloaded')} <span class="devReloadTime">${ts}</span></span>` +
-    `<button class="devReloadClose" title="${t('kbd.close')}">✕</button>`;
-
-  toast.querySelector('.devReloadClose').addEventListener('click', () => toast.remove());
-  document.body.appendChild(toast);
-
-  // Auto-dismiss after 4 s
-  setTimeout(() => { toast.classList.add('devReloadToastFade'); }, 3500);
-  setTimeout(() => { toast.remove(); }, 4200);
-}
 
 // ── Section visibility ─────────────────────────────────────────────────────────
 

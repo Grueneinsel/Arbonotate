@@ -309,6 +309,8 @@ function buildArcDiagram(tokMap, { onSetHead = null, onDeleteArc = null, onSetDe
     for (const [k, v] of Object.entries(attrs)) el.setAttribute(k, String(v));
     return el;
   };
+  // On touch/tablet (coarse pointer) show delete buttons permanently instead of hover-only.
+  const _touchMode = window.matchMedia('(pointer: coarse)').matches;
 
   const svg = mk('svg', { width:svgW, height:svgH });
   // Allow vertical page-scroll over the diagram; touch-action:none is applied
@@ -356,13 +358,16 @@ function buildArcDiagram(tokMap, { onSetHead = null, onDeleteArc = null, onSetDe
         });
       }
 
-      // Root ✕ delete button (shown on hover)
+      // Root ✕ delete button (shown on hover; always visible on touch devices)
       let rootBtnG = null;
       if (editable && onDeleteArc) {
         rootBtnG = mk('g');
-        rootBtnG.style.cssText = 'cursor:pointer; opacity:0; pointer-events:none; transition:opacity .12s;';
+        const _rInit = _touchMode ? 'opacity:0.7; pointer-events:all;' : 'opacity:0; pointer-events:none;';
+        rootBtnG.style.cssText = `cursor:pointer; ${_rInit} transition:opacity .12s;`;
         const bx = dx + lw + 22;
         const by = ty + 7;
+        // Transparent hit-area circle (large touch target)
+        rootBtnG.appendChild(mk('circle', { cx:bx, cy:by, r:18, fill:'transparent' }));
         rootBtnG.appendChild(mk('circle', { cx:bx, cy:by, r:7, fill:'var(--bad)', opacity:0.9 }));
         const rxt = mk('text', { x:bx, y:by+4, 'text-anchor':'middle',
           'font-size':11, 'font-weight':900, fill:'#fff', 'pointer-events':'none' });
@@ -434,13 +439,16 @@ function buildArcDiagram(tokMap, { onSetHead = null, onDeleteArc = null, onSetDe
         });
       }
 
-      // ✕ delete button — rendered in top layer, initially hidden
+      // ✕ delete button — rendered in top layer; hover-only on mouse, always visible on touch
       let btnG = null;
       if (editable && onDeleteArc) {
         btnG = mk('g');
-        btnG.style.cssText = 'cursor:pointer; opacity:0; pointer-events:none; transition:opacity .12s;';
+        const _bInit = _touchMode ? 'opacity:0.7; pointer-events:all;' : 'opacity:0; pointer-events:none;';
+        btnG.style.cssText = `cursor:pointer; ${_bInit} transition:opacity .12s;`;
         const bx = mid + lw/2 + 14;
         const by = apex - 7;
+        // Transparent hit-area circle (large touch target)
+        btnG.appendChild(mk('circle', { cx:bx, cy:by, r:18, fill:'transparent' }));
         btnG.appendChild(mk('circle', { cx:bx, cy:by, r:7, fill:'var(--bad)', opacity:0.9 }));
         const xt = mk('text', { x:bx, y:by+4, 'text-anchor':'middle',
           'font-size':11, 'font-weight':900, fill:'#fff', 'pointer-events':'none' });
