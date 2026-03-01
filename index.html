@@ -175,10 +175,17 @@
     </div>
   </div>
 
-  <div id="helpModal" class="helpModal" onclick="if(event.target===this)closeHelp()">
-    <button id="helpCloseBtn" data-i18n-title="kbd.close" onclick="closeHelp()">✕</button>
-    <div class="helpModalBox">
-      <div id="helpContent" class="helpContent"></div>
+  <!-- Help overlay: tapping the backdrop (outside the white box) closes it -->
+  <div id="helpOverlay" class="helpOverlay" onclick="closeHelp()">
+    <!-- Content box: tap inside does NOT close (stopPropagation) -->
+    <div class="helpDialog" onclick="event.stopPropagation()">
+      <div class="helpDialogBar">
+        <span class="helpDialogTitle" data-i18n="help.title">Hilfe</span>
+        <button id="helpCloseBtn" class="helpDialogClose" onclick="closeHelp()">✕ <span data-i18n="kbd.close">Schließen</span></button>
+      </div>
+      <div class="helpDialogBody">
+        <div id="helpContent" class="helpContent"></div>
+      </div>
     </div>
   </div>
 

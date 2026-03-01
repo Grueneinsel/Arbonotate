@@ -197,6 +197,7 @@ window.LANG_EN = {
   'kbd.flagPrev':    'Previous flag',
 
   // Help
+  'help.title':       'Help',
   'help.unavailable': 'Help not available.',
   'help.runScript':   'Please run python make_readme_js.py and reload the page.',
   'help.hintTitle':   'Open this section in help',

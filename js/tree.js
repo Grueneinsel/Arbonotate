@@ -379,14 +379,12 @@ function renderPreview(){
     arcOnSetHead: (depId, newHeadId) => {
       pushUndo();
       setCustomField(sentIndex, depId, 'head', newHeadId);
-      renderSentence();
+      renderSentenceKeepScroll();
     },
     arcOnDeleteArc: (depId) => {
       pushUndo();
-      // If there is a custom head override: revert it (falls back to file's head).
-      // If the arc comes purely from the file: set head=0 (root) to "delete" it.
       const rawEntry = state.custom[sentIndex]?.[depId];
-      const hasCustomHead = rawEntry?.head != null; // head=0 is valid, != null catches it
+      const hasCustomHead = rawEntry?.head != null;
       if (hasCustomHead) {
         setCustomField(sentIndex, depId, 'head',   null);
         setCustomField(sentIndex, depId, 'deprel', null);
@@ -394,12 +392,12 @@ function renderPreview(){
         setCustomField(sentIndex, depId, 'head',   0);
         setCustomField(sentIndex, depId, 'deprel', 'root');
       }
-      renderSentence();
+      renderSentenceKeepScroll();
     },
     arcOnSetDeprel: (depId, deprel) => {
       pushUndo();
       setCustomField(sentIndex, depId, 'deprel', deprel);
-      renderSentence();
+      renderSentenceKeepScroll();
     },
   });
   // In single-file unlocked mode the Gold and file section would be identical —
@@ -436,19 +434,19 @@ function renderPreview(){
           pushUndo();
           const tok = state.docs[i].sentences[sentIndex]?.tokens.find(t => t.id === depId);
           if(tok) tok.head = newHeadId;
-          renderSentence();
+          renderSentenceKeepScroll();
         },
         arcOnDeleteArc: (depId) => {
           pushUndo();
           const tok = state.docs[i].sentences[sentIndex]?.tokens.find(t => t.id === depId);
           if(tok){ tok.head = null; tok.deprel = "_"; }
-          renderSentence();
+          renderSentenceKeepScroll();
         },
         arcOnSetDeprel: (depId, deprel) => {
           pushUndo();
           const tok = state.docs[i].sentences[sentIndex]?.tokens.find(t => t.id === depId);
           if(tok) tok.deprel = deprel;
-          renderSentence();
+          renderSentenceKeepScroll();
         },
       } : {}),
       onAdoptSubtree: (rootId) => {
@@ -469,12 +467,11 @@ function renderPreview(){
         }
         if(state.custom[sentIndex] && !Object.keys(state.custom[sentIndex]).length)
           delete state.custom[sentIndex];
-        renderSentence();
+        renderSentenceKeepScroll();
       },
       subtreeDiffCheck: (rootId) => hasSubtreeDiff(rootId, goldMap, otherMap),
       onAdoptToken: (tokId) => {
         pushUndo();
-        // Adopt a single token from this file: clear custom overrides and point pick at docIdx
         const e = state.custom[sentIndex]?.[tokId];
         if(e){
           e.head   = null;
@@ -484,7 +481,7 @@ function renderPreview(){
             delete state.custom[sentIndex];
         }
         setDocChoice(sentIndex, tokId, docIdx);
-        renderSentence();
+        renderSentenceKeepScroll();
       },
     });
     wrap.appendChild(section);

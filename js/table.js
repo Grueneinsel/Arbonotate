@@ -278,7 +278,7 @@ function _ensurePopup(){
     const s  = state.custom[si];
     if(s){ delete s[_popupTokId]; if(!Object.keys(s).length) delete state.custom[si]; }
     _popupTokId = null;
-    renderSentence();
+    renderSentenceKeepScroll();
   });
 
   // Close on outside click
@@ -364,7 +364,7 @@ function _onPopupChange(e){
     ? (raw === "" ? null : (parseInt(raw, 10) >= 0 ? parseInt(raw, 10) : null))
     : (raw === "" ? null : raw);
   setCustomField(state.currentSent, _popupTokId, field, val);
-  renderSentence(); // renderCompareTable will reposition popup
+  renderSentenceKeepScroll(); // preserve scroll; renderCompareTable will reposition popup
 }
 
 function _closePopup(){
@@ -536,7 +536,7 @@ cmpTable.addEventListener("change", (e) => {
   pushUndo();
   setCustomField(state.currentSent, tokId, field, val);
   el.blur();
-  renderSentence();
+  renderSentenceKeepScroll();
 });
 
 // Escape on inline pos elements → blur (return keyboard focus to document)
@@ -597,7 +597,7 @@ function _ensureFilePopup(){
         if(eid === `fpCol_${col.key}`){ tok[col.key] = e.target.value || '_'; break; }
       }
     }
-    renderSentence();
+    renderSentenceKeepScroll();
   };
 
   document.getElementById('fpHead')?.addEventListener('change', _onFileChange);

@@ -919,6 +919,15 @@ function renderSentence(){
   renderSentManage();
 }
 
+// Like renderSentence() but preserves the window scroll position.
+// Use this when an in-place edit (table cell, arc drag) triggers a re-render
+// so the page does not jump back to the top.
+function renderSentenceKeepScroll(){
+  const y = window.scrollY;
+  renderSentence();
+  requestAnimationFrame(() => window.scrollTo({ top: y, behavior: 'instant' }));
+}
+
 // ── Plain CoNLL-U helper ───────────────────────────────────────────────────────
 
 
@@ -961,6 +970,8 @@ function renderConlluEditor(force){
     toggle.classList.toggle('open', _conlluEditorOpen);
     toggle.setAttribute('aria-expanded', String(_conlluEditorOpen));
   }
+  // Always wipe stale content when there are no docs, so it never shows after a reset.
+  if(state.docs.length === 0) wrap.innerHTML = '';
   if(!_conlluEditorOpen){ wrap.hidden = true; return; }
   wrap.hidden = false;
   if(state.docs.length === 0){
@@ -1028,8 +1039,7 @@ function toggleConlluEditor(){
   localStorage.setItem('conllu-editor-open', String(_conlluEditorOpen));
   renderConlluEditor(true);
 }
-const _conlluToggleBtn = document.getElementById('conlluEditorToggle');
-if(_conlluToggleBtn) _conlluToggleBtn.addEventListener('click', toggleConlluEditor);
+// Toggle button uses inline onclick="toggleConlluEditor()" in HTML — no addEventListener needed.
 
 // ── Clipboard copy ─────────────────────────────────────────────────────────────
 

@@ -197,6 +197,7 @@ window.LANG_DE = {
   'kbd.flagPrev':    'Vorherige Markierung',
 
   // Hilfe
+  'help.title':       'Hilfe',
   'help.unavailable': 'Hilfe nicht verfügbar.',
   'help.runScript':   'Bitte python make_readme_js.py ausführen und die Seite neu laden.',
   'help.hintTitle':   'Diesen Abschnitt in der Hilfe öffnen',
