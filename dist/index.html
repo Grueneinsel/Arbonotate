@@ -4022,27 +4022,32 @@ cmpTable.addEventListener('click', (e) => {
 // Read-only (file views): click on token box scrolls to table row only.
 // ─────────────────────────────────────────────────────────────────────────────
 
-const _ARC_THRESH = 5; // px movement required to promote a pointerdown to a real drag
+const _ARC_THRESH       = 5;  // px movement required on mouse to promote pointerdown to drag
+const _ARC_THRESH_TOUCH = 12; // higher threshold for touch/stylus (avoids accidental drags)
 
-let _arcPreDrag = null; // pending drag state set on pointerdown, before threshold is crossed
-let _arcDrag    = null; // active drag state after threshold has been crossed
+let _arcPreDrag  = null; // pending drag state set on pointerdown, before threshold is crossed
+let _arcDrag     = null; // active drag state after threshold has been crossed
+let _arcRafId    = null; // rAF handle for pointermove throttle (avoids layout thrashing on tablet)
+let _arcLastMoveE = null; // latest captured pointermove event (consumed inside rAF)
 
-// Global pointermove: promote pre-drag to real drag once the movement threshold is exceeded,
-// then update the drag line and drop-target highlight while dragging.
-window.addEventListener('pointermove', e => {
-  // Only track the pointer that started the drag
+// Core pointermove logic — called inside a requestAnimationFrame so it runs at most
+// once per display frame instead of at the raw event rate (important for tablet perf).
+function _arcProcessMove(e) {
   if (_arcPreDrag && e.pointerId !== _arcPreDrag.pointerId) return;
   if (_arcDrag    && e.pointerId !== _arcDrag.pointerId)    return;
-  // Promote pre-drag to real drag once threshold is crossed
+  // Promote pre-drag to real drag once the appropriate threshold is crossed
   if (_arcPreDrag && !_arcDrag) {
     const dx = e.clientX - _arcPreDrag.startX;
     const dy = e.clientY - _arcPreDrag.startY;
-    if (Math.hypot(dx, dy) > _ARC_THRESH) _arcBeginDrag(e);
+    const thresh = _arcPreDrag.isTouch ? _ARC_THRESH_TOUCH : _ARC_THRESH;
+    if (Math.hypot(dx, dy) > thresh) _arcBeginDrag(e);
   }
   if (!_arcDrag) return;
   // Guard: SVG might have been replaced by a re-render
   if (!_arcDrag.svg.isConnected) { _arcDrag = null; return; }
+  // Re-fetch bounding rect once per rAF frame (not on every raw event)
   const r  = _arcDrag.svg.getBoundingClientRect();
+  _arcDrag._svgRect = r;
   const mx = e.clientX - r.left;
   const my = e.clientY - r.top;
   _arcDrag.line.setAttribute('x2', mx);
@@ -4050,6 +4055,17 @@ window.addEventListener('pointermove', e => {
   _arcDrag.dot.setAttribute('cx', mx);
   _arcDrag.dot.setAttribute('cy', my);
   _arcHighlightDrop(mx, my);
+}
+
+// Global pointermove: capture the latest event and schedule one rAF update per frame.
+window.addEventListener('pointermove', e => {
+  if (!_arcPreDrag && !_arcDrag) return;
+  _arcLastMoveE = e;
+  if (_arcRafId !== null) return; // already scheduled
+  _arcRafId = requestAnimationFrame(() => {
+    _arcRafId = null;
+    if (_arcLastMoveE) { _arcProcessMove(_arcLastMoveE); _arcLastMoveE = null; }
+  });
 });
 
 // Global pointerup: handle drop — either a plain click (no threshold crossed) or a real drag.
@@ -4065,17 +4081,21 @@ window.addEventListener('pointerup', e => {
   _arcPreDrag = null;
   if (!_arcDrag) return;
   const drag = _arcDrag; _arcDrag = null;
+  // Cancel any pending rAF update — the drag is over
+  if (_arcRafId !== null) { cancelAnimationFrame(_arcRafId); _arcRafId = null; _arcLastMoveE = null; }
   if (drag.svg.isConnected) {
     drag.line.remove();
     drag.dot.remove();
     drag.svg.style.cursor = '';
     _arcClearHighlight(drag);
   }
-  const r  = drag.svg.getBoundingClientRect();
+  // Use cached rect when available (set during drag) to avoid an extra reflow
+  const r  = drag._svgRect ?? drag.svg.getBoundingClientRect();
   const mx = e.clientX - r.left;
   const my = e.clientY - r.top;
-  // Check for ROOT drop zone: if the pointer is released above the arc area
-  if (my < drag.wordY - 20 && drag.onSetHead) {
+  // Check for ROOT drop zone: pointer released inside the labeled ROOT strip at the top
+  const rootZoneBoundary = drag.rootZoneH > 0 ? drag.rootZoneH + 6 : drag.wordY - drag.rootH;
+  if (my < rootZoneBoundary && drag.onSetHead) {
     const curHead = drag.toks[drag.tokIdx]?.head;
     if (curHead !== 0) {
       drag.onSetHead(drag.depId, 0);
@@ -4127,7 +4147,13 @@ function _arcBeginDrag(e) {
   pd.svg.appendChild(line);
   pd.svg.appendChild(dot);
   pd.svg.style.cursor = 'grabbing';
-  _arcDrag = { ...pd, line, dot, _hovId:null, _hovEl:null, _hovBad:false };
+  // Pre-build a Map<tokenId → overlayElement> so _arcHighlightDrop never needs querySelector
+  const _tokElCache = new Map();
+  for (const t of pd.toks) {
+    const el = pd.svg.querySelector(`[data-arctokid="${t.id}"]`);
+    if (el) _tokElCache.set(t.id, el);
+  }
+  _arcDrag = { ...pd, line, dot, _hovId:null, _hovEl:null, _hovBad:false, _tokElCache, _svgRect:null };
 }
 
 // Find the nearest token center within a vertical hit band around the word row.
@@ -4145,21 +4171,26 @@ function _arcNearest(mx, my, centers, wordY, cellH) {
 // Highlight the drop target token during a drag (blue = valid, red = would cycle).
 // Also highlights the ROOT zone when the pointer is above the arc area.
 function _arcHighlightDrop(mx, my) {
-  // Root zone highlight
-  const inRootZone = my < _arcDrag.wordY - 20;
+  // Root zone highlight — lights up when cursor is in the labeled ROOT strip at top
+  const rootZoneBoundary = _arcDrag.rootZoneH > 0 ? _arcDrag.rootZoneH + 6 : _arcDrag.wordY - _arcDrag.rootH;
+  const inRootZone = my < rootZoneBoundary;
   const rz = _arcDrag.svg._arcRootZone;
   if (rz) {
     const curHead = _arcDrag.toks[_arcDrag.tokIdx]?.head;
     if (inRootZone && curHead !== 0) {
-      rz.setAttribute('fill', 'rgba(61,232,154,0.15)');
+      rz.setAttribute('fill', 'rgba(61,232,154,0.22)');
       rz.setAttribute('stroke', 'var(--ok)');
+      rz.setAttribute('opacity', '1');
     } else {
-      rz.setAttribute('fill', 'transparent');
-      rz.setAttribute('stroke', 'transparent');
+      rz.setAttribute('fill', 'rgba(61,232,154,0.05)');
+      rz.setAttribute('stroke', 'var(--ok)');
+      rz.setAttribute('opacity', '0.55');
     }
   }
   if (inRootZone) {
-    _arcClearHighlight(_arcDrag);
+    // Only clear the token hover highlight, not the root zone (we just set it above)
+    if (_arcDrag._hovEl) { _arcDrag._hovEl.style.fill = 'transparent'; _arcDrag._hovEl = null; }
+    _arcDrag._hovId = null; _arcDrag._hovBad = false;
     return;
   }
   const ni  = _arcNearest(mx, my, _arcDrag.centers, _arcDrag.wordY, _arcDrag.cellH);
@@ -4168,7 +4199,8 @@ function _arcHighlightDrop(mx, my) {
   _arcClearHighlight(_arcDrag);
   _arcDrag._hovId = nid;
   if (nid !== null && _arcDrag.svg.isConnected) {
-    const el = _arcDrag.svg.querySelector(`[data-arctokid="${nid}"]`);
+    // Use pre-built element cache instead of querySelector on every frame
+    const el = _arcDrag._tokElCache?.get(nid) ?? _arcDrag.svg.querySelector(`[data-arctokid="${nid}"]`);
     if (el) {
       const bad = _arcWouldCycle(_arcDrag.depId, nid, _arcDrag.toks);
       el.style.fill = bad ? 'rgba(255,70,70,0.40)' : 'rgba(74,158,255,0.30)';
@@ -4183,9 +4215,13 @@ function _arcClearHighlight(drag) {
   if (drag._hovEl) { drag._hovEl.style.fill = 'transparent'; drag._hovEl = null; }
   drag._hovId  = null;
   drag._hovBad = false;
-  // Also clear root zone
+  // Restore root zone to default idle appearance (always visible, just dimmer)
   const rz = drag.svg._arcRootZone;
-  if (rz) { rz.setAttribute('fill', 'transparent'); rz.setAttribute('stroke', 'transparent'); }
+  if (rz) {
+    rz.setAttribute('fill', 'rgba(61,232,154,0.05)');
+    rz.setAttribute('stroke', 'var(--ok)');
+    rz.setAttribute('opacity', '0.55');
+  }
 }
 
 // ── Cycle detection ───────────────────────────────────────────────────────────
@@ -4272,14 +4308,15 @@ function buildArcDiagram(tokMap, { onSetHead = null, onDeleteArc = null, onSetDe
   const editable = !!onSetHead;
 
   // ── Layout constants ──────────────────────────────────────────────────────
-  const HPAD   = 14;   // horizontal padding inside word box
-  const CELL_H = 34;   // word box height
-  const GAP    = 18;   // gap between word boxes
-  const ARC_U  = 36;   // px per token-distance unit (controls arc height scaling)
-  const ARC_MX = 210;  // maximum arc height cap
-  const ROOT_H = 30;   // height of the vertical root arrow
-  const PTOP   = 14;   // top SVG padding
-  const PBOT   = 8;    // bottom SVG padding
+  const HPAD      = 14;   // horizontal padding inside word box
+  const CELL_H    = 34;   // word box height
+  const GAP       = 18;   // gap between word boxes
+  const ARC_U     = 36;   // px per token-distance unit (controls arc height scaling)
+  const ARC_MX    = 210;  // maximum arc height cap
+  const ROOT_H    = 30;   // height of the vertical root arrow
+  const ROOT_ZONE = editable ? 36 : 0; // always reserve a visible ROOT drop zone for editable diagrams
+  const PTOP      = ROOT_ZONE + 6; // top SVG padding (includes root zone height)
+  const PBOT      = 8;    // bottom SVG padding
   const FONT_M = "'JetBrains Mono', ui-monospace, Consolas, monospace";
 
   // Measure text widths via an offscreen canvas for accurate box sizing
@@ -4312,7 +4349,8 @@ function buildArcDiagram(tokMap, { onSetHead = null, onDeleteArc = null, onSetDe
   edges.sort((a, b) => a.h - b.h);
 
   const maxArcH = Math.max(0, ...edges.filter(e => !e.isRoot).map(e => e.h));
-  const arcArea = Math.max(maxArcH, edges.some(e => e.isRoot) ? ROOT_H : 0);
+  // Always reserve ROOT_H space in editable diagrams so root arrows always have room to draw
+  const arcArea = Math.max(maxArcH, (editable || edges.some(e => e.isRoot)) ? ROOT_H : 0);
   const wordY   = PTOP + arcArea + 14;
   const svgH    = wordY + CELL_H + PBOT;
 
@@ -4537,8 +4575,9 @@ function buildArcDiagram(tokMap, { onSetHead = null, onDeleteArc = null, onSetDe
         _arcPreDrag = {
           startX: ev.clientX, startY: ev.clientY,
           pointerId: ev.pointerId,
+          isTouch: ev.pointerType !== 'mouse',
           tokIdx: i, depId: t.id,
-          svg, centers, wordY, cellH: CELL_H, toks,
+          svg, centers, wordY, cellH: CELL_H, rootH: ROOT_H, rootZoneH: ROOT_ZONE, toks,
           onSetHead, onSetDeprel, onScrollTok: scrollToTok,
           _hovId: null, _hovEl: null, _hovBad: false,
         };
@@ -4557,19 +4596,28 @@ function buildArcDiagram(tokMap, { onSetHead = null, onDeleteArc = null, onSetDe
   // Appended after token boxes so they are always visible above overlapping paths.
   for (const lg of edgeLabelGroups) svg.appendChild(lg);
 
-  // ── ROOT drop zone indicator (editable only) ──────────────────────────────
-  // A dashed rectangle at the top of the SVG that lights up when a drag enters
-  // the "above arcs" region. Dropping here sets head=0 (root).
+  // ── ROOT drop zone (editable only) ────────────────────────────────────────
+  // A labeled dashed rectangle at the very top of the SVG.
+  // Always visible so users know they can drag a token here to make it a root.
+  // Highlights green when a drag enters the zone; dropping sets head=0 (root).
   if (editable && onSetHead) {
-    const rootZone = mk('rect', {
-      x:GAP, y:2, width:svgW - GAP * 2, height:PTOP + 8,
-      rx:4, fill:'transparent', stroke:'transparent',
-      'stroke-dasharray':'4,3', 'stroke-width':1.5,
-      'pointer-events':'none' });
-    rootZone.id = '_arcRootZone_' + Math.random().toString(36).slice(2);
-    svg.appendChild(rootZone);
-    // Store ref so _arcHighlightDrop can toggle it
-    svg._arcRootZone = rootZone;
+    const rz = mk('rect', {
+      x: GAP, y: 2, width: svgW - GAP * 2, height: ROOT_ZONE - 4,
+      rx: 5, fill: 'rgba(61,232,154,0.05)', stroke: 'var(--ok)',
+      'stroke-dasharray': '5,3', 'stroke-width': 1.2,
+      'pointer-events': 'none', opacity: 0.55 });
+    svg.appendChild(rz);
+
+    const rzLabel = mk('text', {
+      x: svgW / 2, y: 2 + (ROOT_ZONE - 4) / 2 + 4,
+      'text-anchor': 'middle', 'font-size': 10, fill: 'var(--ok)',
+      'font-weight': 700, 'letter-spacing': '1px',
+      'pointer-events': 'none', opacity: 0.65 });
+    rzLabel.textContent = 'ROOT';
+    svg.appendChild(rzLabel);
+
+    svg._arcRootZone  = rz;
+    svg._arcRootLabel = rzLabel;
   }
 
   const wrap = document.createElement('div');
