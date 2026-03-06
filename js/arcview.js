@@ -293,12 +293,15 @@ function buildArcDiagram(tokMap, { onSetHead = null, onDeleteArc = null, onSetDe
   const toks    = Array.from(tokMap.values()).sort((a, b) => a.id - b.id);
   if (!toks.length) return null;
 
-  const editable = !!onSetHead;
+  const editable  = !!onSetHead;
+  const _touch    = window.matchMedia('(pointer: coarse)').matches;
 
-  // ── Layout constants ──────────────────────────────────────────────────────
-  const HPAD      = 14;   // horizontal padding inside word box
-  const CELL_H    = 34;   // word box height
-  const GAP       = 18;   // gap between word boxes
+  // ── Layout constants (larger on touch/tablet for easier tap targets) ──────
+  const HPAD      = _touch ? 18 : 14;  // horizontal padding inside word box
+  const CELL_H    = _touch ? 48 : 34;  // word box height
+  const GAP       = _touch ? 22 : 18;  // gap between word boxes
+  const FONT_SZ   = _touch ? 14 : 12;  // token label font size
+  const MIN_W     = _touch ? 66 : 52;  // minimum word box width
   const ARC_U     = 36;   // px per token-distance unit (controls arc height scaling)
   const ARC_MX    = 210;  // maximum arc height cap
   const ROOT_H    = 30;   // height of the vertical root arrow
@@ -309,8 +312,8 @@ function buildArcDiagram(tokMap, { onSetHead = null, onDeleteArc = null, onSetDe
 
   // Measure text widths via an offscreen canvas for accurate box sizing
   const mc = document.createElement('canvas').getContext('2d');
-  mc.font = `bold 12px ${FONT_M}`;
-  const cellW = toks.map(t => Math.max(52, mc.measureText(t.form).width + HPAD * 2));
+  mc.font = `bold ${FONT_SZ}px ${FONT_M}`;
+  const cellW = toks.map(t => Math.max(MIN_W, mc.measureText(t.form).width + HPAD * 2));
 
   // Compute the x-center of each token box
   let xo = GAP;
@@ -348,7 +351,6 @@ function buildArcDiagram(tokMap, { onSetHead = null, onDeleteArc = null, onSetDe
     return el;
   };
   // On touch/tablet (coarse pointer) show delete buttons permanently instead of hover-only.
-  const _touchMode = window.matchMedia('(pointer: coarse)').matches;
 
   const svg = mk('svg', { width:svgW, height:svgH });
   // Allow vertical page-scroll over the diagram; touch-action:none is applied
@@ -400,7 +402,7 @@ function buildArcDiagram(tokMap, { onSetHead = null, onDeleteArc = null, onSetDe
       let rootBtnG = null;
       if (editable && onDeleteArc) {
         rootBtnG = mk('g');
-        const _rInit = _touchMode ? 'opacity:0.7; pointer-events:all;' : 'opacity:0; pointer-events:none;';
+        const _rInit = _touch ? 'opacity:0.7; pointer-events:all;' : 'opacity:0; pointer-events:none;';
         rootBtnG.style.cssText = `cursor:pointer; ${_rInit} transition:opacity .12s;`;
         const bx = dx + lw + 22;
         const by = ty + 7;
@@ -481,7 +483,7 @@ function buildArcDiagram(tokMap, { onSetHead = null, onDeleteArc = null, onSetDe
       let btnG = null;
       if (editable && onDeleteArc) {
         btnG = mk('g');
-        const _bInit = _touchMode ? 'opacity:0.7; pointer-events:all;' : 'opacity:0; pointer-events:none;';
+        const _bInit = _touch ? 'opacity:0.7; pointer-events:all;' : 'opacity:0; pointer-events:none;';
         btnG.style.cssText = `cursor:pointer; ${_bInit} transition:opacity .12s;`;
         const bx = mid + lw/2 + 14;
         const by = apex - 7;
@@ -539,7 +541,7 @@ function buildArcDiagram(tokMap, { onSetHead = null, onDeleteArc = null, onSetDe
     svg.appendChild(idT);
     // Token form centered in the box
     const fmT = mk('text', { x:cxi, y:wordY+CELL_H/2+5,
-      'text-anchor':'middle', 'font-size':12, 'font-weight':700,
+      'text-anchor':'middle', 'font-size':FONT_SZ, 'font-weight':700,
       fill:'var(--text)', 'font-family':FONT_M });
     fmT.textContent = t.form;
     svg.appendChild(fmT);
