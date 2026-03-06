@@ -56,6 +56,22 @@ window.addEventListener('pointermove', e => {
   });
 });
 
+// Global pointercancel: browser cancelled the pointer (e.g. scroll gesture took over on tablet).
+// Clean up any active drag so the rubber-band line doesn't stay stuck on screen.
+window.addEventListener('pointercancel', e => {
+  if (_arcPreDrag && e.pointerId !== _arcPreDrag.pointerId) return;
+  if (_arcDrag    && e.pointerId !== _arcDrag.pointerId)    return;
+  if (_arcRafId !== null) { cancelAnimationFrame(_arcRafId); _arcRafId = null; _arcLastMoveE = null; }
+  if (_arcDrag?.svg?.isConnected) {
+    _arcDrag.line?.remove();
+    _arcDrag.dot?.remove();
+    _arcDrag.svg.style.cursor = '';
+    _arcClearHighlight(_arcDrag);
+  }
+  _arcPreDrag = null;
+  _arcDrag    = null;
+});
+
 // Global pointerup: handle drop — either a plain click (no threshold crossed) or a real drag.
 window.addEventListener('pointerup', e => {
   if (_arcPreDrag && e.pointerId !== _arcPreDrag.pointerId) return;

@@ -511,6 +511,201 @@ function _buildConlluStructBlockReadOnly(docIdx) {
   return wrap;
 }
 
+// Read-only version of the gold block — used when the project is locked.
+function _buildConlluGoldBlockReadOnly() {
+  const si  = state.currentSent;
+  const ref = state.docs[0]?.sentences?.[si];
+  if (!ref?.tokens?.length) return null;
+
+  const wrap = document.createElement('div');
+  wrap.className = 'conlluStructBlock conlluGoldBlock';
+
+  const lbl = document.createElement('div');
+  lbl.className = 'conlluDocLabel conlluGoldLabel';
+  lbl.textContent = t('conllu.goldLabel');
+  wrap.appendChild(lbl);
+
+  const tableWrap = document.createElement('div');
+  tableWrap.className = 'conlluStructTableWrap';
+  const table = document.createElement('table');
+  table.className = 'conlluStructTable';
+
+  const cols = ['ID', 'FORM', 'LEMMA', UPOS_LABEL_NAME, XPOS_LABEL_NAME,
+                'FEATS', 'HEAD', 'DEPREL', 'DEPS', 'MISC'];
+  const thead = document.createElement('thead');
+  const hrow  = document.createElement('tr');
+  for (const col of cols) {
+    const th = document.createElement('th'); th.textContent = col; hrow.appendChild(th);
+  }
+  thead.appendChild(hrow);
+  table.appendChild(thead);
+
+  const tbody = document.createElement('tbody');
+  for (const refTok of ref.tokens) {
+    const id     = refTok.id;
+    const ci     = getDocChoice(si, id);
+    const srcTok = state.docs[ci]?.sentences?.[si]?.tokens?.find(t => t.id === id) ?? refTok;
+    const cust   = state.custom[si]?.[id] ?? {};
+
+    const tr = document.createElement('tr');
+    if (Object.keys(cust).length) tr.classList.add('conlluGoldRow');
+
+    const fields = [
+      id,
+      refTok.form,
+      srcTok.lemma  ?? '_',
+      cust.upos   ?? srcTok.upos   ?? '_',
+      cust.xpos   ?? srcTok.xpos   ?? '_',
+      srcTok.feats  ?? '_',
+      cust.head   ?? srcTok.head   ?? '_',
+      cust.deprel ?? srcTok.deprel ?? '_',
+      srcTok.deps   ?? '_',
+      srcTok.misc   ?? '_',
+    ];
+    fields.forEach((v, fi) => {
+      const td = document.createElement('td');
+      td.textContent = v ?? '_';
+      if (fi === 0) td.className = 'conlluStructId';
+      tr.appendChild(td);
+    });
+    tbody.appendChild(tr);
+  }
+
+  table.appendChild(tbody);
+  tableWrap.appendChild(table);
+  wrap.appendChild(tableWrap);
+  return wrap;
+}
+
+// Build a gold-annotation editor table for the current sentence.
+// HEAD, DEPREL, UPOS, XPOS write to state.custom (gold overrides).
+// FORM, LEMMA, FEATS, DEPS, MISC are read-only (edit via per-doc tables below).
+function _buildConlluGoldBlock() {
+  const si   = state.currentSent;
+  const ref  = state.docs[0]?.sentences?.[si];
+  if (!ref?.tokens?.length) return null;
+
+  const wrap = document.createElement('div');
+  wrap.className = 'conlluStructBlock conlluGoldBlock';
+
+  const lbl = document.createElement('div');
+  lbl.className = 'conlluDocLabel conlluGoldLabel';
+  lbl.textContent = t('conllu.goldLabel');
+  wrap.appendChild(lbl);
+
+  const tableWrap = document.createElement('div');
+  tableWrap.className = 'conlluStructTableWrap';
+  const table = document.createElement('table');
+  table.className = 'conlluStructTable';
+
+  const cols = ['ID', 'FORM', 'LEMMA', UPOS_LABEL_NAME, XPOS_LABEL_NAME,
+                'FEATS', 'HEAD', 'DEPREL', 'DEPS', 'MISC'];
+  const thead = document.createElement('thead');
+  const hrow  = document.createElement('tr');
+  for (const col of cols) {
+    const th = document.createElement('th'); th.textContent = col; hrow.appendChild(th);
+  }
+  thead.appendChild(hrow);
+  table.appendChild(thead);
+
+  const tbody = document.createElement('tbody');
+  for (const refTok of ref.tokens) {
+    const id     = refTok.id;
+    const ci     = getDocChoice(si, id);
+    const srcTok = state.docs[ci]?.sentences?.[si]?.tokens?.find(t => t.id === id) ?? refTok;
+    const cust   = state.custom[si]?.[id] ?? {};
+
+    // Resolved gold values
+    const goldHead   = cust.head   ?? srcTok.head   ?? null;
+    const goldDeprel = cust.deprel ?? srcTok.deprel ?? '_';
+    const goldUpos   = cust.upos   ?? srcTok.upos   ?? '_';
+    const goldXpos   = cust.xpos   ?? srcTok.xpos   ?? '_';
+
+    const tr = document.createElement('tr');
+    if (cust.head !== undefined || cust.deprel !== undefined ||
+        cust.upos !== undefined || cust.xpos   !== undefined) {
+      tr.classList.add('conlluGoldRow');
+    }
+
+    // ID (read-only)
+    const idTd = document.createElement('td');
+    idTd.textContent = id; idTd.className = 'conlluStructId'; tr.appendChild(idTd);
+
+    // Read-only fields from source
+    for (const v of [refTok.form, srcTok.lemma ?? '_']) {
+      const td = document.createElement('td');
+      td.textContent = v ?? '_'; td.className = 'conlluGoldRo'; tr.appendChild(td);
+    }
+
+    // Editable: UPOS, XPOS
+    const mkGoldSelect = (field, curVal, optHtml) => {
+      const td = document.createElement('td');
+      if (optHtml) {
+        const sel = document.createElement('select');
+        sel.className = 'conlluStructSelect';
+        sel.innerHTML = optHtml;
+        sel.value = curVal ?? '';
+        sel.addEventListener('focus', () => pushUndo(), { once: true });
+        sel.addEventListener('change', () => {
+          setCustomField(si, id, field, sel.value || null);
+          renderSentenceKeepScroll();
+          tr.classList.toggle('conlluGoldRow', !!(state.custom[si]?.[id]));
+        });
+        td.appendChild(sel);
+      } else {
+        const inp = document.createElement('input');
+        inp.type = 'text'; inp.value = curVal ?? '';
+        inp.className = 'conlluStructInput'; inp.spellcheck = false; inp.autocomplete = 'off';
+        inp.addEventListener('focus', () => pushUndo(), { once: true });
+        inp.addEventListener('input', () => {
+          setCustomField(si, id, field, inp.value || null);
+          renderSentenceKeepScroll();
+          tr.classList.toggle('conlluGoldRow', !!(state.custom[si]?.[id]));
+        });
+        td.appendChild(inp);
+      }
+      return td;
+    };
+    tr.appendChild(mkGoldSelect('upos', goldUpos, UPOS_OPTIONS_HTML));
+    tr.appendChild(mkGoldSelect('xpos', goldXpos, XPOS_OPTIONS_HTML));
+
+    // Read-only: FEATS
+    const featsTd = document.createElement('td');
+    featsTd.textContent = srcTok.feats ?? '_'; featsTd.className = 'conlluGoldRo'; tr.appendChild(featsTd);
+
+    // Editable: HEAD
+    const headTd  = document.createElement('td');
+    const headInp = document.createElement('input');
+    headInp.type = 'number'; headInp.min = '0';
+    headInp.value = goldHead ?? '';
+    headInp.className = 'conlluStructInput conlluStructHead';
+    headInp.addEventListener('focus', () => pushUndo(), { once: true });
+    headInp.addEventListener('input', () => {
+      const v = headInp.value === '' ? null : parseInt(headInp.value, 10);
+      setCustomField(si, id, 'head', isNaN(v) ? null : v);
+      renderSentenceKeepScroll();
+      tr.classList.toggle('conlluGoldRow', !!(state.custom[si]?.[id]));
+    });
+    headTd.appendChild(headInp); tr.appendChild(headTd);
+
+    // Editable: DEPREL
+    tr.appendChild(mkGoldSelect('deprel', goldDeprel, DEPREL_OPTIONS_HTML));
+
+    // Read-only: DEPS, MISC
+    for (const v of [srcTok.deps ?? '_', srcTok.misc ?? '_']) {
+      const td = document.createElement('td');
+      td.textContent = v; td.className = 'conlluGoldRo'; tr.appendChild(td);
+    }
+
+    tbody.appendChild(tr);
+  }
+
+  table.appendChild(tbody);
+  tableWrap.appendChild(table);
+  wrap.appendChild(tableWrap);
+  return wrap;
+}
+
 // Build a structured per-token editor table for one doc's current sentence.
 // Each cell is an editable input; changes write directly to the doc token data.
 function _buildConlluStructBlock(docIdx) {
@@ -645,10 +840,16 @@ function renderConlluEditor(force){
   if(state.docs.length === 0){ wrap.innerHTML = ''; wrap.hidden = true; return; }
   wrap.hidden = false;
 
+  // Update section heading to reflect current mode
+  const titleEl = document.getElementById('conlluSectionTitle');
+  if(titleEl) titleEl.textContent = state.unlocked ? t('sec.conllu.edit') : t('sec.conllu.view');
+
   if(!state.unlocked){
-    // Project locked: show read-only table, no editing controls.
+    // Project locked: show read-only gold block + per-doc tables, no editing controls.
     if(!force && wrap.querySelector('.conlluStructBlock') && !wrap.querySelector('.conlluTab')) return;
     wrap.innerHTML = '';
+    const goldRo = _buildConlluGoldBlockReadOnly();
+    if(goldRo) wrap.appendChild(goldRo);
     for(let i = 0; i < state.docs.length; i++){
       const block = _buildConlluStructBlockReadOnly(i);
       if(block) wrap.appendChild(block);
@@ -685,6 +886,10 @@ function renderConlluEditor(force){
     sentLabel.className = 'conlluSectionHead';
     sentLabel.textContent = t('sent.label', { cur: state.currentSent + 1, max: state.maxSents });
     wrap.appendChild(sentLabel);
+    // Gold block first — edits HEAD/DEPREL/UPOS/XPOS via state.custom
+    const goldBlock = _buildConlluGoldBlock();
+    if(goldBlock) wrap.appendChild(goldBlock);
+    // Per-doc source blocks below for reference / raw editing
     for(let i = 0; i < state.docs.length; i++){
       const block = _buildConlluStructBlock(i);
       if(block) wrap.appendChild(block);

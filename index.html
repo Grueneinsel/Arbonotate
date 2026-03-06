@@ -37,6 +37,7 @@
       <button class="langBtn" data-lang="en" onclick="setLang('en')" title="English">🇬🇧</button>
       <button id="themeToggleBtn" class="langBtn" onclick="toggleTheme()" title="Theme">☀️</button>
       <button id="globalResetBtn" class="langBtn globalResetBtn" data-i18n="files.globalReset">↺ Alles zurücksetzen</button>
+      <button class="langBtn tourStartBtn" onclick="startTour()" data-i18n="tour.startBtn">Guided Tour</button>
     </div>
     <button id="helpBtn" class="helpBtn" data-i18n-title="help.btnTitle" onclick="openHelp()">?</button>
   </header>
@@ -66,7 +67,7 @@
 
     <section class="card">
       <h2 data-i18n="sec.select">2) Satz wählen <button class="helpHintBtn" data-i18n-title="help.hintTitle" onclick="openHelpSection('sec.select')">?</button></h2>
-      <div class="row">
+      <div class="row" id="sentNavRow">
         <button id="prevBtn" disabled>←</button>
         <select id="sentSelect" disabled></select>
         <button id="nextBtn" disabled>→</button>
@@ -129,13 +130,13 @@
 
     <section class="card conlluEditorSection" id="conlluEditorSection">
       <h2 class="conlluEditorH2">
-        <span data-i18n="sec.conllu">5) CoNLL-U bearbeiten</span>
+        <span id="conlluSectionTitle" data-i18n="sec.conllu.view">5) CoNLL-U</span>
         <button class="helpHintBtn" data-i18n-title="help.hintTitle" onclick="openHelpSection('sec.conllu')">?</button>
       </h2>
       <div id="conlluEditorWrap" class="conlluEditorWrap" hidden></div>
     </section>
 
-    <section class="card">
+    <section class="card" id="exportSection">
       <h2 data-i18n="sec.export">6) Export <button class="helpHintBtn" data-i18n-title="help.hintTitle" onclick="openHelpSection('sec.export')">?</button></h2>
       <div class="row">
         <button id="exportConlluBtn"    disabled data-i18n="export.conllu">Gold CoNLL-U herunterladen</button>
@@ -210,5 +211,6 @@
   <script src="js/keyboard.js"></script>
   <script src="generated/readme_content.js"></script>
   <script src="js/help.js"></script>
+  <script src="js/tour.js"></script>
 </body>
 </html>

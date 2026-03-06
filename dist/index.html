@@ -1213,6 +1213,118 @@ td:hover .fileEditBtn { display: inline-block; }
   border-color: var(--ok);
 }
 
+/* ── Guided Tour ──────────────────────────────────────────────────────────── */
+.tourStartBtn {
+  background: var(--accent);
+  color: var(--bg);
+  border-color: var(--accent);
+  font-weight: 700;
+  padding: 4px 12px;
+}
+.tourStartBtn:hover { opacity: 0.85; }
+
+/* Full-screen click blocker (transparent — darkening comes from spotlight shadow) */
+.tourOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9010;
+  pointer-events: all;
+  background: transparent;
+}
+
+/* Spotlight: positioned over the highlighted element; box-shadow darkens everything else */
+.tourSpot {
+  position: fixed;
+  display: none;
+  border-radius: 8px;
+  box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.65);
+  z-index: 9011;
+  pointer-events: none;
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  transition: left .22s ease, top .22s ease, width .22s ease, height .22s ease;
+}
+
+/* Tooltip card */
+.tourTip {
+  position: fixed;
+  z-index: 9015;
+  background: var(--card);
+  border: 1.5px solid var(--accent);
+  border-radius: 12px;
+  padding: 18px 20px 14px;
+  max-width: 360px;
+  min-width: 260px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.55);
+  pointer-events: all;
+}
+.tourProgress {
+  font-size: 11px;
+  color: var(--muted);
+  font-weight: 600;
+  letter-spacing: .05em;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+.tourTitle {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--accent);
+  margin-bottom: 8px;
+  line-height: 1.3;
+}
+.tourText {
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--text);
+  margin-bottom: 14px;
+}
+.tourBtns {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.tourBtnRight {
+  display: flex;
+  gap: 6px;
+}
+.tourBtnSkip {
+  font-size: 11px;
+  padding: 4px 10px;
+  border: 1px solid var(--line2);
+  border-radius: 5px;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  touch-action: manipulation;
+}
+.tourBtnSkip:hover { color: var(--text); border-color: var(--text); }
+.tourBtnPrev, .tourBtnNext {
+  padding: 6px 15px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  touch-action: manipulation;
+  min-height: 34px;
+}
+.tourBtnPrev {
+  border: 1px solid var(--line2);
+  background: transparent;
+  color: var(--text);
+}
+.tourBtnPrev:hover { background: var(--bg-focus-soft); }
+.tourBtnNext {
+  background: var(--accent);
+  border: 1px solid var(--accent);
+  color: var(--bg);
+}
+.tourBtnNext:hover { opacity: 0.85; }
+
 /* ── CoNLL-U editor section ── */
 .conlluEditorH2 {
   display: flex;
@@ -1292,6 +1404,10 @@ td:hover .fileEditBtn { display: inline-block; }
   padding: 2px 0 4px;
 }
 .conlluStructBlock { display: flex; flex-direction: column; gap: 4px; }
+.conlluGoldBlock { border: 1px solid var(--accent); border-radius: 6px; padding: 6px 8px; background: color-mix(in srgb, var(--accent) 5%, var(--card)); }
+.conlluGoldLabel { color: var(--accent) !important; font-weight: 700; }
+.conlluGoldRo { color: var(--muted); font-style: italic; }
+.conlluGoldRow td:not(.conlluStructId) { background: color-mix(in srgb, var(--accent) 8%, transparent); }
 .conlluStructTableWrap { overflow-x: auto; }
 .conlluStructTable {
   border-collapse: collapse;
@@ -1417,6 +1533,7 @@ document.addEventListener('DOMContentLoaded', _syncThemeBtn);
       <button class="langBtn" data-lang="en" onclick="setLang('en')" title="English">🇬🇧</button>
       <button id="themeToggleBtn" class="langBtn" onclick="toggleTheme()" title="Theme">☀️</button>
       <button id="globalResetBtn" class="langBtn globalResetBtn" data-i18n="files.globalReset">↺ Alles zurücksetzen</button>
+      <button class="langBtn tourStartBtn" onclick="startTour()" data-i18n="tour.startBtn">Guided Tour</button>
     </div>
     <button id="helpBtn" class="helpBtn" data-i18n-title="help.btnTitle" onclick="openHelp()">?</button>
   </header>
@@ -1446,7 +1563,7 @@ document.addEventListener('DOMContentLoaded', _syncThemeBtn);
 
     <section class="card">
       <h2 data-i18n="sec.select">2) Satz wählen <button class="helpHintBtn" data-i18n-title="help.hintTitle" onclick="openHelpSection('sec.select')">?</button></h2>
-      <div class="row">
+      <div class="row" id="sentNavRow">
         <button id="prevBtn" disabled>←</button>
         <select id="sentSelect" disabled></select>
         <button id="nextBtn" disabled>→</button>
@@ -1509,13 +1626,13 @@ document.addEventListener('DOMContentLoaded', _syncThemeBtn);
 
     <section class="card conlluEditorSection" id="conlluEditorSection">
       <h2 class="conlluEditorH2">
-        <span data-i18n="sec.conllu">5) CoNLL-U bearbeiten</span>
+        <span id="conlluSectionTitle" data-i18n="sec.conllu.view">5) CoNLL-U</span>
         <button class="helpHintBtn" data-i18n-title="help.hintTitle" onclick="openHelpSection('sec.conllu')">?</button>
       </h2>
       <div id="conlluEditorWrap" class="conlluEditorWrap" hidden></div>
     </section>
 
-    <section class="card">
+    <section class="card" id="exportSection">
       <h2 data-i18n="sec.export">6) Export <button class="helpHintBtn" data-i18n-title="help.hintTitle" onclick="openHelpSection('sec.export')">?</button></h2>
       <div class="row">
         <button id="exportConlluBtn"    disabled data-i18n="export.conllu">Gold CoNLL-U herunterladen</button>
@@ -1576,9 +1693,13 @@ window.LANG_DE = {
   'sec.select':  '2) Satz wählen',
   'sec.tree':    '3) Baumansicht',
   'sec.compare': '4) Vergleich',
-  'sec.conllu':    '5) CoNLL-U bearbeiten',
+  'sec.conllu':      '5) CoNLL-U',
+  'sec.conllu.view': '5) CoNLL-U',
+  'sec.conllu.edit': '5) CoNLL-U bearbeiten',
   'footer.author': 'Entwickelt von Frederik Konopka',
+  'tour.startBtn':     '🎓 Guided Tour',
   'conllu.structured': '📝 Strukturierter Editor',
+  'conllu.goldLabel':  '⭐ Gold (dieser Satz)',
   'conllu.raw':        '📄 Rohtexteditor',
   'sec.export':  '6) Export',
 
@@ -1822,9 +1943,13 @@ window.LANG_EN = {
   'sec.select':  '2) Select Sentence',
   'sec.tree':    '3) Tree View',
   'sec.compare': '4) Comparison',
-  'sec.conllu':    '5) Edit CoNLL-U',
+  'sec.conllu':      '5) CoNLL-U',
+  'sec.conllu.view': '5) CoNLL-U',
+  'sec.conllu.edit': '5) Edit CoNLL-U',
   'footer.author': 'Developed by Frederik Konopka',
+  'tour.startBtn':     '🎓 Guided Tour',
   'conllu.structured': '📝 Structured Editor',
+  'conllu.goldLabel':  '⭐ Gold (this sentence)',
   'conllu.raw':        '📄 Raw Text Editor',
   'sec.export':  '6) Export',
 
@@ -4138,6 +4263,22 @@ window.addEventListener('pointermove', e => {
   });
 });
 
+// Global pointercancel: browser cancelled the pointer (e.g. scroll gesture took over on tablet).
+// Clean up any active drag so the rubber-band line doesn't stay stuck on screen.
+window.addEventListener('pointercancel', e => {
+  if (_arcPreDrag && e.pointerId !== _arcPreDrag.pointerId) return;
+  if (_arcDrag    && e.pointerId !== _arcDrag.pointerId)    return;
+  if (_arcRafId !== null) { cancelAnimationFrame(_arcRafId); _arcRafId = null; _arcLastMoveE = null; }
+  if (_arcDrag?.svg?.isConnected) {
+    _arcDrag.line?.remove();
+    _arcDrag.dot?.remove();
+    _arcDrag.svg.style.cursor = '';
+    _arcClearHighlight(_arcDrag);
+  }
+  _arcPreDrag = null;
+  _arcDrag    = null;
+});
+
 // Global pointerup: handle drop — either a plain click (no threshold crossed) or a real drag.
 window.addEventListener('pointerup', e => {
   if (_arcPreDrag && e.pointerId !== _arcPreDrag.pointerId) return;
@@ -6356,6 +6497,201 @@ function _buildConlluStructBlockReadOnly(docIdx) {
   return wrap;
 }
 
+// Read-only version of the gold block — used when the project is locked.
+function _buildConlluGoldBlockReadOnly() {
+  const si  = state.currentSent;
+  const ref = state.docs[0]?.sentences?.[si];
+  if (!ref?.tokens?.length) return null;
+
+  const wrap = document.createElement('div');
+  wrap.className = 'conlluStructBlock conlluGoldBlock';
+
+  const lbl = document.createElement('div');
+  lbl.className = 'conlluDocLabel conlluGoldLabel';
+  lbl.textContent = t('conllu.goldLabel');
+  wrap.appendChild(lbl);
+
+  const tableWrap = document.createElement('div');
+  tableWrap.className = 'conlluStructTableWrap';
+  const table = document.createElement('table');
+  table.className = 'conlluStructTable';
+
+  const cols = ['ID', 'FORM', 'LEMMA', UPOS_LABEL_NAME, XPOS_LABEL_NAME,
+                'FEATS', 'HEAD', 'DEPREL', 'DEPS', 'MISC'];
+  const thead = document.createElement('thead');
+  const hrow  = document.createElement('tr');
+  for (const col of cols) {
+    const th = document.createElement('th'); th.textContent = col; hrow.appendChild(th);
+  }
+  thead.appendChild(hrow);
+  table.appendChild(thead);
+
+  const tbody = document.createElement('tbody');
+  for (const refTok of ref.tokens) {
+    const id     = refTok.id;
+    const ci     = getDocChoice(si, id);
+    const srcTok = state.docs[ci]?.sentences?.[si]?.tokens?.find(t => t.id === id) ?? refTok;
+    const cust   = state.custom[si]?.[id] ?? {};
+
+    const tr = document.createElement('tr');
+    if (Object.keys(cust).length) tr.classList.add('conlluGoldRow');
+
+    const fields = [
+      id,
+      refTok.form,
+      srcTok.lemma  ?? '_',
+      cust.upos   ?? srcTok.upos   ?? '_',
+      cust.xpos   ?? srcTok.xpos   ?? '_',
+      srcTok.feats  ?? '_',
+      cust.head   ?? srcTok.head   ?? '_',
+      cust.deprel ?? srcTok.deprel ?? '_',
+      srcTok.deps   ?? '_',
+      srcTok.misc   ?? '_',
+    ];
+    fields.forEach((v, fi) => {
+      const td = document.createElement('td');
+      td.textContent = v ?? '_';
+      if (fi === 0) td.className = 'conlluStructId';
+      tr.appendChild(td);
+    });
+    tbody.appendChild(tr);
+  }
+
+  table.appendChild(tbody);
+  tableWrap.appendChild(table);
+  wrap.appendChild(tableWrap);
+  return wrap;
+}
+
+// Build a gold-annotation editor table for the current sentence.
+// HEAD, DEPREL, UPOS, XPOS write to state.custom (gold overrides).
+// FORM, LEMMA, FEATS, DEPS, MISC are read-only (edit via per-doc tables below).
+function _buildConlluGoldBlock() {
+  const si   = state.currentSent;
+  const ref  = state.docs[0]?.sentences?.[si];
+  if (!ref?.tokens?.length) return null;
+
+  const wrap = document.createElement('div');
+  wrap.className = 'conlluStructBlock conlluGoldBlock';
+
+  const lbl = document.createElement('div');
+  lbl.className = 'conlluDocLabel conlluGoldLabel';
+  lbl.textContent = t('conllu.goldLabel');
+  wrap.appendChild(lbl);
+
+  const tableWrap = document.createElement('div');
+  tableWrap.className = 'conlluStructTableWrap';
+  const table = document.createElement('table');
+  table.className = 'conlluStructTable';
+
+  const cols = ['ID', 'FORM', 'LEMMA', UPOS_LABEL_NAME, XPOS_LABEL_NAME,
+                'FEATS', 'HEAD', 'DEPREL', 'DEPS', 'MISC'];
+  const thead = document.createElement('thead');
+  const hrow  = document.createElement('tr');
+  for (const col of cols) {
+    const th = document.createElement('th'); th.textContent = col; hrow.appendChild(th);
+  }
+  thead.appendChild(hrow);
+  table.appendChild(thead);
+
+  const tbody = document.createElement('tbody');
+  for (const refTok of ref.tokens) {
+    const id     = refTok.id;
+    const ci     = getDocChoice(si, id);
+    const srcTok = state.docs[ci]?.sentences?.[si]?.tokens?.find(t => t.id === id) ?? refTok;
+    const cust   = state.custom[si]?.[id] ?? {};
+
+    // Resolved gold values
+    const goldHead   = cust.head   ?? srcTok.head   ?? null;
+    const goldDeprel = cust.deprel ?? srcTok.deprel ?? '_';
+    const goldUpos   = cust.upos   ?? srcTok.upos   ?? '_';
+    const goldXpos   = cust.xpos   ?? srcTok.xpos   ?? '_';
+
+    const tr = document.createElement('tr');
+    if (cust.head !== undefined || cust.deprel !== undefined ||
+        cust.upos !== undefined || cust.xpos   !== undefined) {
+      tr.classList.add('conlluGoldRow');
+    }
+
+    // ID (read-only)
+    const idTd = document.createElement('td');
+    idTd.textContent = id; idTd.className = 'conlluStructId'; tr.appendChild(idTd);
+
+    // Read-only fields from source
+    for (const v of [refTok.form, srcTok.lemma ?? '_']) {
+      const td = document.createElement('td');
+      td.textContent = v ?? '_'; td.className = 'conlluGoldRo'; tr.appendChild(td);
+    }
+
+    // Editable: UPOS, XPOS
+    const mkGoldSelect = (field, curVal, optHtml) => {
+      const td = document.createElement('td');
+      if (optHtml) {
+        const sel = document.createElement('select');
+        sel.className = 'conlluStructSelect';
+        sel.innerHTML = optHtml;
+        sel.value = curVal ?? '';
+        sel.addEventListener('focus', () => pushUndo(), { once: true });
+        sel.addEventListener('change', () => {
+          setCustomField(si, id, field, sel.value || null);
+          renderSentenceKeepScroll();
+          tr.classList.toggle('conlluGoldRow', !!(state.custom[si]?.[id]));
+        });
+        td.appendChild(sel);
+      } else {
+        const inp = document.createElement('input');
+        inp.type = 'text'; inp.value = curVal ?? '';
+        inp.className = 'conlluStructInput'; inp.spellcheck = false; inp.autocomplete = 'off';
+        inp.addEventListener('focus', () => pushUndo(), { once: true });
+        inp.addEventListener('input', () => {
+          setCustomField(si, id, field, inp.value || null);
+          renderSentenceKeepScroll();
+          tr.classList.toggle('conlluGoldRow', !!(state.custom[si]?.[id]));
+        });
+        td.appendChild(inp);
+      }
+      return td;
+    };
+    tr.appendChild(mkGoldSelect('upos', goldUpos, UPOS_OPTIONS_HTML));
+    tr.appendChild(mkGoldSelect('xpos', goldXpos, XPOS_OPTIONS_HTML));
+
+    // Read-only: FEATS
+    const featsTd = document.createElement('td');
+    featsTd.textContent = srcTok.feats ?? '_'; featsTd.className = 'conlluGoldRo'; tr.appendChild(featsTd);
+
+    // Editable: HEAD
+    const headTd  = document.createElement('td');
+    const headInp = document.createElement('input');
+    headInp.type = 'number'; headInp.min = '0';
+    headInp.value = goldHead ?? '';
+    headInp.className = 'conlluStructInput conlluStructHead';
+    headInp.addEventListener('focus', () => pushUndo(), { once: true });
+    headInp.addEventListener('input', () => {
+      const v = headInp.value === '' ? null : parseInt(headInp.value, 10);
+      setCustomField(si, id, 'head', isNaN(v) ? null : v);
+      renderSentenceKeepScroll();
+      tr.classList.toggle('conlluGoldRow', !!(state.custom[si]?.[id]));
+    });
+    headTd.appendChild(headInp); tr.appendChild(headTd);
+
+    // Editable: DEPREL
+    tr.appendChild(mkGoldSelect('deprel', goldDeprel, DEPREL_OPTIONS_HTML));
+
+    // Read-only: DEPS, MISC
+    for (const v of [srcTok.deps ?? '_', srcTok.misc ?? '_']) {
+      const td = document.createElement('td');
+      td.textContent = v; td.className = 'conlluGoldRo'; tr.appendChild(td);
+    }
+
+    tbody.appendChild(tr);
+  }
+
+  table.appendChild(tbody);
+  tableWrap.appendChild(table);
+  wrap.appendChild(tableWrap);
+  return wrap;
+}
+
 // Build a structured per-token editor table for one doc's current sentence.
 // Each cell is an editable input; changes write directly to the doc token data.
 function _buildConlluStructBlock(docIdx) {
@@ -6490,10 +6826,16 @@ function renderConlluEditor(force){
   if(state.docs.length === 0){ wrap.innerHTML = ''; wrap.hidden = true; return; }
   wrap.hidden = false;
 
+  // Update section heading to reflect current mode
+  const titleEl = document.getElementById('conlluSectionTitle');
+  if(titleEl) titleEl.textContent = state.unlocked ? t('sec.conllu.edit') : t('sec.conllu.view');
+
   if(!state.unlocked){
-    // Project locked: show read-only table, no editing controls.
+    // Project locked: show read-only gold block + per-doc tables, no editing controls.
     if(!force && wrap.querySelector('.conlluStructBlock') && !wrap.querySelector('.conlluTab')) return;
     wrap.innerHTML = '';
+    const goldRo = _buildConlluGoldBlockReadOnly();
+    if(goldRo) wrap.appendChild(goldRo);
     for(let i = 0; i < state.docs.length; i++){
       const block = _buildConlluStructBlockReadOnly(i);
       if(block) wrap.appendChild(block);
@@ -6530,6 +6872,10 @@ function renderConlluEditor(force){
     sentLabel.className = 'conlluSectionHead';
     sentLabel.textContent = t('sent.label', { cur: state.currentSent + 1, max: state.maxSents });
     wrap.appendChild(sentLabel);
+    // Gold block first — edits HEAD/DEPREL/UPOS/XPOS via state.custom
+    const goldBlock = _buildConlluGoldBlock();
+    if(goldBlock) wrap.appendChild(goldBlock);
+    // Per-doc source blocks below for reference / raw editing
     for(let i = 0; i < state.docs.length; i++){
       const block = _buildConlluStructBlock(i);
       if(block) wrap.appendChild(block);
@@ -8940,6 +9286,467 @@ function inlineMd(s){
   return esc(s)
     .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
     .replace(/`([^`]+)`/g, '<code class="helpInlineCode">$1</code>');
+}
+
+</script>
+  <script>
+// Guided tour — walks through the English demo in a temporary project.
+// The tour project is created on start and removed on close, leaving all
+// existing projects and annotations completely untouched.
+// ─────────────────────────────────────────────────────────────────────────────
+
+// ── Bilingual step content ────────────────────────────────────────────────────
+const _TOUR_CONTENT = {
+  de: [
+    {
+      title: 'Willkommen bei CoNLL-U Vergleich!',
+      text: 'Diese Tour zeigt alle Funktionen anhand des englischen Beispiels. Es wird in einem temporären Projekt geöffnet — deine eigenen Daten bleiben unberührt. Mit «Tour abbrechen» oder Esc jederzeit beenden.',
+    },
+    {
+      title: 'Projekte',
+      text: 'Jeder Tab ist ein eigenes Projekt mit separaten Dateien, Annotationen und Undo-Verlauf. Wechseln mit [ ] oder Klick auf den Tab. Das «Guided Tour»-Projekt wird beim Beenden der Tour automatisch entfernt.',
+    },
+    {
+      title: '1) Dateien',
+      text: 'Zwei CoNLL-U-Dateien sind geladen: annotator_A und annotator_B mit je 2 Sätzen. Eigene Dateien per Drag & Drop oder «Dateien hinzufügen» laden. Tagsets (JSON) für eigene Label-Menüs importieren.',
+    },
+    {
+      title: '2) Satz wählen',
+      text: 'Mit ← → oder dem Dropdown zwischen Sätzen navigieren. Das Badge zeigt abweichende Tokens. Aktuell: Satz 1 — «The quick brown fox jumps over the lazy dog.»',
+    },
+    {
+      title: 'Satztext',
+      text: '«The quick brown fox jumps over the lazy dog.» — Tokens als Kacheln. Klick springt zur Zeile in der Vergleichstabelle. Orange = abweichende Tokens. Gelb = bestätigter Satz.',
+    },
+    {
+      title: 'Garden-Path-Satz',
+      text: '«Time flies like an arrow.» — Klassische Ambiguität: Annotator A liest «Time» als Nomen, Annotator B als Verb. Fast alle Tokens weichen ab — alles orange.',
+    },
+    {
+      title: '3) Baumansicht',
+      text: 'Abhängigkeitsbäume beider Annotatoren nebeneinander. Grün = identisch, orange/rot = Unterschied. Pfeilspitze zeigt zum Dependenten. Farbbalken neben Dateiname = Bogenfarbe.',
+    },
+    {
+      title: '4) Vergleichstabelle',
+      text: 'Jede Zeile = ein Token, alle CoNLL-U-Felder sichtbar. Farbige Zellen = Unterschiede. Die erste Datei gilt als Gold-Referenz. Spalten ein-/ausblenden über die Buttons oben.',
+    },
+    {
+      title: 'Gold-Annotation wählen',
+      text: 'Klicke eine markierte Zelle → Gold-Popup öffnet sich. Datei 1 oder 2 wählen oder eigenen Wert eingeben. Tastenkürzel: Pfeiltasten ↑↓ wählen Token, 1 oder 2 wählt Annotator, Enter öffnet Popup.',
+    },
+    {
+      title: 'Undo / Redo',
+      text: 'Jede Änderung ist rückgängig machbar. Ctrl+Z = Undo, Ctrl+Y = Redo. Die Buttons zeigen im Tooltip die Anzahl verfügbarer Schritte.',
+    },
+    {
+      title: 'Satz bestätigen',
+      text: 'Wenn die Annotationen fertig sind: «Bestätigen» oder Space. Das ✓ erscheint im Dropdown. «Alle ohne Diffs bestätigen» erledigt alle konfliktfreien Sätze in einem Schritt.',
+    },
+    {
+      title: 'Bearbeitungsmodus freischalten',
+      text: 'Das Schloss schützt vor versehentlichen Änderungen. Im Bearbeitungsmodus können Bögen neu gezogen, Tokens eingefügt/gelöscht und alle Felder direkt bearbeitet werden.',
+    },
+    {
+      title: 'Bögen ziehen',
+      text: 'Ziehe von einem Token-Kasten zu einem anderen, um den Kopf neu zuzuweisen. In die grüne ROOT-Zone oben = head=0. Nach dem Drop erscheint ein Deprel-Auswahlfenster.',
+    },
+    {
+      title: '5) CoNLL-U',
+      text: 'Alle 10 CoNLL-U-Felder direkt in der Tabelle bearbeiten — aktiviert wenn Bearbeitung freigeschaltet ist. Gold-Tabelle oben zeigt die aktuellen Gold-Annotationen. Über Tabs zwischen Strukturiertem Editor und Rohtext wechseln.',
+    },
+    {
+      title: '6) Export',
+      text: 'Gold-CoNLL-U herunterladen, Baumansichten exportieren oder die gesamte Session (alle Projekte + Undo-Verlauf) als JSON speichern und später wiederherstellen.',
+    },
+    {
+      title: 'Tour abgeschlossen!',
+      text: 'Das Tour-Projekt wird jetzt entfernt und du kehrst zu deinen Daten zurück. Lade eigene .conllu-Dateien per Drag & Drop und fang an. Taste ? öffnet jederzeit die vollständige Hilfe.',
+    },
+  ],
+  en: [
+    {
+      title: 'Welcome to CoNLL-U Vergleich!',
+      text: 'This tour uses the English example in a temporary project — your own data is completely untouched. Press Esc or "Skip tour" to exit at any time.',
+    },
+    {
+      title: 'Projects',
+      text: 'Each tab is a separate project with its own files, annotations and undo history. Switch with [ ] keys or by clicking a tab. The "Guided Tour" project is removed automatically when the tour ends.',
+    },
+    {
+      title: '1) Files',
+      text: 'Two CoNLL-U files are loaded: annotator_A and annotator_B, 2 sentences each. Load your own files via drag & drop or "Add files". Import a tagset JSON for custom label menus.',
+    },
+    {
+      title: '2) Select Sentence',
+      text: 'Navigate with ← → arrows or the dropdown. The badge shows differing token count. Currently: Sentence 1 — "The quick brown fox jumps over the lazy dog."',
+    },
+    {
+      title: 'Sentence Text',
+      text: '"The quick brown fox jumps over the lazy dog." — Tokens shown as tiles. Click a token to jump to its row in the comparison table. Orange = differing tokens. Yellow = confirmed sentence.',
+    },
+    {
+      title: 'Garden-Path Sentence',
+      text: '"Time flies like an arrow." — Classic ambiguity: Annotator A reads "Time" as a noun, Annotator B as a verb. Almost every token differs — all orange.',
+    },
+    {
+      title: '3) Tree View',
+      text: 'Dependency trees of both annotators side by side. Green = identical arcs, orange/red = differences. Arrowhead points to the dependent. Colour bar by filename matches arc colour.',
+    },
+    {
+      title: '4) Comparison Table',
+      text: 'Each row is one token, all CoNLL-U fields visible. Highlighted cells show disagreements. File 1 is the default gold reference. Toggle columns with the buttons above.',
+    },
+    {
+      title: 'Choosing Gold Annotations',
+      text: 'Click a highlighted cell → gold picker opens. Choose file 1 or 2, or type your own value. Keyboard: ↑↓ select token row, 1 or 2 picks annotator, Enter opens picker.',
+    },
+    {
+      title: 'Undo / Redo',
+      text: 'Every change is undoable. Ctrl+Z = Undo, Ctrl+Y = Redo. Button tooltips show the number of available steps.',
+    },
+    {
+      title: 'Confirm Sentence',
+      text: 'When annotations are complete, click Confirm or press Space. The ✓ appears in the dropdown. "Confirm all without diffs" handles all conflict-free sentences at once.',
+    },
+    {
+      title: 'Unlock Edit Mode',
+      text: 'The lock protects against accidental edits. In edit mode you can drag arcs to reassign heads, add/delete tokens, and edit all fields directly.',
+    },
+    {
+      title: 'Drag Arcs',
+      text: 'Drag from any token box to another to reassign its head. Drop in the green ROOT zone at the top to set head=0. A deprel picker appears after each drop.',
+    },
+    {
+      title: '5) CoNLL-U',
+      text: 'Edit all 10 CoNLL-U fields in the structured table — available when edit mode is unlocked. The gold table at the top shows current gold annotations. Switch between Structured Editor and Raw Text via the tabs.',
+    },
+    {
+      title: '6) Export',
+      text: 'Download gold CoNLL-U, export tree views, or save the entire session (all projects + undo history) as JSON to continue later.',
+    },
+    {
+      title: 'Tour Complete!',
+      text: 'The tour project is now removed and you return to your data. Load your own .conllu files via drag & drop and start annotating. Press ? for the full help reference.',
+    },
+  ],
+};
+
+// ── Step definitions ──────────────────────────────────────────────────────────
+const _TOUR_STEPS = [
+  { sel: null                                                      }, //  0 Welcome
+  { sel: '#projectTabBar'                                          }, //  1 Projects
+  { sel: '#fileList'                                               }, //  2 Files
+  { sel: '#sentNavRow',  before: () => _tourGoSent(0)             }, //  3 Sentence nav
+  { sel: '#sentText'                                               }, //  4 Sentence 1
+  { sel: '#sentText',    before: () => _tourGoSent(1)             }, //  5 Garden-path
+  { sel: '#treeGrid',    before: () => _tourGoSent(0)             }, //  6 Tree view
+  { sel: '#cmpTable'                                               }, //  7 Table
+  { sel: '#cmpTable'                                               }, //  8 Gold pick
+  { sel: '#undoBtn'                                                }, //  9 Undo
+  { sel: '#confirmBtn'                                             }, // 10 Confirm
+  { sel: '#projectLockBar'                                         }, // 11 Lock
+  { sel: '#treeGrid',    before: _tourUnlock                      }, // 12 Drag arcs
+  { sel: '#conlluEditorSection'                                    }, // 13 CoNLL-U
+  { sel: '#exportSection', before: _tourLock                      }, // 14 Export
+  { sel: null                                                      }, // 15 Done
+];
+
+// ── State ─────────────────────────────────────────────────────────────────────
+let _tourIdx         = -1;
+let _tourRoot        = null;
+let _tourHighlighted = null; // { el, origPos, origZ }
+let _tourOrigIdx     = -1;   // project index before tour started
+let _tourProjIdx     = -1;   // index of the temporary tour project
+
+// ── Tour project helpers ──────────────────────────────────────────────────────
+function _tourCreateProject() {
+  if (typeof DEMO_SESSION === 'undefined' || typeof parseConllu === 'undefined') return false;
+  let parsed;
+  try { parsed = JSON.parse(DEMO_SESSION); } catch { return false; }
+  const src = parsed.projects?.[1]; // English — Penn Tagset
+  if (!src) return false;
+
+  // Save current project state before switching away
+  if (typeof _saveActiveProject === 'function') _saveActiveProject();
+  _tourOrigIdx = state.activeProjectIdx;
+
+  // Build tour project (plain clone, no session import so existing projects are untouched)
+  const lang  = (typeof getLang === 'function') ? getLang() : 'de';
+  const name  = lang === 'de' ? 'Guided Tour' : 'Guided Tour';
+  const docs  = (src.docs || []).map(d => {
+    const p = parseConllu(d.content);
+    return { key: `tour::${d.name}`, name: d.name, content: d.content, sentences: p.sentences };
+  });
+  const tourProj = {
+    name:        name,
+    docs,
+    custom:      {},
+    goldPick:    {},
+    confirmed:   [],
+    notes:       {},
+    flags:       {},
+    currentSent: 0,
+    maxSents:    Math.max(0, ...docs.map(d => d.sentences.length)),
+    hiddenCols:  [],
+    undoStack:   [],
+    redoStack:   [],
+    labels:      src.labels || null,
+    unlocked:    false,
+  };
+
+  state.projects.push(tourProj);
+  _tourProjIdx = state.projects.length - 1;
+  state.activeProjectIdx = _tourProjIdx;
+
+  if (typeof _loadActiveProject === 'function') _loadActiveProject();
+  if (typeof renderProjectTabs  === 'function') renderProjectTabs();
+  if (typeof renderFiles        === 'function') renderFiles();
+  if (typeof renderSentSelect   === 'function') renderSentSelect();
+  if (typeof renderSentence     === 'function') renderSentence();
+  if (typeof renderConlluEditor === 'function') renderConlluEditor(true);
+  return true;
+}
+
+function _tourRemoveProject() {
+  if (_tourProjIdx < 0) return;
+  const idx = _tourProjIdx;
+  _tourProjIdx = -1;
+
+  // Switch back to the original project (its index is unchanged because we appended)
+  state.activeProjectIdx = Math.min(_tourOrigIdx, state.projects.length - 2);
+  _tourOrigIdx = -1;
+
+  state.projects.splice(idx, 1);
+
+  if (typeof _loadActiveProject === 'function') _loadActiveProject();
+  if (typeof renderProjectTabs  === 'function') renderProjectTabs();
+  if (typeof renderFiles        === 'function') renderFiles();
+  if (typeof renderSentSelect   === 'function') renderSentSelect();
+  if (typeof renderSentence     === 'function') renderSentence();
+  if (typeof renderConlluEditor === 'function') renderConlluEditor(true);
+}
+
+// ── Step helpers ──────────────────────────────────────────────────────────────
+function _tourGoSent(n) {
+  if (typeof state === 'undefined') return;
+  state.currentSent = n;
+  if (typeof renderSentSelect   === 'function') renderSentSelect();
+  if (typeof renderSentence     === 'function') renderSentence();
+  if (typeof renderConlluEditor === 'function') renderConlluEditor(true);
+}
+
+function _tourUnlock() {
+  if (typeof state === 'undefined' || state.unlocked) return;
+  state.unlocked = true;
+  if (typeof _saveActiveProject === 'function') _saveActiveProject();
+  if (typeof renderProjectLock  === 'function') renderProjectLock();
+  if (typeof renderFiles        === 'function') renderFiles();
+  if (typeof renderSentence     === 'function') renderSentence();
+}
+
+function _tourLock() {
+  if (typeof state === 'undefined' || !state.unlocked) return;
+  state.unlocked = false;
+  if (typeof _saveActiveProject === 'function') _saveActiveProject();
+  if (typeof renderProjectLock  === 'function') renderProjectLock();
+  if (typeof renderFiles        === 'function') renderFiles();
+  if (typeof renderSentence     === 'function') renderSentence();
+}
+
+function _tourRestoreHighlight() {
+  if (!_tourHighlighted) return;
+  const { el, origPos, origZ } = _tourHighlighted;
+  el.style.position = origPos;
+  el.style.zIndex   = origZ;
+  _tourHighlighted  = null;
+}
+
+// ── Public API ────────────────────────────────────────────────────────────────
+function startTour() {
+  // If tour is already running, close cleanly first
+  if (_tourRoot) closeTour();
+  if (!_tourCreateProject()) return;
+  _tourBuildDOM();
+  setTimeout(() => _tourShowStep(0), 450);
+}
+
+function closeTour() {
+  _tourRestoreHighlight();
+  document.getElementById('tourOverlay')?.remove();
+  document.getElementById('tourSpot')?.remove();
+  document.getElementById('tourTip')?.remove();
+  _tourRoot = null;
+  document.removeEventListener('keydown', _tourEscHandler);
+  _tourRemoveProject();
+  _tourIdx = -1;
+}
+
+// ── DOM construction ──────────────────────────────────────────────────────────
+// Overlay, spotlight, and tooltip are SEPARATE direct children of <body> so that
+// their z-index values are compared in the root stacking context.
+// If they were nested inside a single parent with its own z-index, the parent's
+// stacking level would be used when comparing against elevated target elements.
+function _tourBuildDOM() {
+  // Click-blocking backdrop
+  const overlay = document.createElement('div');
+  overlay.id = 'tourOverlay';
+  overlay.className = 'tourOverlay';
+  document.body.appendChild(overlay);
+
+  // Spotlight rectangle — box-shadow darkens everything outside it
+  const spot = document.createElement('div');
+  spot.id = 'tourSpot';
+  spot.className = 'tourSpot';
+  document.body.appendChild(spot);
+
+  // Tooltip card
+  const tip = document.createElement('div');
+  tip.id = 'tourTip';
+  tip.className = 'tourTip';
+  tip.innerHTML = `
+    <div class="tourProgress"></div>
+    <div class="tourTitle"></div>
+    <div class="tourText"></div>
+    <div class="tourBtns">
+      <button class="tourBtnSkip"></button>
+      <div class="tourBtnRight">
+        <button class="tourBtnPrev"></button>
+        <button class="tourBtnNext"></button>
+      </div>
+    </div>`;
+  document.body.appendChild(tip);
+
+  // _tourRoot is just a sentinel — we use IDs to find the elements
+  _tourRoot = overlay;
+  document.addEventListener('keydown', _tourEscHandler);
+}
+
+function _tourEscHandler(e) {
+  if (e.key === 'Escape') closeTour();
+}
+
+// ── Step rendering ────────────────────────────────────────────────────────────
+function _tourShowStep(idx) {
+  if (!_tourRoot) return;
+  const step = _TOUR_STEPS[idx];
+  const go = () => { if (_tourRoot) _tourRenderStep(idx); };
+  if (step.before) {
+    step.before();
+    setTimeout(go, 400);
+  } else {
+    requestAnimationFrame(go);
+  }
+}
+
+function _tourRenderStep(idx) {
+  if (!_tourRoot) return;
+  _tourIdx = idx;
+
+  const lang    = (typeof getLang === 'function') ? getLang() : 'de';
+  const content = _TOUR_CONTENT[lang] || _TOUR_CONTENT.de;
+  const texts   = content[idx] || { title: '', text: '' };
+  const total   = _TOUR_STEPS.length;
+  const step    = _TOUR_STEPS[idx];
+  const isLast  = idx === total - 1;
+  const isDE    = lang === 'de';
+
+  const lblStep = isDE ? `Schritt ${idx+1} / ${total}` : `Step ${idx+1} / ${total}`;
+  const lblSkip = isDE ? 'Tour abbrechen' : 'Skip tour';
+  const lblPrev = isDE ? '← Zurück' : '← Back';
+  const lblNext = isDE ? 'Weiter →' : 'Next →';
+  const lblDone = isDE ? 'Fertig' : 'Done';
+
+  const tip = document.getElementById('tourTip');
+  if (!tip) return;
+  tip.querySelector('.tourProgress').textContent = lblStep;
+  tip.querySelector('.tourTitle').textContent    = texts.title;
+  tip.querySelector('.tourText').textContent     = texts.text;
+
+  const skipBtn = tip.querySelector('.tourBtnSkip');
+  const prevBtn = tip.querySelector('.tourBtnPrev');
+  const nextBtn = tip.querySelector('.tourBtnNext');
+
+  skipBtn.textContent   = lblSkip;
+  prevBtn.textContent   = lblPrev;
+  prevBtn.style.display = idx > 0 ? '' : 'none';
+  nextBtn.textContent   = isLast ? lblDone : lblNext;
+
+  // Replace nodes to strip stale listeners
+  const ns = skipBtn.cloneNode(true); skipBtn.replaceWith(ns);
+  const np = prevBtn.cloneNode(true); prevBtn.replaceWith(np);
+  const nn = nextBtn.cloneNode(true); nextBtn.replaceWith(nn);
+  ns.addEventListener('click', closeTour);
+  np.addEventListener('click', () => _tourShowStep(idx - 1));
+  nn.addEventListener('click', () => isLast ? closeTour() : _tourShowStep(idx + 1));
+
+  // Highlight target
+  _tourRestoreHighlight();
+  const targetEl = step.sel ? document.querySelector(step.sel) : null;
+  const spot     = document.getElementById('tourSpot');
+
+  if (targetEl) {
+    targetEl.scrollIntoView({ behavior: 'instant', block: 'center' });
+
+    const computed = window.getComputedStyle(targetEl).position;
+    _tourHighlighted = { el: targetEl, origPos: targetEl.style.position, origZ: targetEl.style.zIndex };
+    if (computed === 'static') targetEl.style.position = 'relative';
+    targetEl.style.zIndex = '9013';
+
+    requestAnimationFrame(() => {
+      if (!_tourRoot || _tourIdx !== idx) return;
+      const r    = targetEl.getBoundingClientRect();
+      const P    = 8;
+      const maxH = window.innerHeight * 0.55;
+      const h    = Math.min(r.height, maxH);
+
+      spot.style.transition = 'none';
+      spot.style.cssText = `display:block;left:${r.left-P}px;top:${r.top-P}px;width:${r.width+P*2}px;height:${h+P*2}px`;
+      requestAnimationFrame(() => { if (spot) spot.style.transition = ''; });
+
+      _tourPositionTip(tip, { left: r.left, top: r.top, right: r.right,
+                               bottom: r.top + h, width: r.width, height: h });
+    });
+  } else {
+    spot.style.transition = 'none';
+    spot.style.display    = 'none';
+    requestAnimationFrame(() => { if (spot) spot.style.transition = ''; });
+    _tourPositionTip(tip, null);
+  }
+}
+
+function _tourPositionTip(tip, targetRect) {
+  tip.style.left = '-9999px';
+  tip.style.top  = '-9999px';
+
+  requestAnimationFrame(() => {
+    if (!document.getElementById('tourTip')) return;
+    const tw  = tip.offsetWidth  || 320;
+    const th  = tip.offsetHeight || 200;
+    const vw  = window.innerWidth;
+    const vh  = window.innerHeight;
+    const GAP = 16;
+    let left, top;
+
+    if (!targetRect) {
+      left = Math.round(Math.max(GAP, (vw - tw) / 2));
+      top  = Math.round(Math.max(GAP, (vh - th) / 2));
+    } else {
+      const r = targetRect;
+      if (r.bottom + th + GAP < vh) {
+        top = r.bottom + GAP;
+      } else if (r.top - th - GAP > 0) {
+        top = r.top - th - GAP;
+      } else {
+        top = GAP;
+      }
+      left = Math.min(Math.max(GAP, r.left), vw - tw - GAP);
+      top  = Math.round(top);
+      left = Math.round(left);
+    }
+
+    tip.style.left = `${left}px`;
+    tip.style.top  = `${top}px`;
+  });
 }
 
 </script>
