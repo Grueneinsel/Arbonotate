@@ -275,6 +275,7 @@ function startTour() {
   if (_tourRoot) closeTour();
   if (!_tourCreateProject()) return;
   _tourBuildDOM();
+  document.body.style.overflow = 'hidden';
   setTimeout(() => _tourShowStep(0), 450);
 }
 
@@ -284,6 +285,7 @@ function closeTour() {
   document.getElementById('tourSpot')?.remove();
   document.getElementById('tourTip')?.remove();
   _tourRoot = null;
+  document.body.style.overflow = '';
   document.removeEventListener('keydown', _tourEscHandler);
   _tourRemoveProject();
   _tourIdx = -1;

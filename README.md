@@ -13,16 +13,17 @@ Läuft vollständig lokal ohne Server — einfach `index.html` im Browser öffne
 | **CoNLL-U-Vergleich** | Token-für-Token-Diff mehrerer Dateien gegen eine Gold-Annotation |
 | **Interaktiver Baum** | Abhängigkeitsbäume mit Drag-&-Drop-Pfeilen, Relation-Auswahl, ROOT-Zone |
 | **Gold-Annotation** | Per Klick, Popup oder Tastaturkürzel — Custom-Werte überschreiben Datei-Werte |
-| **CoNLL-U-Editor** | Direkte Bearbeitung aller Sätze je Datei als plain Text (Abschnitt 5) |
+| **CoNLL-U-Editor** | Strukturierter Editor und Roh-Textarea je Datei; Gold-Tabelle im Lesemodus sichtbar |
 | **Satzverwaltung** | Sätze einfügen, löschen, sortieren — Satzliste immer sichtbar |
 | **Undo/Redo** | Bis zu 80 Schritte pro Projekt; wird mit Session gespeichert |
 | **Session-Export** | Vollständigen Arbeitsstand als JSON sichern und laden |
 | **Autosave** | Arbeitsstand wird alle 30 Sekunden lokal gesichert und beim Start automatisch geladen |
 | **Tagset-Konfiguration** | Eigene DEPREL-Listen, UPOS/XPOS-Werte und Dependency-Layer per `labels.js` oder JSON |
 | **Export** | Gold CoNLL-U und Baumansicht (alle Sätze) herunterladen |
+| **Guided Tour** | Interaktive Einführung mit Spotlight und Tooltips anhand des englischen Beispiels |
 | **Tastaturkürzel** | Vollständige Bedienung ohne Maus |
 | **Mehrsprachig** | Deutsch / Englisch; weitere Sprachen per `lang/xx.js` |
-| **Tablet-Unterstützung** | Touch-optimiert; Pfeile ziehbar, Scrollen funktioniert |
+| **Tablet-Unterstützung** | Touch-optimiert; Pfeile ziehbar, vergrößerte Tap-Ziele |
 
 ---
 
@@ -263,15 +264,24 @@ Die Anzahl der Felder passt sich automatisch an die geladene Tagset-Konfiguratio
 
 ---
 
-## 5) CoNLL-U bearbeiten
+## 5) CoNLL-U
 
-Abschnitt 5 enthält einen ausklappbaren **Texteditor** für die rohen CoNLL-U-Daten.
+Abschnitt 5 zeigt und bearbeitet die CoNLL-U-Daten des aktuellen Satzes. Das Verhalten hängt vom **Bearbeitungsmodus** ab (Schloss in Abschnitt 1):
 
-- **„▾ Öffnen"** klappt den Editor aus; **„▴ Schließen"** klappt ihn wieder ein
-- Für jede geladene Datei gibt es eine eigene Textarea mit dem vollständigen CoNLL-U-Text aller Sätze
-- Die Felder wachsen automatisch mit dem Inhalt — kein Scrollen in der Textarea nötig
-- Änderungen direkt am Text eingeben → **„✓ Übernehmen"** übernimmt sie in alle anderen Ansichten
-- **„✕ Zurücksetzen"** verwirft alle Änderungen und stellt den zuletzt gespeicherten Stand wieder her
+### Lesemodus (gesperrt 🔒)
+
+- **Gold-Tabelle** zeigt alle Tokens mit den aktuellen Gold-Annotationen (HEAD, DEPREL, UPOS, XPOS) — schreibgeschützt
+- Zeilen mit aktiven Custom-Überschreibungen sind farbig hervorgehoben
+
+### Bearbeitungsmodus (entsperrt 🔓)
+
+- **Gold-Tabelle** (editierbar): HEAD, DEPREL, UPOS und XPOS direkt anpassen — Änderungen werden sofort als Custom-Werte gespeichert
+- **Tab „📝 Strukturierter Editor"**: Alle CoNLL-U-Felder jeder Datei als strukturierte Tabelle; Zeilen hinzufügen/löschen, Werte direkt eingeben
+- **Tab „Rohtext"**: Vollständiger CoNLL-U-Text je Datei als Textarea; wächst automatisch mit dem Inhalt
+  - Änderungen eingeben → **„✓ Übernehmen"** überträgt sie in alle anderen Ansichten
+  - **„✕ Zurücksetzen"** verwirft Änderungen und stellt den letzten gespeicherten Stand wieder her
+
+Der Titel des Abschnitts wechselt automatisch zwischen **„5) CoNLL-U"** (Lesemodus) und **„5) CoNLL-U bearbeiten"** (Bearbeitungsmodus).
 
 ---
 
@@ -314,7 +324,7 @@ Der Arbeitsstand wird alle **30 Sekunden** automatisch im Browser-LocalStorage g
 
 ---
 
-## 6) Undo / Redo
+## Undo / Redo
 
 Alle Annotationsänderungen (Datei-Auswahl, Custom-Popup, Bestätigen, Teilbaum-Übernahme) sind rückgängig machbar. Jedes Projekt hat seinen eigenen Undo-Stack.
 
@@ -324,6 +334,16 @@ Alle Annotationsänderungen (Datei-Auswahl, Custom-Popup, Bestätigen, Teilbaum-
 | **↪ Redo** / `Ctrl+Y` | Rückgängige Änderung wiederherstellen |
 
 Der Verlauf wird in der Session mitgespeichert (bis zu 80 Schritte pro Projekt).
+
+---
+
+## Guided Tour
+
+Der **🎓 Guided Tour**-Button oben rechts startet eine interaktive Einführung in alle Funktionen des Tools.
+
+- Die Tour öffnet das englische Beispielprojekt automatisch in einem **temporären Projekt** — eigene Daten bleiben vollständig erhalten
+- Spotlight und Tooltip führen Schritt für Schritt durch alle 16 Stationen: Projekte, Dateien, Satznavigation, Baumansicht, Vergleichstabelle, Gold-Annotation, Bearbeitungsmodus, CoNLL-U-Editor, Export
+- Beenden mit **„Tour abbrechen"**, `Esc` oder dem „Fertig"-Button — das Tour-Projekt wird danach automatisch entfernt
 
 ---
 
@@ -517,6 +537,7 @@ HTML_Editor/
 │   ├── i18n.js                ← Übersetzungs-Engine (t(), setLang(), registerLang())
 │   ├── theme.js               ← Dark/Light-Mode-Umschalter
 │   ├── help.js                ← Hilfe-Modal (lädt readme_content.js)
+│   ├── tour.js                ← Guided Tour (temporäres Projekt, Spotlight, Tooltips)
 │   └── main.js                ← Initialisierung, Event-Listener, UI-Rendering
 │
 ├── lang/

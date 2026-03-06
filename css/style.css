@@ -1213,8 +1213,13 @@ td:hover .fileEditBtn { display: inline-block; }
   border-color: var(--accent);
   font-weight: 700;
   padding: 4px 12px;
+  width: auto;
+  height: auto;
+  font-size: 13px;
+  opacity: 1 !important;
+  overflow: hidden;
 }
-.tourStartBtn:hover { opacity: 0.85; }
+.tourStartBtn:hover { opacity: 0.85 !important; }
 
 /* Full-screen click blocker (transparent — darkening comes from spotlight shadow) */
 .tourOverlay {

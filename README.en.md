@@ -13,16 +13,17 @@ Runs entirely locally without a server — simply open `index.html` in your brow
 | **CoNLL-U comparison** | Token-by-token diff of multiple files against a Gold annotation |
 | **Interactive tree** | Dependency trees with drag-and-drop arcs, relation selector, ROOT drop zone |
 | **Gold annotation** | Via click, popup, or keyboard shortcuts — custom values override file values |
-| **CoNLL-U editor** | Direct editing of all sentences per file as plain text (section 5) |
+| **CoNLL-U editor** | Structured editor and raw textarea per file; gold table visible in read-only mode |
 | **Sentence management** | Insert, delete sentences — sentence list always visible |
 | **Undo/Redo** | Up to 80 steps per project; saved with session |
 | **Session export** | Save and load complete working state as JSON |
 | **Autosave** | Working state saved every 30 seconds; automatically restored on next page open |
 | **Tagset configuration** | Custom DEPREL lists, UPOS/XPOS values, and dependency layers via `labels.js` or JSON |
 | **Export** | Download Gold CoNLL-U and tree view (all sentences) |
+| **Guided Tour** | Interactive introduction with spotlight and tooltips using the English example |
 | **Keyboard shortcuts** | Full operation without mouse |
 | **Multi-language** | German / English; add more languages via `lang/xx.js` |
-| **Tablet support** | Touch-optimised; arcs draggable, scrolling works |
+| **Tablet support** | Touch-optimised; arcs draggable, larger tap targets |
 
 ---
 
@@ -263,15 +264,24 @@ Use the **column toggle bar** to show or hide individual file columns.
 
 ---
 
-## 5) Edit CoNLL-U
+## 5) CoNLL-U
 
-Section 5 contains an expandable **text editor** for the raw CoNLL-U data.
+Section 5 shows and edits the CoNLL-U data for the current sentence. Its behaviour depends on the **edit mode** (lock in section 1):
 
-- **"▾ Open"** expands the editor; **"▴ Close"** collapses it again
-- Each loaded file has its own textarea showing the complete CoNLL-U text of all sentences
-- Fields grow automatically with the content — no internal scrolling in the textarea
-- Edit the text directly → **"✓ Apply"** applies the changes to all other views
-- **"✕ Reset"** discards all changes and restores the last saved state
+### Read-only mode (locked 🔒)
+
+- **Gold table** shows all tokens with current Gold annotations (HEAD, DEPREL, UPOS, XPOS) — read-only
+- Rows with active custom overrides are highlighted
+
+### Edit mode (unlocked 🔓)
+
+- **Gold table** (editable): adjust HEAD, DEPREL, UPOS, and XPOS directly — changes are saved immediately as custom values
+- **Tab "📝 Structured Editor"**: all CoNLL-U fields of each file as a structured table; add/delete rows, edit values directly
+- **Tab "Raw text"**: full CoNLL-U text per file as a textarea; grows automatically with content
+  - Edit the text → **"✓ Apply"** transfers changes to all other views
+  - **"✕ Reset"** discards changes and restores the last saved state
+
+The section title switches automatically between **"5) CoNLL-U"** (read-only) and **"5) Edit CoNLL-U"** (edit mode).
 
 ---
 
@@ -314,7 +324,7 @@ The working state is automatically saved to the browser's LocalStorage every **3
 
 ---
 
-## 6) Undo / Redo
+## Undo / Redo
 
 All annotation changes (file selection, custom popup, confirm, subtree adoption) can be undone. Each project has its own undo stack.
 
@@ -324,6 +334,16 @@ All annotation changes (file selection, custom popup, confirm, subtree adoption)
 | **↪ Redo** / `Ctrl+Y` | Redo undone change |
 
 The history is saved with the session (up to 80 steps per project).
+
+---
+
+## Guided Tour
+
+The **🎓 Guided Tour** button in the top-right corner starts an interactive introduction to all features.
+
+- The tour automatically opens the English example in a **temporary project** — your own data is completely untouched
+- A spotlight and tooltip walk you through all 16 steps: projects, files, sentence navigation, tree view, comparison table, gold annotation, edit mode, CoNLL-U editor, and export
+- Exit with **"Skip tour"**, `Esc`, or the "Done" button — the tour project is removed automatically
 
 ---
 
@@ -517,6 +537,7 @@ HTML_Editor/
 │   ├── i18n.js                ← Translation engine (t(), setLang(), registerLang())
 │   ├── theme.js               ← Dark/light mode toggle
 │   ├── help.js                ← Help modal (loads readme_content.js)
+│   ├── tour.js                ← Guided tour (temporary project, spotlight, tooltips)
 │   └── main.js                ← Initialisation, event listeners, UI rendering
 │
 ├── lang/
