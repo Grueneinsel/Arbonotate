@@ -1227,6 +1227,8 @@ td:hover .fileEditBtn { display: inline-block; }
 }
 .conlluEditorToggle:hover { background: var(--bg-focus-soft); }
 .conlluEditorToggle.open { background: var(--accent); color: var(--bg); }
+/* The hidden attribute alone is not enough because display:flex would override it */
+.conlluEditorWrap[hidden] { display: none; }
 .conlluEditorWrap {
   display: flex;
   flex-direction: column;
@@ -1264,6 +1266,90 @@ td:hover .fileEditBtn { display: inline-block; }
   gap: 8px;
   padding-top: 4px;
 }
+.conlluTabBar {
+  display: flex;
+  gap: 4px;
+  border-bottom: 2px solid var(--line2);
+  padding-bottom: 6px;
+  margin-bottom: 10px;
+}
+.conlluTab {
+  padding: 5px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  border: 1px solid var(--line2);
+  border-radius: 6px 6px 0 0;
+  background: var(--bg-control);
+  color: var(--muted);
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: background .1s, color .1s;
+}
+.conlluTab:hover { background: var(--bg-focus-soft); color: var(--text); }
+.conlluTabActive {
+  background: var(--accent);
+  color: var(--bg);
+  border-color: var(--accent);
+}
+.conlluSectionHead {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: .5px;
+  padding: 2px 0 4px;
+}
+.conlluStructBlock { display: flex; flex-direction: column; gap: 4px; }
+.conlluStructTableWrap { overflow-x: auto; }
+.conlluStructTable {
+  border-collapse: collapse;
+  font-family: var(--mono);
+  font-size: 11px;
+}
+.conlluStructTable th,
+.conlluStructTable td {
+  padding: 2px 4px;
+  border: 1px solid var(--line2);
+  white-space: nowrap;
+}
+.conlluStructTable th {
+  background: var(--bg-control);
+  font-weight: 700;
+  color: var(--muted);
+  font-size: 10px;
+  text-align: left;
+}
+.conlluStructId {
+  color: var(--muted);
+  text-align: center;
+  font-weight: 600;
+  min-width: 22px;
+}
+.conlluStructInput {
+  font-family: var(--mono);
+  font-size: 11px;
+  background: transparent;
+  border: none;
+  color: var(--text);
+  outline: none;
+  width: 5.5em;
+  min-width: 2.5em;
+  padding: 1px 2px;
+}
+.conlluStructInput:focus { background: var(--bg-focus-soft); border-radius: 3px; }
+.conlluStructHead { width: 3em; }
+.conlluStructSelect {
+  font-family: var(--mono);
+  font-size: 11px;
+  background: var(--bg);
+  border: none;
+  color: var(--text);
+  outline: none;
+  cursor: pointer;
+  max-width: 9em;
+  padding: 1px 2px;
+}
+.conlluStructSelect:focus { background: var(--bg-focus-soft); }
 
 /* ── Show only section 1 when no files loaded ── */
 .wrap.noFiles section.card:not(:first-child) {

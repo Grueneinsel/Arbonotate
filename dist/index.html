@@ -1234,6 +1234,8 @@ td:hover .fileEditBtn { display: inline-block; }
 }
 .conlluEditorToggle:hover { background: var(--bg-focus-soft); }
 .conlluEditorToggle.open { background: var(--accent); color: var(--bg); }
+/* The hidden attribute alone is not enough because display:flex would override it */
+.conlluEditorWrap[hidden] { display: none; }
 .conlluEditorWrap {
   display: flex;
   flex-direction: column;
@@ -1271,6 +1273,90 @@ td:hover .fileEditBtn { display: inline-block; }
   gap: 8px;
   padding-top: 4px;
 }
+.conlluTabBar {
+  display: flex;
+  gap: 4px;
+  border-bottom: 2px solid var(--line2);
+  padding-bottom: 6px;
+  margin-bottom: 10px;
+}
+.conlluTab {
+  padding: 5px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  border: 1px solid var(--line2);
+  border-radius: 6px 6px 0 0;
+  background: var(--bg-control);
+  color: var(--muted);
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: background .1s, color .1s;
+}
+.conlluTab:hover { background: var(--bg-focus-soft); color: var(--text); }
+.conlluTabActive {
+  background: var(--accent);
+  color: var(--bg);
+  border-color: var(--accent);
+}
+.conlluSectionHead {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: .5px;
+  padding: 2px 0 4px;
+}
+.conlluStructBlock { display: flex; flex-direction: column; gap: 4px; }
+.conlluStructTableWrap { overflow-x: auto; }
+.conlluStructTable {
+  border-collapse: collapse;
+  font-family: var(--mono);
+  font-size: 11px;
+}
+.conlluStructTable th,
+.conlluStructTable td {
+  padding: 2px 4px;
+  border: 1px solid var(--line2);
+  white-space: nowrap;
+}
+.conlluStructTable th {
+  background: var(--bg-control);
+  font-weight: 700;
+  color: var(--muted);
+  font-size: 10px;
+  text-align: left;
+}
+.conlluStructId {
+  color: var(--muted);
+  text-align: center;
+  font-weight: 600;
+  min-width: 22px;
+}
+.conlluStructInput {
+  font-family: var(--mono);
+  font-size: 11px;
+  background: transparent;
+  border: none;
+  color: var(--text);
+  outline: none;
+  width: 5.5em;
+  min-width: 2.5em;
+  padding: 1px 2px;
+}
+.conlluStructInput:focus { background: var(--bg-focus-soft); border-radius: 3px; }
+.conlluStructHead { width: 3em; }
+.conlluStructSelect {
+  font-family: var(--mono);
+  font-size: 11px;
+  background: var(--bg);
+  border: none;
+  color: var(--text);
+  outline: none;
+  cursor: pointer;
+  max-width: 9em;
+  padding: 1px 2px;
+}
+.conlluStructSelect:focus { background: var(--bg-focus-soft); }
 
 /* ── Show only section 1 when no files loaded ── */
 .wrap.noFiles section.card:not(:first-child) {
@@ -1508,8 +1594,10 @@ window.LANG_DE = {
   'sec.compare': '4) Vergleich',
   'sec.conllu':    '5) CoNLL-U bearbeiten',
   'footer.author': 'Entwickelt von Frederik Konopka',
-  'conllu.open':  '▾ Öffnen',
-  'conllu.close': '▴ Schließen',
+  'conllu.open':       '▾ Öffnen',
+  'conllu.close':      '▴ Schließen',
+  'conllu.structured': '📝 Strukturierter Editor',
+  'conllu.raw':        '📄 Rohtexteditor',
   'sec.export':  '6) Export',
 
   // Datei-Bereich
@@ -1754,8 +1842,10 @@ window.LANG_EN = {
   'sec.compare': '4) Comparison',
   'sec.conllu':    '5) Edit CoNLL-U',
   'footer.author': 'Developed by Frederik Konopka',
-  'conllu.open':  '▾ Open',
-  'conllu.close': '▴ Close',
+  'conllu.open':       '▾ Open',
+  'conllu.close':      '▴ Close',
+  'conllu.structured': '📝 Structured Editor',
+  'conllu.raw':        '📄 Raw Text Editor',
   'sec.export':  '6) Export',
 
   // File section
@@ -5934,6 +6024,7 @@ function renderFiles(){
   if(state.docs.length === 0){
     fileList.innerHTML = `<div class="muted small">${escapeHtml(t('files.drop'))}</div>`;
     fileList.appendChild(_buildDemoMenu());
+    _updateSectionVisibility();
     return;
   }
   const warnedIndices = getWarnedDocIndices();
@@ -6228,6 +6319,179 @@ function _sentToConlluLines(sent){
 // ── CoNLL-U editor section ─────────────────────────────────────────────────────
 
 let _conlluEditorOpen = localStorage.getItem('conllu-editor-open') === 'true';
+let _conlluEditorMode = localStorage.getItem('conllu-editor-mode') || 'struct'; // 'struct' | 'raw'
+
+// Build a read-only structured table for one doc's current sentence (no inputs).
+function _buildConlluStructBlockReadOnly(docIdx) {
+  const d       = state.docs[docIdx];
+  const sentIdx = state.currentSent;
+  const sent    = d?.sentences?.[sentIdx];
+  if (!sent?.tokens?.length) return null;
+
+  const wrap = document.createElement('div');
+  wrap.className = 'conlluStructBlock';
+
+  const lbl = document.createElement('div');
+  lbl.className = 'conlluDocLabel';
+  lbl.textContent = d.name;
+  wrap.appendChild(lbl);
+
+  const tableWrap = document.createElement('div');
+  tableWrap.className = 'conlluStructTableWrap';
+
+  const table = document.createElement('table');
+  table.className = 'conlluStructTable';
+
+  const cols = ['ID', 'FORM', 'LEMMA', UPOS_LABEL_NAME, XPOS_LABEL_NAME,
+                 'FEATS', 'HEAD', 'DEPREL', 'DEPS', 'MISC'];
+  const thead = document.createElement('thead');
+  const hrow  = document.createElement('tr');
+  for (const col of cols) {
+    const th = document.createElement('th'); th.textContent = col; hrow.appendChild(th);
+  }
+  thead.appendChild(hrow);
+  table.appendChild(thead);
+
+  const tbody = document.createElement('tbody');
+  for (const tok of sent.tokens) {
+    const tr = document.createElement('tr');
+    const fields = [
+      tok.id, tok.form, tok.lemma,
+      tok.upos, tok.xpos, tok.feats,
+      tok.head ?? '_', tok.deprel, tok.deps, tok.misc,
+    ];
+    fields.forEach((v, fi) => {
+      const td = document.createElement('td');
+      td.textContent = v ?? '_';
+      if(fi === 0) td.className = 'conlluStructId';
+      tr.appendChild(td);
+    });
+    tbody.appendChild(tr);
+  }
+
+  table.appendChild(tbody);
+  tableWrap.appendChild(table);
+  wrap.appendChild(tableWrap);
+  return wrap;
+}
+
+// Build a structured per-token editor table for one doc's current sentence.
+// Each cell is an editable input; changes write directly to the doc token data.
+function _buildConlluStructBlock(docIdx) {
+  const d       = state.docs[docIdx];
+  const sentIdx = state.currentSent;
+  const sent    = d?.sentences?.[sentIdx];
+  if (!sent?.tokens?.length) return null;
+
+  const wrap = document.createElement('div');
+  wrap.className = 'conlluStructBlock';
+
+  const lbl = document.createElement('div');
+  lbl.className = 'conlluDocLabel';
+  lbl.textContent = d.name;
+  wrap.appendChild(lbl);
+
+  const tableWrap = document.createElement('div');
+  tableWrap.className = 'conlluStructTableWrap';
+
+  const table = document.createElement('table');
+  table.className = 'conlluStructTable';
+
+  // Column headers
+  const cols = ['ID', 'FORM', 'LEMMA', UPOS_LABEL_NAME, XPOS_LABEL_NAME,
+                 'FEATS', 'HEAD', 'DEPREL', 'DEPS', 'MISC'];
+  const thead = document.createElement('thead');
+  const hrow  = document.createElement('tr');
+  for (const col of cols) {
+    const th = document.createElement('th');
+    th.textContent = col;
+    hrow.appendChild(th);
+  }
+  thead.appendChild(hrow);
+  table.appendChild(thead);
+
+  // Debounced update: re-render sections 2-4 and sync the raw textarea
+  let _debounceId = null;
+  const _schedule = () => {
+    clearTimeout(_debounceId);
+    _debounceId = setTimeout(() => {
+      renderSentenceKeepScroll();
+      const ta = document.querySelector(`.conlluDocTa[data-doc-idx="${docIdx}"]`);
+      if (ta) ta.value = _docToConlluText(d);
+    }, 180);
+  };
+
+  const mkInput = (tok, fieldName, value) => {
+    const td  = document.createElement('td');
+    const inp = document.createElement('input');
+    inp.type        = 'text';
+    inp.value       = value ?? '';
+    inp.className   = 'conlluStructInput';
+    inp.spellcheck  = false;
+    inp.autocomplete = 'off';
+    inp.addEventListener('focus', () => pushUndo(), { once: true });
+    inp.addEventListener('input', () => { tok[fieldName] = inp.value || '_'; _schedule(); });
+    td.appendChild(inp);
+    return td;
+  };
+
+  const mkSelect = (tok, fieldName, value, optionsHtml) => {
+    if (!optionsHtml) return mkInput(tok, fieldName, value);
+    const td  = document.createElement('td');
+    const sel = document.createElement('select');
+    sel.className    = 'conlluStructSelect';
+    sel.innerHTML    = optionsHtml;
+    sel.value        = value ?? '';
+    sel.addEventListener('focus',  () => pushUndo(), { once: true });
+    sel.addEventListener('change', () => { tok[fieldName] = sel.value || '_'; _schedule(); });
+    td.appendChild(sel);
+    return td;
+  };
+
+  const tbody = document.createElement('tbody');
+  for (const tok of sent.tokens) {
+    const tr = document.createElement('tr');
+
+    // ID (read-only)
+    const idTd = document.createElement('td');
+    idTd.textContent = tok.id;
+    idTd.className   = 'conlluStructId';
+    tr.appendChild(idTd);
+
+    tr.appendChild(mkInput (tok, 'form',   tok.form));
+    tr.appendChild(mkInput (tok, 'lemma',  tok.lemma));
+    tr.appendChild(mkSelect(tok, 'upos',   tok.upos,   UPOS_OPTIONS_HTML));
+    tr.appendChild(mkSelect(tok, 'xpos',   tok.xpos,   XPOS_OPTIONS_HTML));
+    tr.appendChild(mkInput (tok, 'feats',  tok.feats));
+
+    // HEAD: numeric input
+    const headTd  = document.createElement('td');
+    const headInp = document.createElement('input');
+    headInp.type      = 'number';
+    headInp.min       = '0';
+    headInp.value     = tok.head ?? '';
+    headInp.className = 'conlluStructInput conlluStructHead';
+    headInp.addEventListener('focus', () => pushUndo(), { once: true });
+    headInp.addEventListener('input', () => {
+      const v = headInp.value === '' ? null : parseInt(headInp.value, 10);
+      tok.head = isNaN(v) ? null : v;
+      _schedule();
+    });
+    headTd.appendChild(headInp);
+    tr.appendChild(headTd);
+
+    tr.appendChild(mkSelect(tok, 'deprel', tok.deprel, DEPREL_OPTIONS_HTML));
+    tr.appendChild(mkInput (tok, 'deps',   tok.deps));
+    tr.appendChild(mkInput (tok, 'misc',   tok.misc));
+
+    tbody.appendChild(tr);
+  }
+
+  table.appendChild(tbody);
+  tableWrap.appendChild(table);
+  wrap.appendChild(tableWrap);
+  return wrap;
+}
 
 // Build full CoNLL-U text for all sentences of a doc (blank line separator).
 function _docToConlluText(d){
@@ -6247,58 +6511,99 @@ function renderConlluEditor(force){
     toggle.classList.toggle('open', _conlluEditorOpen);
     toggle.setAttribute('aria-expanded', String(_conlluEditorOpen));
   }
-  // Always wipe stale content when there are no docs, so it never shows after a reset.
-  if(state.docs.length === 0) wrap.innerHTML = '';
-  if(!_conlluEditorOpen){ wrap.hidden = true; return; }
+  // Always wipe stale content when there are no docs.
+  if(state.docs.length === 0){ wrap.innerHTML = ''; wrap.hidden = true; return; }
   wrap.hidden = false;
-  if(state.docs.length === 0){
-    wrap.innerHTML = `<p class="muted small">${escapeHtml(t('files.none'))}</p>`;
+
+  if(!_conlluEditorOpen){
+    // Collapsed state: show read-only table for quick reference, no editing controls.
+    if(!force && wrap.querySelector('.conlluStructBlock') && !wrap.querySelector('.conlluTab')) return;
+    wrap.innerHTML = '';
+    for(let i = 0; i < state.docs.length; i++){
+      const block = _buildConlluStructBlockReadOnly(i);
+      if(block) wrap.appendChild(block);
+    }
     return;
   }
-  // Only rebuild on force or initial open (no textareas yet)
-  if(!force && wrap.querySelector('textarea')) return;
+
+  // Only rebuild on force or when the wrap is still empty / in wrong mode
+  if(!force && wrap.querySelector('.conlluTab')) return;
 
   wrap.innerHTML = '';
-  for(let i = 0; i < state.docs.length; i++){
-    const d = state.docs[i];
-    const block = document.createElement('div');
-    block.className = 'conlluDocBlock';
-    const lbl = document.createElement('div');
-    lbl.className = 'conlluDocLabel';
-    lbl.textContent = d.name;
-    block.appendChild(lbl);
-    const ta = document.createElement('textarea');
-    ta.className = 'conlluDocTa';
-    ta.spellcheck = false;
-    ta.dataset.docIdx = i;
-    ta.value = _docToConlluText(d);
-    // Auto-size to content
-    const _autoH = el => { el.style.height = 'auto'; el.style.height = el.scrollHeight + 'px'; };
-    requestAnimationFrame(() => _autoH(ta));
-    ta.addEventListener('input', () => _autoH(ta));
-    block.appendChild(ta);
-    wrap.appendChild(block);
+
+  // ── Mode tab bar ──────────────────────────────────────────────────────────
+  const tabBar = document.createElement('div');
+  tabBar.className = 'conlluTabBar';
+  const mkTab = (mode, label) => {
+    const btn = document.createElement('button');
+    btn.textContent = label;
+    btn.className = 'conlluTab' + (_conlluEditorMode === mode ? ' conlluTabActive' : '');
+    btn.addEventListener('click', () => {
+      _conlluEditorMode = mode;
+      localStorage.setItem('conllu-editor-mode', mode);
+      renderConlluEditor(true);
+    });
+    return btn;
+  };
+  tabBar.appendChild(mkTab('struct', t('conllu.structured')));
+  tabBar.appendChild(mkTab('raw',    t('conllu.raw')));
+  wrap.appendChild(tabBar);
+
+  if(_conlluEditorMode === 'struct'){
+    // ── Structured per-token editor for the current sentence ─────────────
+    const sentLabel = document.createElement('div');
+    sentLabel.className = 'conlluSectionHead';
+    sentLabel.textContent = t('sent.label', { cur: state.currentSent + 1, max: state.maxSents });
+    wrap.appendChild(sentLabel);
+    for(let i = 0; i < state.docs.length; i++){
+      const block = _buildConlluStructBlock(i);
+      if(block) wrap.appendChild(block);
+    }
+  } else {
+    // ── Raw full-file textarea editor ─────────────────────────────────────
+    for(let i = 0; i < state.docs.length; i++){
+      const d = state.docs[i];
+      const block = document.createElement('div');
+      block.className = 'conlluDocBlock';
+      const lbl = document.createElement('div');
+      lbl.className = 'conlluDocLabel';
+      lbl.textContent = d.name;
+      block.appendChild(lbl);
+      const ta = document.createElement('textarea');
+      ta.className = 'conlluDocTa';
+      ta.spellcheck = false;
+      ta.dataset.docIdx = i;
+      ta.value = _docToConlluText(d);
+      const _autoH = el => { el.style.height = 'auto'; el.style.height = el.scrollHeight + 'px'; };
+      requestAnimationFrame(() => _autoH(ta));
+      ta.addEventListener('input', () => _autoH(ta));
+      block.appendChild(ta);
+      wrap.appendChild(block);
+    }
   }
 
   const btnRow = document.createElement('div');
   btnRow.className = 'conlluEditorBtns';
 
-  const saveBtn = document.createElement('button');
-  saveBtn.textContent = t('sent.editSentSave');
-  saveBtn.addEventListener('click', () => {
-    pushUndo();
-    wrap.querySelectorAll('textarea[data-doc-idx]').forEach(ta => {
-      const d = state.docs[parseInt(ta.dataset.docIdx, 10)];
-      if(!d) return;
-      d.sentences = parseConllu(ta.value).sentences;
+  // "Save" button only applies to the raw textarea editor
+  if(_conlluEditorMode === 'raw'){
+    const saveBtn = document.createElement('button');
+    saveBtn.textContent = t('sent.editSentSave');
+    saveBtn.addEventListener('click', () => {
+      pushUndo();
+      wrap.querySelectorAll('textarea[data-doc-idx]').forEach(ta => {
+        const d = state.docs[parseInt(ta.dataset.docIdx, 10)];
+        if(!d) return;
+        d.sentences = parseConllu(ta.value).sentences;
+      });
+      recomputeMaxSents();
+      state.currentSent = Math.min(state.currentSent, Math.max(0, state.maxSents - 1));
+      renderConlluEditor(true);
+      renderSentSelect();
+      renderSentence();
     });
-    recomputeMaxSents();
-    state.currentSent = Math.min(state.currentSent, Math.max(0, state.maxSents - 1));
-    renderConlluEditor(true);
-    renderSentSelect();
-    renderSentence();
-  });
-  btnRow.appendChild(saveBtn);
+    btnRow.appendChild(saveBtn);
+  }
 
   const cancelBtn = document.createElement('button');
   cancelBtn.textContent = t('sent.editSentCancel');
