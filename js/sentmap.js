@@ -1,5 +1,19 @@
 // Sentence selector, sentence minimap, flags, and confirmation state.
 
+// ── Stats cache ────────────────────────────────────────────────────────────────
+// Sentence stats are expensive to compute (O(tokens × docs × cols)) and change
+// only when annotations change — not when confirmed/flags/notes are toggled.
+// The cache is invalidated precisely on data changes and fully on structural changes
+// (file load, undo/redo, project switch, reset).
+
+let _statsCache = null;
+
+// Invalidate one sentence (sentIdx) or the entire cache (no argument).
+function _invalidateStatsCache(sentIdx){
+  if(sentIdx == null) _statsCache = null;
+  else if(_statsCache) _statsCache.delete(sentIdx);
+}
+
 // Rebuild the sentence navigation controls and "init custom from doc" buttons.
 function renderSentSelect(){
   const ok = state.docs.length >= 1 && state.maxSents > 0;
@@ -24,8 +38,12 @@ function renderSentSelect(){
   updateExportButtons();
 }
 
-// Compute diff/token statistics for a sentence index (reusable across renders).
+// Compute diff/token statistics for a sentence index. Results are cached and
+// reused across renderSentSelectOptions / renderSentMap calls within the same
+// render cycle, and across renders when no annotation data has changed.
 function _sentStats(i){
+  if(!_statsCache) _statsCache = new Map();
+  if(_statsCache.has(i)) return _statsCache.get(i);
   const docMaps = state.docs.map(d => {
     const s = d.sentences[i];
     const m = new Map();
@@ -38,7 +56,9 @@ function _sentStats(i){
   for(const idStr of Object.keys(customSent)) ids.add(parseInt(idStr, 10));
   const idList = Array.from(ids).sort((a,b) => a - b);
   const goldMap = buildGoldTokenMap(i, idList, docMaps);
-  return computeStats(i, idList, docMaps, goldMap);
+  const result  = computeStats(i, idList, docMaps, goldMap);
+  _statsCache.set(i, result);
+  return result;
 }
 
 // Toggle the confirmed state for the current sentence.
@@ -89,7 +109,7 @@ function updateConfirmBtn(){
 // Rebuild all <option> elements in the sentence <select> dropdown with diff/flag styling.
 function renderSentSelectOptions(){
   if(state.docs.length < 1 || state.maxSents === 0) return;
-  sentSelect.innerHTML = "";
+  const frag = document.createDocumentFragment();
   for(let i=0;i<state.maxSents;i++){
     const stats = _sentStats(i);
     const hasDiff   = stats.diffCount > 0;
@@ -119,8 +139,10 @@ function renderSentSelectOptions(){
       opt.style.background = hasDiff ? '#1f0b0b' : '#091a10';
       opt.style.color = hasDiff ? '#ff9090' : '#6fe8a8';
     }
-    sentSelect.appendChild(opt);
+    frag.appendChild(opt);
   }
+  sentSelect.innerHTML = "";
+  sentSelect.appendChild(frag);
   sentSelect.value = String(state.currentSent);
 
   // Update the select border color to reflect the current sentence's status
@@ -168,7 +190,7 @@ function _updateSentNote(){
 function renderSentMap(){
   if(!sentMap) return;
   if(state.docs.length < 1 || state.maxSents === 0){ sentMap.innerHTML = ""; return; }
-  sentMap.innerHTML = "";
+  const frag = document.createDocumentFragment();
   for(let i=0;i<state.maxSents;i++){
     const stats = _sentStats(i);
     const hasDiff   = stats.diffCount > 0;
@@ -199,8 +221,10 @@ function renderSentMap(){
       state.currentSent = i;
       renderSentence();
     });
-    sentMap.appendChild(dot);
+    frag.appendChild(dot);
   }
+  sentMap.innerHTML = "";
+  sentMap.appendChild(frag);
 }
 
 // ── Flags ──────────────────────────────────────────────────────────────────────
@@ -224,7 +248,6 @@ function toggleFlag(sentIdx, tokId){
   // Also update sentText token spans (both read-only and editable modes)
   const span = sentText.querySelector(`[data-id="${tokId}"]`);
   if(span) span.classList.toggle("sentTokenFlagged", isFlagged);
-  // Reflect flag change in the minimap and dropdown without a full re-render
-  renderSentMap();
+  // Reflect flag change in the minimap and dropdown (renderSentSelectOptions calls renderSentMap)
   renderSentSelectOptions();
 }

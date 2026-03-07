@@ -371,6 +371,9 @@ function renderProjectLock(){
 
 // Re-render the entire sentence view: sentence text, stats, table, trees, note.
 function renderSentence(){
+  // Invalidate stats for the current sentence to catch any direct token mutations
+  // (e.g. arc editing writes to state.docs[].sentences[].tokens directly).
+  _invalidateStatsCache(state.currentSent);
   // Stop any running TTS when the displayed sentence changes.
   stopTts();
   const ok = state.docs.length >= 1 && state.maxSents > 0;
@@ -1012,7 +1015,7 @@ function copySentenceConllu(){
       copyConlluBtn.textContent = t('copy.done');
       setTimeout(() => { if(copyConlluBtn) copyConlluBtn.textContent = t('copy.btn'); }, 1500);
     }
-  }).catch(() => { _showToast(t('copy.btn') + ' — Fehler', 'error'); });
+  }).catch(() => { _showToast(t('copy.err'), 'error'); });
 }
 
 // ── Demo ───────────────────────────────────────────────────────────────────────

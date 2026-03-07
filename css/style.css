@@ -1404,15 +1404,17 @@ td:hover .fileEditBtn { display: inline-block; }
 }
 .devBadgeClose:hover { color: #fff; }
 
-/* Dev mode auto-reload bar */
+/* Dev mode auto-reload bar — border only shows when bar has content */
 .devModeBar {
   display: flex;
   align-items: center;
   gap: 10px;
+  font-size: 12px;
+}
+.devModeBar:not(:empty) {
   margin-top: 10px;
   padding-top: 8px;
   border-top: 1px solid var(--line);
-  font-size: 12px;
 }
 .devModeLabel {
   display: flex;

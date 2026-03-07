@@ -176,6 +176,7 @@ function moveDoc(idx, dir){
 /** Reset only the current project (docs, annotations, undo). Other projects untouched. */
 function resetProject(){
   if(!confirm(t('files.resetConfirm'))) return;
+  _invalidateStatsCache();
   state.docs        = [];
   state.custom      = {};
   state.goldPick    = {};
@@ -197,6 +198,7 @@ function resetProject(){
 /** Reset ALL projects — full application reset. */
 function resetAll(){
   if(!confirm(t('files.globalResetConfirm'))) return;
+  _invalidateStatsCache();
   state.docs        = [];
   state.custom      = {};
   state.goldPick    = {};

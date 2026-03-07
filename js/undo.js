@@ -28,6 +28,8 @@ function _restore(snap){
   state.custom    = snap.custom;
   state.goldPick  = snap.goldPick;
   state.confirmed = snap.confirmed;
+  // Annotations for any sentence may have changed — wipe the entire stats cache.
+  _invalidateStatsCache();
   if(snap.docTokens != null){
     state.docs.forEach((d, i) => {
       const toks = snap.docTokens[i];

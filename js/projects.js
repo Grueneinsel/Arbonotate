@@ -66,6 +66,8 @@ function _saveActiveProject(){
 
 /** Load projects[activeProjectIdx] → live state */
 function _loadActiveProject(){
+  // All docs/annotations change when switching projects or loading files — clear cache.
+  _invalidateStatsCache();
   const p = state.projects[state.activeProjectIdx];
   state.docs        = p.docs       || [];
   state.custom      = JSON.parse(JSON.stringify(p.custom    || {}));
@@ -249,7 +251,7 @@ function renderProjectTabs(){
       const badge = document.createElement("span");
       badge.className = "projectTabBadge" + (tabConfirmed === tabTotal ? " projectTabBadgeDone" : "");
       badge.textContent = `${tabConfirmed}/${tabTotal}`;
-      badge.title = `${tabConfirmed} von ${tabTotal} Sätzen bestätigt`;
+      badge.title = t('project.badgeTitle', { done: tabConfirmed, total: tabTotal });
       tab.appendChild(badge);
     }
 

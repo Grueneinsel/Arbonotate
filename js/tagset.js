@@ -26,7 +26,7 @@ function applyTagsetJson(data){
   const tagCount = cols.reduce((s, c) => s + (c.values?.length || 0), 0);
   const depCount = depCols.reduce((s, dc) => s + Object.values(dc.groups || {}).flat().length, 0);
   if(tagCount > 0 || depCount > 0){
-    _showToast(`✓ Tagset geladen (${tagCount} Tags, ${depCount} DepRels)`, 'info');
+    _showToast(t('tagset.loadedToast', { n: tagCount, d: depCount }), 'info');
   }
 }
 
@@ -228,7 +228,7 @@ function renderTagsetList(){
     const colUsed = usedVals[col.key] || new Set();
     const tagHtml = vals.map(v => {
       const isUsed = hasData && colUsed.has(v);
-      return `<span class="tagsetTag${isUsed ? ' tagsetTagUsed' : ''}" title="${isUsed ? '✓ im Projekt verwendet' : ''}">${escapeHtml(v)}</span>`;
+      return `<span class="tagsetTag${isUsed ? ' tagsetTagUsed' : ''}" title="${isUsed ? t('tagset.usedTooltip') : ''}">${escapeHtml(v)}</span>`;
     }).join("");
     sections.push(`<div class="tagsetSection">
       <div class="tagsetSectionHead">${escapeHtml(col.name || col.key)} <span class="muted">(${vals.length})</span></div>
@@ -248,7 +248,7 @@ function renderTagsetList(){
         <span class="tagsetGroupName">${escapeHtml(gname)}</span>
         ${tags.map(v => {
           const isUsed = hasData && depUsed.has(v);
-          return `<span class="tagsetTag${isUsed ? ' tagsetTagUsed' : ''}" title="${isUsed ? '✓ im Projekt verwendet' : ''}">${escapeHtml(v)}</span>`;
+          return `<span class="tagsetTag${isUsed ? ' tagsetTagUsed' : ''}" title="${isUsed ? t('tagset.usedTooltip') : ''}">${escapeHtml(v)}</span>`;
         }).join("")}
       </div>`
     ).join("");

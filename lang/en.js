@@ -107,10 +107,12 @@ window.LANG_EN = {
   'export.mwtNote':    'Note: Multi-word tokens (IDs with "-" or ".") are ignored.',
 
   // Tagset
-  'tagset.upload':    '📤 Upload tagset',
-  'tagset.download':  '📥 Download tagset',
-  'tagset.template':  '📋 Download template',
-  'tagset.loaded':    '{deprel} deprels · {upos} UPOS · {xpos} XPOS loaded',
+  'tagset.upload':       '📤 Upload tagset',
+  'tagset.download':     '📥 Download tagset',
+  'tagset.template':     '📋 Download template',
+  'tagset.loaded':       '{deprel} deprels · {upos} UPOS · {xpos} XPOS loaded',
+  'tagset.loadedToast':  '✓ Tagset loaded ({n} tags, {d} deprels)',
+  'tagset.usedTooltip':  '✓ Used in project',
   'tagset.sectionTitle': '⚙ Tagset',
   'tagset.example':      '📄 Example',
   'tagset.noLabels':     'No tagset configured',
@@ -165,10 +167,12 @@ window.LANG_EN = {
   // Note per sentence
   'note.label':       'Note:',
   'note.placeholder': 'Note for this sentence …',
+  'note.indicator':   'This sentence has a note',
 
   // Clipboard
   'copy.btn':  'Copy CoNLL-U',
   'copy.done': '✓ Copied!',
+  'copy.err':  'Copy failed',
   'kbd.copy':  'Copy',
 
   // File order
@@ -186,6 +190,7 @@ window.LANG_EN = {
   'autosave.saved':   'Autosave stored',
 
   // Projects
+  'project.badgeTitle':    '{done} of {total} sentences confirmed',
   'project.new':           'New project',
   'project.default':       'Project',
   'project.namePrompt':    'Project name:',

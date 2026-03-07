@@ -133,10 +133,12 @@ window.LANG_DE = {
   'kbd.close':        'Schließen',
 
   // Tagset
-  'tagset.upload':    '📤 Tagset hochladen',
-  'tagset.download':  '📥 Tagset herunterladen',
-  'tagset.template':  '📋 Vorlage herunterladen',
-  'tagset.loaded':    '{deprel} Deprel · {upos} UPOS · {xpos} XPOS geladen',
+  'tagset.upload':       '📤 Tagset hochladen',
+  'tagset.download':     '📥 Tagset herunterladen',
+  'tagset.template':     '📋 Vorlage herunterladen',
+  'tagset.loaded':       '{deprel} Deprel · {upos} UPOS · {xpos} XPOS geladen',
+  'tagset.loadedToast':  '✓ Tagset geladen ({n} Tags, {d} DepRels)',
+  'tagset.usedTooltip':  '✓ Im Projekt verwendet',
   'tagset.sectionTitle': '⚙ Tagset',
   'tagset.example':      '📄 Beispiel',
   'tagset.noLabels':     'Kein Tagset konfiguriert',
@@ -165,10 +167,12 @@ window.LANG_DE = {
   // Notiz pro Satz
   'note.label':       'Notiz:',
   'note.placeholder': 'Notiz zum Satz …',
+  'note.indicator':   'Dieser Satz hat eine Notiz',
 
   // Zwischenablage
   'copy.btn':  'CoNLL-U kopieren',
   'copy.done': '✓ Kopiert!',
+  'copy.err':  'Kopieren fehlgeschlagen',
   'kbd.copy':  'Kopieren',
 
   // Datei-Reihenfolge
@@ -186,6 +190,7 @@ window.LANG_DE = {
   'autosave.saved':   'Autosave gespeichert',
 
   // Projekte
+  'project.badgeTitle':    '{done} von {total} Sätzen bestätigt',
   'project.new':           'Neues Projekt',
   'project.default':       'Projekt',
   'project.namePrompt':    'Projektname:',

@@ -172,6 +172,7 @@ function setCustomField(sentIndex, tokId, field, value){
     delete sent[tokId];
     if(Object.keys(sent).length === 0) delete state.custom[sentIndex];
   }
+  _invalidateStatsCache(sentIndex);
 }
 
 function getCustomUpos(sentIndex, tokId){ return getCustomEntry(sentIndex, tokId)?.upos ?? null; }
@@ -185,7 +186,10 @@ function getDocChoice(sentIndex, tokId){
   if(typeof v === "number" && v >= 0 && v < state.docs.length) return v;
   return 0;
 }
-function setDocChoice(sentIndex, tokId, docIdx){ ensureGoldSent(sentIndex)[tokId] = docIdx; }
+function setDocChoice(sentIndex, tokId, docIdx){
+  ensureGoldSent(sentIndex)[tokId] = docIdx;
+  _invalidateStatsCache(sentIndex);
+}
 
 // Format a head/deprel pair as a display string for comparison.
 function valueStr(head, deprel){
@@ -222,6 +226,7 @@ function computeStats(sentIndex, idList, docMaps, goldMap){
 // ── Helpers ────────────────────────────────────────────────────────────────────
 
 // Escape special HTML characters to prevent XSS when inserting dynamic text.
+const _escapeMap = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' };
 function escapeHtml(s){
-  return String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  return String(s).replace(/[&<>"]/g, c => _escapeMap[c]);
 }
