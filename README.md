@@ -651,6 +651,6 @@ The six example directories together cover all tool features:
 ## Legal Notice
 
 **Frederik Konopka**
-✉️ arbonotate@frederik-konopka.de
+✉️ [arbonotate@frederik-konopka.de](mailto:arbonotate@frederik-konopka.de)
 
 Arbonotate is a non-commercial, open-source research tool. No user data is collected or transmitted.

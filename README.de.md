@@ -651,6 +651,6 @@ Die sechs Beispielverzeichnisse decken gemeinsam alle Funktionen des Tools ab:
 ## Impressum
 
 **Frederik Konopka**
-✉️ arbonotate@frederik-konopka.de
+✉️ [arbonotate@frederik-konopka.de](mailto:arbonotate@frederik-konopka.de)
 
 Arbonotate ist ein nicht-kommerzielles, quelloffenes Forschungstool. Es werden keine Nutzerdaten erhoben oder übertragen.
