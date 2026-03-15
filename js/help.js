@@ -151,5 +151,6 @@ function esc(s){
 function inlineMd(s){
   return esc(s)
     .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
-    .replace(/`([^`]+)`/g, '<code class="helpInlineCode">$1</code>');
+    .replace(/`([^`]+)`/g, '<code class="helpInlineCode">$1</code>')
+    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
 }
