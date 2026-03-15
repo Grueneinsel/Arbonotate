@@ -3,6 +3,8 @@
 
 window.README_CONTENT_EN = `# Arbonotate
 
+> **Arbonotate** = *Arbor* (Latin: tree) + *annotate* — a browser-based workbench for annotating and comparing dependency trees.
+
 Browser-based tool for comparing and annotating dependency trees in CoNLL-U files.
 Runs entirely locally without a server — simply open \`index.html\` in your browser.
 
@@ -647,6 +649,8 @@ The six example directories together cover all tool features:
 `;
 
 window.README_CONTENT_DE = `# Arbonotate
+
+> **Arbonotate** = *Arbor* (lateinisch: Baum) + *annotate* (annotieren) — eine browserbasierte Arbeitsumgebung zum Annotieren und Vergleichen von Abhängigkeitsbäumen.
 
 Browserbasiertes Tool zum Vergleichen und Annotieren von Abhängigkeitsbäumen in CoNLL-U-Dateien.
 Läuft vollständig lokal ohne Server — einfach \`index.html\` im Browser öffnen.

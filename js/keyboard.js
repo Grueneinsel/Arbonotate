@@ -193,6 +193,9 @@ document.addEventListener("keydown", (e) => {
 
     // ── Copy current sentence as CoNLL-U to clipboard ─────────────────────────
     case "c":
+      // Don't intercept Ctrl+C or when the user has text selected
+      if(e.ctrlKey || e.metaKey) break;
+      if(window.getSelection()?.toString().trim()) break;
       e.preventDefault();
       copySentenceConllu();
       break;
