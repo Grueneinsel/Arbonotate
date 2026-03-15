@@ -23,9 +23,14 @@ jobs:
       - name: Build dist/index.html
         run: python bundler.py
 
-      - name: Get short commit SHA
-        id: sha
-        run: echo "short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+      - name: Get short commit SHA and date
+        id: meta
+        run: |
+          echo "short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+          echo "date=$(date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
+
+      - name: Rename dist file
+        run: cp dist/index.html "dist/Arbonotate_${{ steps.meta.outputs.date }}.html"
 
       - name: Delete existing 'latest' release and tag
         env:
@@ -37,7 +42,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: latest
-          name: "Arbonotate – latest (${{ steps.sha.outputs.short }})"
+          name: "Arbonotate – latest (${{ steps.meta.outputs.short }})"
           body: |
             Automatically built from the latest commit on `main`.
 
@@ -70,6 +75,6 @@ jobs:
             | **Tablet support** | Touch-optimised, draggable arcs, larger tap targets |
 
             → [Full documentation](https://github.com/Grueneinsel/Arbonotate/blob/main/README.md)
-          files: dist/index.html
+          files: dist/Arbonotate_${{ steps.meta.outputs.date }}.html
           draft: false
           prerelease: false
