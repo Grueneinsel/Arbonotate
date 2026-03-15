@@ -49,10 +49,11 @@ function setLang(code){
   if(typeof renderSentSelect === 'function') renderSentSelect();
   if(typeof renderSentence   === 'function') renderSentence();
   if(typeof _syncUndoBtns    === 'function') _syncUndoBtns();
-  // If help modal is open, reload its content in the new language
+  // If help overlay is open, reload its content in the new language
+  if(typeof _helpLoadedLang !== 'undefined') _helpLoadedLang = null;
   if(typeof openHelp === 'function'){
-    const modal = document.getElementById('helpModal');
-    if(modal?.classList.contains('active')) openHelp();
+    const overlay = document.getElementById('helpOverlay');
+    if(overlay?.classList.contains('open')) openHelp();
   }
 }
 

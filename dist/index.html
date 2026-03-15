@@ -1060,6 +1060,8 @@ html[data-theme="light"] .treeSingleBtn:hover{ background:#b8dcf0; }
 }
 .helpContent .helpTable tr:nth-child(even) td{ background:#0a1218; }
 .helpContent strong{ color:var(--text); font-weight:700; }
+.helpContent a{ color:var(--accent); text-decoration:underline; }
+.helpContent a:hover{ opacity:.8; }
 
 /* Session row separator */
 .sessionRow{ margin-top:10px; padding-top:10px; border-top:1px solid var(--line); }
@@ -2558,10 +2560,11 @@ function setLang(code){
   if(typeof renderSentSelect === 'function') renderSentSelect();
   if(typeof renderSentence   === 'function') renderSentence();
   if(typeof _syncUndoBtns    === 'function') _syncUndoBtns();
-  // If help modal is open, reload its content in the new language
+  // If help overlay is open, reload its content in the new language
+  if(typeof _helpLoadedLang !== 'undefined') _helpLoadedLang = null;
   if(typeof openHelp === 'function'){
-    const modal = document.getElementById('helpModal');
-    if(modal?.classList.contains('active')) openHelp();
+    const overlay = document.getElementById('helpOverlay');
+    if(overlay?.classList.contains('open')) openHelp();
   }
 }
 
