@@ -1,9 +1,9 @@
 // Auto-generated — do not edit manually.
 // Regenerate with:  python make_readme_js.py
 
-window.README_CONTENT_EN = `# CoNLL-U Comparison
+window.README_CONTENT_EN = `# Arbonotate
 
-Browser-based tool for comparing and annotating multiple CoNLL-U files.
+Browser-based tool for comparing and annotating dependency trees in CoNLL-U files.
 Runs entirely locally without a server — simply open \`index.html\` in your browser.
 
 ---
@@ -646,9 +646,9 @@ The six example directories together cover all tool features:
 - Data lives only in **browser memory** — use session export to save your progress permanently
 `;
 
-window.README_CONTENT_DE = `# CoNLL-U Vergleich
+window.README_CONTENT_DE = `# Arbonotate
 
-Browserbasiertes Tool zum Vergleichen und Annotieren mehrerer CoNLL-U-Dateien.
+Browserbasiertes Tool zum Vergleichen und Annotieren von Abhängigkeitsbäumen in CoNLL-U-Dateien.
 Läuft vollständig lokal ohne Server — einfach \`index.html\` im Browser öffnen.
 
 ---

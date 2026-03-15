@@ -1,6 +1,6 @@
-# CoNLL-U Comparison
+# Arbonotate
 
-Browser-based tool for comparing and annotating multiple CoNLL-U files.
+Browser-based tool for comparing and annotating dependency trees in CoNLL-U files.
 Runs entirely locally without a server — simply open `index.html` in your browser.
 
 ---

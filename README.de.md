@@ -1,6 +1,6 @@
-# CoNLL-U Vergleich
+# Arbonotate
 
-Browserbasiertes Tool zum Vergleichen und Annotieren mehrerer CoNLL-U-Dateien.
+Browserbasiertes Tool zum Vergleichen und Annotieren von Abhängigkeitsbäumen in CoNLL-U-Dateien.
 Läuft vollständig lokal ohne Server — einfach `index.html` im Browser öffnen.
 
 ---
