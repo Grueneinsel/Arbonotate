@@ -5,6 +5,8 @@ window.README_CONTENT_EN = `# Arbonotate
 
 > **Arbonotate** = *Arbor* (Latin: tree) + *annotate* — a browser-based workbench for annotating and comparing dependency trees.
 
+**GitHub:** [github.com/Grueneinsel/Arbonotate](https://github.com/Grueneinsel/Arbonotate) · **Latest release:** [Download dist/index.html](https://github.com/Grueneinsel/Arbonotate/releases/latest)
+
 Browser-based tool for comparing and annotating dependency trees in CoNLL-U files.
 Runs entirely locally without a server — simply open \`index.html\` in your browser.
 
@@ -646,11 +648,23 @@ The six example directories together cover all tool features:
 - **Multi-word tokens** (IDs \`N-M\`) and **empty nodes** (IDs \`N.M\`) are stored on load and fully reconstructed on CoNLL-U export; only regular tokens appear in the comparison table and tree view
 - At least **two files** are required for comparison and tree view
 - Data lives only in **browser memory** — use session export to save your progress permanently
+
+---
+
+## Legal Notice
+
+**Frederik Konopka**
+✉️ arbonotate@frederik-konopka.de
+📞 +49 1525 5385967
+
+Arbonotate is a non-commercial, open-source research tool. No user data is collected or transmitted.
 `;
 
 window.README_CONTENT_DE = `# Arbonotate
 
 > **Arbonotate** = *Arbor* (lateinisch: Baum) + *annotate* (annotieren) — eine browserbasierte Arbeitsumgebung zum Annotieren und Vergleichen von Abhängigkeitsbäumen.
+
+**GitHub:** [github.com/Grueneinsel/Arbonotate](https://github.com/Grueneinsel/Arbonotate) · **Aktueller Release:** [dist/index.html herunterladen](https://github.com/Grueneinsel/Arbonotate/releases/latest)
 
 Browserbasiertes Tool zum Vergleichen und Annotieren von Abhängigkeitsbäumen in CoNLL-U-Dateien.
 Läuft vollständig lokal ohne Server — einfach \`index.html\` im Browser öffnen.
@@ -1293,6 +1307,16 @@ Die sechs Beispielverzeichnisse decken gemeinsam alle Funktionen des Tools ab:
 - **Multi-Word-Token** (IDs \`N-M\`) und **Empty Nodes** (IDs \`N.M\`) werden beim Laden gespeichert und beim CoNLL-U-Export vollständig rekonstruiert; in der Vergleichstabelle und Baumansicht erscheinen nur die regulären Token
 - Mindestens **zwei Dateien** nötig für Vergleich und Baumansicht
 - Daten liegen nur im **Browser-Speicher** — Session-Export verwenden, um den Stand dauerhaft zu sichern
+
+---
+
+## Impressum
+
+**Frederik Konopka**
+✉️ arbonotate@frederik-konopka.de
+📞 +49 1525 5385967
+
+Arbonotate ist ein nicht-kommerzielles, quelloffenes Forschungstool. Es werden keine Nutzerdaten erhoben oder übertragen.
 `;
 
 window.TAGSET_TEMPLATE = `{

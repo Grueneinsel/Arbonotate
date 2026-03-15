@@ -8,6 +8,7 @@ window.LANG_DE = {
   'sec.conllu.view': '5) CoNLL-U',
   'sec.conllu.edit': '5) CoNLL-U bearbeiten',
   'footer.author': 'Entwickelt von Frederik Konopka',
+  'footer.impressum': 'Impressum',
   'tour.startBtn':     '🎓 Guided Tour',
   'conllu.structured': '📝 Strukturierter Editor',
   'conllu.goldLabel':  '⭐ Gold (dieser Satz)',

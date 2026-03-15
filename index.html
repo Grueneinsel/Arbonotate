@@ -157,8 +157,27 @@
   <footer class="appFooter">
     <span>Arbonotate <strong>v1.0</strong></span>
     <span class="appFooterSep">·</span>
-    <span data-i18n="footer.author">Entwickelt von Frederik Konopka</span>
+    <span data-i18n="footer.author">Developed by Frederik Konopka</span>
+    <span class="appFooterSep">·</span>
+    <a href="#" class="footerImpressumLink" onclick="document.getElementById('impressumModal').classList.add('active');return false;" data-i18n="footer.impressum">Legal Notice</a>
   </footer>
+
+  <!-- Impressum Modal -->
+  <div id="impressumModal" class="modalOverlay" onclick="if(event.target===this)this.classList.remove('active')">
+    <div class="modalBox" style="max-width:480px">
+      <button class="modalClose" onclick="document.getElementById('impressumModal').classList.remove('active')" title="Close">×</button>
+      <h2 data-i18n="footer.impressum">Legal Notice</h2>
+      <p>
+        <strong>Frederik Konopka</strong><br>
+        ✉️ <a href="mailto:arbonotate@frederik-konopka.de">arbonotate@frederik-konopka.de</a><br>
+        📞 <a href="tel:+4915255385967">+49 1525 5385967</a>
+      </p>
+      <p style="font-size:0.85em;color:var(--text-muted,#888)">
+        Arbonotate is a non-commercial, open-source research tool.<br>
+        No user data is collected or transmitted.
+      </p>
+    </div>
+  </div>
 
   <div id="devVersionBadge" hidden></div>
   <div id="autosaveBanner" class="autosaveBanner" style="display:none" hidden></div>

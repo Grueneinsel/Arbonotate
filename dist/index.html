@@ -1072,6 +1072,8 @@ html[data-theme="light"] .treeSingleBtn:hover{ background:#b8dcf0; }
 }
 .appFooterSep{ opacity:.4; }
 .appFooter strong{ color:var(--text); }
+.footerImpressumLink{ color:var(--muted); text-decoration:underline dotted; cursor:pointer; }
+.footerImpressumLink:hover{ color:var(--text); }
 
 /* Download toast */
 .downloadToast{
@@ -1902,8 +1904,27 @@ document.addEventListener('DOMContentLoaded', _syncThemeBtn);
   <footer class="appFooter">
     <span>Arbonotate <strong>v1.0</strong></span>
     <span class="appFooterSep">·</span>
-    <span data-i18n="footer.author">Entwickelt von Frederik Konopka</span>
+    <span data-i18n="footer.author">Developed by Frederik Konopka</span>
+    <span class="appFooterSep">·</span>
+    <a href="#" class="footerImpressumLink" onclick="document.getElementById('impressumModal').classList.add('active');return false;" data-i18n="footer.impressum">Legal Notice</a>
   </footer>
+
+  <!-- Impressum Modal -->
+  <div id="impressumModal" class="modalOverlay" onclick="if(event.target===this)this.classList.remove('active')">
+    <div class="modalBox" style="max-width:480px">
+      <button class="modalClose" onclick="document.getElementById('impressumModal').classList.remove('active')" title="Close">×</button>
+      <h2 data-i18n="footer.impressum">Legal Notice</h2>
+      <p>
+        <strong>Frederik Konopka</strong><br>
+        ✉️ <a href="mailto:arbonotate@frederik-konopka.de">arbonotate@frederik-konopka.de</a><br>
+        📞 <a href="tel:+4915255385967">+49 1525 5385967</a>
+      </p>
+      <p style="font-size:0.85em;color:var(--text-muted,#888)">
+        Arbonotate is a non-commercial, open-source research tool.<br>
+        No user data is collected or transmitted.
+      </p>
+    </div>
+  </div>
 
   <div id="devVersionBadge" hidden></div>
   <div id="autosaveBanner" class="autosaveBanner" style="display:none" hidden></div>
@@ -1939,6 +1960,7 @@ window.LANG_DE = {
   'sec.conllu.view': '5) CoNLL-U',
   'sec.conllu.edit': '5) CoNLL-U bearbeiten',
   'footer.author': 'Entwickelt von Frederik Konopka',
+  'footer.impressum': 'Impressum',
   'tour.startBtn':     '🎓 Guided Tour',
   'conllu.structured': '📝 Strukturierter Editor',
   'conllu.goldLabel':  '⭐ Gold (dieser Satz)',
@@ -2215,6 +2237,7 @@ window.LANG_EN = {
   'sec.conllu.view': '5) CoNLL-U',
   'sec.conllu.edit': '5) Edit CoNLL-U',
   'footer.author': 'Developed by Frederik Konopka',
+  'footer.impressum': 'Legal Notice',
   'tour.startBtn':     '🎓 Guided Tour',
   'conllu.structured': '📝 Structured Editor',
   'conllu.goldLabel':  '⭐ Gold (this sentence)',
@@ -8671,6 +8694,8 @@ window.README_CONTENT_EN = `# Arbonotate
 
 > **Arbonotate** = *Arbor* (Latin: tree) + *annotate* — a browser-based workbench for annotating and comparing dependency trees.
 
+**GitHub:** [github.com/Grueneinsel/Arbonotate](https://github.com/Grueneinsel/Arbonotate) · **Latest release:** [Download dist/index.html](https://github.com/Grueneinsel/Arbonotate/releases/latest)
+
 Browser-based tool for comparing and annotating dependency trees in CoNLL-U files.
 Runs entirely locally without a server — simply open \`index.html\` in your browser.
 
@@ -9312,11 +9337,23 @@ The six example directories together cover all tool features:
 - **Multi-word tokens** (IDs \`N-M\`) and **empty nodes** (IDs \`N.M\`) are stored on load and fully reconstructed on CoNLL-U export; only regular tokens appear in the comparison table and tree view
 - At least **two files** are required for comparison and tree view
 - Data lives only in **browser memory** — use session export to save your progress permanently
+
+---
+
+## Legal Notice
+
+**Frederik Konopka**
+✉️ arbonotate@frederik-konopka.de
+📞 +49 1525 5385967
+
+Arbonotate is a non-commercial, open-source research tool. No user data is collected or transmitted.
 `;
 
 window.README_CONTENT_DE = `# Arbonotate
 
 > **Arbonotate** = *Arbor* (lateinisch: Baum) + *annotate* (annotieren) — eine browserbasierte Arbeitsumgebung zum Annotieren und Vergleichen von Abhängigkeitsbäumen.
+
+**GitHub:** [github.com/Grueneinsel/Arbonotate](https://github.com/Grueneinsel/Arbonotate) · **Aktueller Release:** [dist/index.html herunterladen](https://github.com/Grueneinsel/Arbonotate/releases/latest)
 
 Browserbasiertes Tool zum Vergleichen und Annotieren von Abhängigkeitsbäumen in CoNLL-U-Dateien.
 Läuft vollständig lokal ohne Server — einfach \`index.html\` im Browser öffnen.
@@ -9959,6 +9996,16 @@ Die sechs Beispielverzeichnisse decken gemeinsam alle Funktionen des Tools ab:
 - **Multi-Word-Token** (IDs \`N-M\`) und **Empty Nodes** (IDs \`N.M\`) werden beim Laden gespeichert und beim CoNLL-U-Export vollständig rekonstruiert; in der Vergleichstabelle und Baumansicht erscheinen nur die regulären Token
 - Mindestens **zwei Dateien** nötig für Vergleich und Baumansicht
 - Daten liegen nur im **Browser-Speicher** — Session-Export verwenden, um den Stand dauerhaft zu sichern
+
+---
+
+## Impressum
+
+**Frederik Konopka**
+✉️ arbonotate@frederik-konopka.de
+📞 +49 1525 5385967
+
+Arbonotate ist ein nicht-kommerzielles, quelloffenes Forschungstool. Es werden keine Nutzerdaten erhoben oder übertragen.
 `;
 
 window.TAGSET_TEMPLATE = `{
