@@ -652,5 +652,6 @@ Die sechs Beispielverzeichnisse decken gemeinsam alle Funktionen des Tools ab:
 
 **Frederik Konopka**
 ✉️ [arbonotate@frederik-konopka.de](mailto:arbonotate@frederik-konopka.de)
+🐙 [github.com/Grueneinsel/Arbonotate](https://github.com/Grueneinsel/Arbonotate)
 
 Arbonotate ist ein nicht-kommerzielles, quelloffenes Forschungstool. Es werden keine Nutzerdaten erhoben oder übertragen.

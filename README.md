@@ -652,5 +652,6 @@ The six example directories together cover all tool features:
 
 **Frederik Konopka**
 ✉️ [arbonotate@frederik-konopka.de](mailto:arbonotate@frederik-konopka.de)
+🐙 [github.com/Grueneinsel/Arbonotate](https://github.com/Grueneinsel/Arbonotate)
 
 Arbonotate is a non-commercial, open-source research tool. No user data is collected or transmitted.
