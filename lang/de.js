@@ -37,6 +37,9 @@ window.LANG_DE = {
   'files.globalResetConfirm':  'Wirklich ALLE Projekte und Annotationen zurücksetzen?',
 
   // Satz-Auswahl
+  'nav.prev':          'Vorheriger Satz',
+  'nav.next':          'Nächster Satz',
+  'nav.sentSelect':    'Satz auswählen',
   'sent.optLabel':     'Satz {n}',
   'sent.progress':     '{done} / {total} bestätigt',
   'sent.confirm':      '✓ Bestätigen',

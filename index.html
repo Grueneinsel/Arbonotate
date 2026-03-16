@@ -102,9 +102,10 @@
     <section class="card">
       <h2 data-i18n="sec.select">2) Satz wählen <button class="helpHintBtn" data-i18n-title="help.hintTitle" onclick="openHelpSection('sec.select')">?</button></h2>
       <div class="row" id="sentNavRow">
-        <button id="prevBtn" disabled>←</button>
+        <button id="prevBtn" disabled data-i18n-aria-label="nav.prev">←</button>
+        <label for="sentSelect" class="srOnly" data-i18n="nav.sentSelect">Satz auswählen</label>
         <select id="sentSelect" disabled></select>
-        <button id="nextBtn" disabled>→</button>
+        <button id="nextBtn" disabled data-i18n-aria-label="nav.next">→</button>
         <button id="confirmBtn" class="confirmBtn" disabled>✓ Bestätigen</button>
         <button id="ttsBtn" class="ttsBtn" disabled data-i18n="tts.speak">🔊 Vorlesen</button>
         <label class="autoAdvanceRow">

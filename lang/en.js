@@ -37,6 +37,9 @@ window.LANG_EN = {
   'files.globalResetConfirm': 'Really reset ALL projects and annotations?',
 
   // Sentence select
+  'nav.prev':          'Previous sentence',
+  'nav.next':          'Next sentence',
+  'nav.sentSelect':    'Select sentence',
   'sent.optLabel':     'Sentence {n}',
   'sent.progress':     '{done} / {total} confirmed',
   'sent.confirm':      '✓ Confirm',

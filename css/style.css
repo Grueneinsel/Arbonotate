@@ -283,6 +283,7 @@ button:not(:disabled):active,
 .card:hover { box-shadow: 0 6px 28px rgba(0,0,0,0.28); }
 
 /* ── Layout ──────────────────────────────────────────────────────────────────── */
+.srOnly{ position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
 .wrap{ max-width:1440px; margin:0 auto; padding:14px; display:grid; gap:10px }
 .card{
   background:var(--card);
@@ -1067,8 +1068,8 @@ html[data-theme="light"] .treeSingleBtn:hover{ background:#b8dcf0; }
 }
 .appFooterSep{ opacity:.4; }
 .appFooter strong{ color:var(--text); }
-.footerImpressumLink{ color:inherit; opacity:.7; text-decoration:underline dotted; cursor:pointer; }
-.footerImpressumLink:hover{ opacity:1; }
+.footerImpressumLink{ color:inherit; text-decoration:underline dotted; cursor:pointer; }
+.footerImpressumLink:hover{ color:var(--text); }
 
 /* Download toast */
 .downloadToast{

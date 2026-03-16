@@ -1,13 +1,25 @@
 #!/usr/bin/env python3
 # bundler.py — entry: ./index.html, output: ./dist/index.html
 # Inlines all local <link rel="stylesheet"> and <script src="…"> references.
-# No minification — files are inlined as-is for easy debugging.
+# Minifies CSS (rcssmin) and JS (rjsmin) when available.
 
 from __future__ import annotations
 import re
 import subprocess
 import sys
 from pathlib import Path
+
+try:
+    import rcssmin as _rcssmin
+    def _minify_css(s: str) -> str: return _rcssmin.cssmin(s)
+except ImportError:
+    def _minify_css(s: str) -> str: return s
+
+try:
+    import rjsmin as _rjsmin
+    def _minify_js(s: str) -> str: return _rjsmin.jsmin(s)
+except ImportError:
+    def _minify_js(s: str) -> str: return s
 
 ROOT     = Path(__file__).parent.resolve()
 ENTRY    = ROOT / "index.html"
@@ -61,8 +73,9 @@ def inline_css(html: str, base: Path) -> str:
         css_path = (base / href_m.group(1)).resolve()
         css = read(css_path)
         css = inline_css_urls(css, css_path)
+        css = _minify_css(css)
         css = css.replace("</style", "<\\/style")
-        return f"<style>\n{css}\n</style>"
+        return f"<style>{css}</style>"
     return LINK_RE.sub(repl, html)
 
 def inline_js(html: str, base: Path) -> str:
@@ -71,10 +84,11 @@ def inline_js(html: str, base: Path) -> str:
         if is_external(src):
             return m.group(0)
         js = read((base / src).resolve())
+        js = _minify_js(js)
         js = js.replace("</script", "<\\/script")
         attrs = re.sub(r"""\bsrc\s*=\s*["'][^"']+["']""", "",
                        (m.group(1) + " " + m.group(3)).strip()).strip()
-        return f"<script{' ' + attrs if attrs else ''}>\n{js}\n</script>"
+        return f"<script{' ' + attrs if attrs else ''}>{js}</script>"
     return SCRIPT_RE.sub(repl, html)
 
 def main() -> int:

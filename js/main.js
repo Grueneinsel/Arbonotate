@@ -1226,14 +1226,14 @@ renderSentSelect();
 renderSentence();
 if(typeof renderTagsetList === 'function') renderTagsetList();
 renderConlluEditor(true);
+// Auto-load session synchronously before first paint to avoid layout shift (CLS)
+_autoLoadLastSession();
 _updateSectionVisibility();
 // ?dev in URL → force-enable dev mode (persisted to localStorage)
 if(new URLSearchParams(location.search).has('dev')){
   localStorage.setItem(_DEV_MODE_KEY, '1');
 }
 renderDevModeBar();
-// Auto-load last session from localStorage on first open
 window.addEventListener('load', () => {
   _devModeRestoreSession();
-  _autoLoadLastSession();
 }, { once: true });
