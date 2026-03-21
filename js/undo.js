@@ -25,8 +25,10 @@ function _snapshot(){
 
 // Overwrite live state from a previously captured snapshot.
 function _restore(snap){
-  state.custom    = snap.custom;
-  state.goldPick  = snap.goldPick;
+  // Deep-clone to prevent later state mutations from corrupting the snapshot
+  // still sitting in the undo/redo stack.
+  state.custom    = JSON.parse(JSON.stringify(snap.custom));
+  state.goldPick  = JSON.parse(JSON.stringify(snap.goldPick));
   state.confirmed = snap.confirmed;
   // Annotations for any sentence may have changed — wipe the entire stats cache.
   _invalidateStatsCache();

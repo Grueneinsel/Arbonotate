@@ -1048,7 +1048,7 @@ function _loadDemoProject(idx){
     const r = parseConllu(d.content);
     return { key: `session::${d.name}`, name: d.name, content: d.content, sentences: r.sentences };
   });
-  state.projects.push({
+  const projectData = {
     name:        p.name || t('project.default'),
     docs,
     custom:      JSON.parse(JSON.stringify(p.custom   || {})),
@@ -1063,8 +1063,16 @@ function _loadDemoProject(idx){
     redoStack:   p.redo        || [],
     labels:      p.labels      || null,
     unlocked:    p.unlocked    || false,
-  });
-  state.activeProjectIdx = state.projects.length - 1;
+  };
+
+  // If the active project is empty, load into it instead of creating a new tab.
+  const activeDocs = state.projects[state.activeProjectIdx]?.docs || [];
+  if(activeDocs.length === 0){
+    state.projects[state.activeProjectIdx] = projectData;
+  } else {
+    state.projects.push(projectData);
+    state.activeProjectIdx = state.projects.length - 1;
+  }
   _loadActiveProject();
   renderProjectTabs();
   renderFiles();
