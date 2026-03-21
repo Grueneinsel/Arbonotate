@@ -197,6 +197,14 @@ async function _dispatchFiles(files){
   }
 }
 
+// ── Tagset edit button ─────────────────────────────────────────────────────────
+{
+  const _tagsetEditBtnEl = document.getElementById("tagsetEditBtn");
+  if(_tagsetEditBtnEl){
+    _tagsetEditBtnEl.addEventListener("click", () => _showTagsetEditor());
+  }
+}
+
 // ── Tagset download ────────────────────────────────────────────────────────────
 {
   const _tagsetDownloadBtnEl = document.getElementById("tagsetDownloadBtn");
@@ -379,3 +387,183 @@ function renderTagsetList(){
 document.getElementById("tagsetDetails")?.addEventListener("toggle", function(){
   if(this.open) renderTagsetList();
 });
+
+// ── Tagset editor ──────────────────────────────────────────────────────────────
+
+/** Open a modal dialog for creating / editing the active tagset inline. */
+function _showTagsetEditor(){
+  document.getElementById('tagsetEditorDialog')?.remove();
+
+  // Normalise legacy format (__upos__/__xpos__ + top-level groups) to extended format
+  // so that existing tagsets are editable regardless of how they were loaded.
+  const lbl = JSON.parse(JSON.stringify(LABELS || {}));
+  if(!Array.isArray(lbl['__cols__']) && !Array.isArray(lbl['__dep_cols__'])){
+    const upos = lbl['__upos__'] || [];
+    const xpos = lbl['__xpos__'] || [];
+    const groups = Object.fromEntries(Object.entries(lbl).filter(([k]) => !k.startsWith('__')));
+    lbl['__cols__']     = [
+      ...(upos.length ? [{ key:'upos', name:'UPOS', values: upos }] : []),
+      ...(xpos.length ? [{ key:'xpos', name:'XPOS', values: xpos }] : []),
+    ];
+    lbl['__dep_cols__'] = Object.keys(groups).length
+      ? [{ key:'dep', name:'DepRel', groups }] : [];
+  }
+  const initCols    = lbl['__cols__']     || [];
+  const initDepCols = lbl['__dep_cols__'] || [];
+
+  const overlay = document.createElement('div');
+  overlay.id = 'tagsetEditorDialog';
+  overlay.style.cssText = 'position:fixed;inset:0;z-index:10000;background:rgba(0,0,0,.6);display:flex;align-items:flex-start;justify-content:center;overflow-y:auto;padding:20px 10px;box-sizing:border-box;';
+
+  const dlg = document.createElement('div');
+  dlg.style.cssText = 'background:var(--card);border:1px solid var(--accent);border-radius:8px;padding:24px;width:620px;max-width:100%;box-shadow:0 8px 32px rgba(0,0,0,.6);margin:auto;';
+
+  const close = () => overlay.remove();
+  overlay.addEventListener('pointerdown', e => { if(e.target === overlay) close(); });
+
+  // ── helpers ──────────────────────────────────────────────────────────────
+
+  const S = {
+    section: 'margin-bottom:20px;',
+    sectionHead: 'font-size:13px;font-weight:bold;margin-bottom:8px;color:var(--accent);',
+    colBox: 'background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:10px;margin-bottom:8px;',
+    row: 'display:flex;gap:8px;align-items:center;margin-bottom:8px;flex-wrap:wrap;',
+    label: 'font-size:12px;color:var(--muted);white-space:nowrap;',
+    input: 'font-size:12px;padding:3px 6px;border-radius:4px;border:1px solid var(--line);background:var(--card);color:var(--text);',
+    ta: 'width:100%;box-sizing:border-box;font-size:12px;font-family:var(--mono);padding:6px;border-radius:4px;border:1px solid var(--line);background:var(--card);color:var(--text);overflow:hidden;resize:none;',
+    taSmall: 'width:100%;box-sizing:border-box;font-size:12px;font-family:var(--mono);padding:5px;border-radius:4px;border:1px solid var(--line);background:var(--bg);color:var(--text);overflow:hidden;resize:none;',
+    addBtn: 'font-size:12px;padding:4px 10px;cursor:pointer;border-radius:4px;border:1px dashed var(--line2);background:transparent;color:var(--muted);margin-top:4px;',
+    removeBtn: 'font-size:14px;padding:2px 8px;cursor:pointer;border-radius:4px;border:1px solid var(--bad);background:transparent;color:var(--bad);margin-left:auto;flex-shrink:0;',
+    valLabel: 'font-size:11px;color:var(--muted);margin-bottom:3px;',
+  };
+
+  function el(tag, style, text){ const e=document.createElement(tag); if(style) e.style.cssText=style; if(text!==undefined) e.textContent=text; return e; }
+
+  function autoResize(ta){ ta.style.height='auto'; ta.style.height=ta.scrollHeight+'px'; }
+  function makeAutoTa(style){ const ta=el('textarea',style); ta.addEventListener('input',()=>autoResize(ta)); return ta; }
+
+  // ── label column builder ──────────────────────────────────────────────────
+
+  function makeLabelColEl(col){
+    const wrap = el('div', S.colBox);
+    const row  = el('div', S.row);
+
+    const keyLbl  = el('span', S.label, t('tagset.colKey') + ':');
+    const keyIn   = el('input', S.input + 'width:80px;'); keyIn.type='text'; keyIn.value = col.key || '';
+    const nameLbl = el('span', S.label, t('tagset.colName') + ':');
+    const nameIn  = el('input', S.input + 'flex:1;min-width:80px;'); nameIn.type='text'; nameIn.value = col.name || '';
+    const removeBtn = el('button', S.removeBtn, '×'); removeBtn.title = t('tagset.removeCol');
+    removeBtn.addEventListener('click', () => wrap.remove());
+
+    row.append(keyLbl, keyIn, nameLbl, nameIn, removeBtn);
+
+    const valLbl  = el('div', S.valLabel, t('tagset.values'));
+    const valArea = makeAutoTa(S.ta);
+    valArea.value = (col.values || []).join('\n');
+    requestAnimationFrame(() => autoResize(valArea));
+
+    wrap.append(row, valLbl, valArea);
+    wrap._getData = () => ({
+      key:    keyIn.value.trim() || ('col' + Date.now()),
+      name:   nameIn.value.trim() || keyIn.value.trim() || 'Col',
+      values: valArea.value.split('\n').map(v => v.trim()).filter(Boolean),
+    });
+    return wrap;
+  }
+
+  // ── dep column builder ────────────────────────────────────────────────────
+
+  function makeGroupEl(gname, tags){
+    const wrap = el('div', 'background:var(--card2);border:1px solid var(--line2);border-radius:4px;padding:8px;margin-bottom:6px;');
+    const row  = el('div', S.row);
+    const nameIn = el('input', S.input + 'flex:1;min-width:80px;'); nameIn.type='text'; nameIn.value = gname || ''; nameIn.placeholder = t('tagset.groupName');
+    const removeBtn = el('button', S.removeBtn.replace('margin-left:auto;',''), '×'); removeBtn.title = t('tagset.removeGroup');
+    removeBtn.addEventListener('click', () => wrap.remove());
+    row.append(nameIn, removeBtn);
+
+    const valLbl  = el('div', S.valLabel, t('tagset.values'));
+    const valArea = makeAutoTa(S.taSmall);
+    valArea.value = (tags || []).join('\n');
+    requestAnimationFrame(() => autoResize(valArea));
+
+    wrap.append(row, valLbl, valArea);
+    wrap._getData = () => ({
+      name: nameIn.value.trim(),
+      tags: valArea.value.split('\n').map(v => v.trim()).filter(Boolean),
+    });
+    return wrap;
+  }
+
+  function makeDepColEl(dc){
+    const wrap    = el('div', S.colBox);
+    const headRow = el('div', S.row);
+
+    const keyLbl    = el('span', S.label, t('tagset.colKey') + ':');
+    const keyIn     = el('input', S.input + 'width:80px;'); keyIn.type='text'; keyIn.value = dc.key || '';
+    const nameLbl   = el('span', S.label, t('tagset.colName') + ':');
+    const nameIn    = el('input', S.input + 'flex:1;min-width:80px;'); nameIn.type='text'; nameIn.value = dc.name || '';
+    const removeBtn = el('button', S.removeBtn, '×'); removeBtn.title = t('tagset.removeCol');
+    removeBtn.addEventListener('click', () => wrap.remove());
+    headRow.append(keyLbl, keyIn, nameLbl, nameIn, removeBtn);
+
+    const groupsCont = el('div');
+    for(const [gname, tags] of Object.entries(dc.groups || {})){
+      groupsCont.appendChild(makeGroupEl(gname, tags));
+    }
+
+    const addGroupBtn = el('button', S.addBtn, t('tagset.addGroup'));
+    addGroupBtn.addEventListener('click', () => groupsCont.appendChild(makeGroupEl('', [])));
+
+    wrap.append(headRow, groupsCont, addGroupBtn);
+    wrap._getData = () => {
+      const groups = {};
+      for(const g of groupsCont.children){
+        if(!g._getData) continue;
+        const d = g._getData();
+        if(d.name) groups[d.name] = d.tags;
+      }
+      return { key: keyIn.value.trim() || ('dep' + Date.now()), name: nameIn.value.trim() || keyIn.value.trim() || 'DepRel', groups };
+    };
+    return wrap;
+  }
+
+  // ── assemble dialog ───────────────────────────────────────────────────────
+
+  const title = el('div', 'font-weight:bold;font-size:15px;margin-bottom:18px;', t('tagset.editTitle'));
+
+  // Label columns section
+  const colsSec  = el('div', S.section);
+  const colsHead = el('div', S.sectionHead, t('tagset.labelCols'));
+  const colsCont = el('div');
+  for(const col of initCols) colsCont.appendChild(makeLabelColEl(col));
+  const addColBtn = el('button', S.addBtn + 'border-color:var(--accent);color:var(--accent);', t('tagset.addLabelCol'));
+  addColBtn.style.marginTop = '4px';
+  addColBtn.addEventListener('click', () => colsCont.appendChild(makeLabelColEl({ key:'', name:'', values:[] })));
+  colsSec.append(colsHead, colsCont, addColBtn);
+
+  // Dep columns section
+  const depSec  = el('div', S.section);
+  const depHead = el('div', S.sectionHead, t('tagset.depCols'));
+  const depCont = el('div');
+  for(const dc of initDepCols) depCont.appendChild(makeDepColEl(dc));
+  const addDepBtn = el('button', S.addBtn + 'border-color:var(--accent);color:var(--accent);', t('tagset.addDepCol'));
+  addDepBtn.addEventListener('click', () => depCont.appendChild(makeDepColEl({ key:'', name:'', groups:{} })));
+  depSec.append(depHead, depCont, addDepBtn);
+
+  // Footer
+  const footer    = el('div', 'display:flex;justify-content:flex-end;gap:8px;margin-top:20px;border-top:1px solid var(--line);padding-top:14px;');
+  const cancelBtn = el('button', 'font-size:13px;padding:5px 16px;cursor:pointer;border-radius:4px;border:1px solid var(--line);background:transparent;color:var(--muted);', t('tagset.mapCancel'));
+  cancelBtn.addEventListener('click', close);
+  const saveBtn = el('button', 'font-size:13px;padding:5px 16px;cursor:pointer;border-radius:4px;border:1px solid var(--accent);background:var(--accent);color:#fff;font-weight:bold;', t('tagset.editSave'));
+  saveBtn.addEventListener('click', () => {
+    const newCols    = Array.from(colsCont.children).filter(e => e._getData).map(e => e._getData());
+    const newDepCols = Array.from(depCont.children).filter(e => e._getData).map(e => e._getData());
+    close();
+    applyTagsetJson({ '__cols__': newCols, '__dep_cols__': newDepCols });
+  });
+  footer.append(cancelBtn, saveBtn);
+
+  dlg.append(title, colsSec, depSec, footer);
+  overlay.appendChild(dlg);
+  document.body.appendChild(overlay);
+}

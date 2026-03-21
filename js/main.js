@@ -1034,12 +1034,42 @@ function loadExamples(){
 }
 
 // Load a single demo project by index from DEMO_SESSION into the app.
+// Appends it as a new project tab — does NOT replace existing projects.
 function _loadDemoProject(idx){
-  if(typeof DEMO_SESSION === 'undefined' || typeof importSession !== 'function') return;
-  const parsed = JSON.parse(DEMO_SESSION);
-  if(!parsed.projects[idx]) return;
-  const single = JSON.stringify({ version: 2, activeProjectIdx: 0, projects: [parsed.projects[idx]] });
-  importSession(single);
+  if(typeof DEMO_SESSION === 'undefined') return;
+  let parsed;
+  try { parsed = JSON.parse(DEMO_SESSION); } catch { return; }
+  const p = parsed.projects?.[idx];
+  if(!p) return;
+
+  _saveActiveProject();
+
+  const docs = (p.docs || []).filter(d => typeof d.content === 'string').map(d => {
+    const r = parseConllu(d.content);
+    return { key: `session::${d.name}`, name: d.name, content: d.content, sentences: r.sentences };
+  });
+  state.projects.push({
+    name:        p.name || t('project.default'),
+    docs,
+    custom:      JSON.parse(JSON.stringify(p.custom   || {})),
+    goldPick:    JSON.parse(JSON.stringify(p.goldPick || {})),
+    confirmed:   p.confirmed  || [],
+    notes:       JSON.parse(JSON.stringify(p.notes    || {})),
+    flags:       p.flags      || {},
+    currentSent: p.currentSent || 0,
+    maxSents:    Math.max(0, ...docs.map(d => d.sentences.length), 0),
+    hiddenCols:  p.hiddenCols  || [],
+    undoStack:   p.undo        || [],
+    redoStack:   p.redo        || [],
+    labels:      p.labels      || null,
+    unlocked:    p.unlocked    || false,
+  });
+  state.activeProjectIdx = state.projects.length - 1;
+  _loadActiveProject();
+  renderProjectTabs();
+  renderFiles();
+  renderSentSelect();
+  renderSentence();
 }
 
 // Build the demo-picker button with an expandable per-project menu.

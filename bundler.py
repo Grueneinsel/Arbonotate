@@ -100,7 +100,11 @@ def main() -> int:
         print("Running make_readme_js.py …")
         subprocess.run([sys.executable, str(MAKE_README_JS)], cwd=str(ROOT), check=False)
 
+    from datetime import date as _date
+    build_date = _date.today().isoformat()   # e.g. 2026-03-21
+
     html = read(ENTRY)
+    html = html.replace("__BUILD_DATE__", build_date)
     html = inline_css(html, ENTRY.parent)
     html = inline_js(html, ENTRY.parent)
 
