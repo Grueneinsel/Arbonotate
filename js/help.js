@@ -107,7 +107,9 @@ function mdToHtml(md){
         if(!tableHdrDone){ out.push("<tbody>"); tableHdrDone = true; }
         continue;
       }
-      var cells = line.split("|").slice(1,-1).map(function(c){ return inlineMd(c.trim()); });
+      // Replace escaped pipes (\|) with a placeholder before splitting, then restore.
+      var rawLine = line.replace(/\\\|/g, '\x00');
+      var cells = rawLine.split("|").slice(1,-1).map(function(c){ return inlineMd(c.trim()).replace(/\x00/g, '|'); });
       if(!tableHdrDone) out.push("<thead><tr>" + cells.map(function(c){ return "<th>" + c + "</th>"; }).join("") + "</tr></thead>");
       else              out.push("<tr>"         + cells.map(function(c){ return "<td>" + c + "</td>"; }).join("") + "</tr>");
       continue;
