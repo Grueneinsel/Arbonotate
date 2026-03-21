@@ -1011,18 +1011,18 @@ html[data-theme="light"] .treeSingleBtn:hover{ background:#b8dcf0; }
   touch-action:manipulation;
   min-height:44px;
 }
-/* Scrollable content area — overflow-x:auto so wide tables can scroll horizontally */
+/* Scrollable content area */
 .helpDialogBody{
-  overflow-y:scroll; overflow-x:auto;
+  overflow-y:scroll; overflow-x:hidden;
   -webkit-overflow-scrolling:touch;
   touch-action:pan-y;
-  flex:1;
+  flex:1; min-width:0;
   padding:16px 20px 36px;
   scrollbar-gutter:stable;
 }
 
 /* ── Gerendertes Markdown ── */
-.helpContent{ line-height:1.6; overflow-wrap:break-word; word-break:break-word; }
+.helpContent{ line-height:1.6; overflow-wrap:break-word; word-break:break-word; max-width:100%; }
 .helpContent .helpH{ margin:0 0 8px; }
 .helpContent h1.helpH{ font-size:20px; font-weight:800; color:var(--text); }
 .helpContent h2.helpH{ font-size:12px; font-weight:700; color:var(--accent); margin-top:26px; text-transform:uppercase; letter-spacing:.4px; }
@@ -1034,7 +1034,7 @@ html[data-theme="light"] .treeSingleBtn:hover{ background:#b8dcf0; }
 .helpContent .helpCode{
   margin:8px 0; padding:12px 14px;
   background:#060e18; border:1px solid var(--line); border-radius:8px;
-  overflow-x:auto; font-family:var(--mono); font-size:11px; line-height:1.6; white-space:pre;
+  max-width:100%; overflow-x:auto; font-family:var(--mono); font-size:11px; line-height:1.6; white-space:pre;
 }
 .helpContent .helpInlineCode{
   font-family:var(--mono); font-size:11px;
