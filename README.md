@@ -5,7 +5,7 @@
 **GitHub:** [github.com/Grueneinsel/Arbonotate](https://github.com/Grueneinsel/Arbonotate) · **Latest release:** [Download dist/index.html](https://github.com/Grueneinsel/Arbonotate/releases/latest)
 
 Browser-based tool for comparing and annotating dependency trees in CoNLL-U files.
-Runs entirely locally without a server — simply open `index.html` in your browser.
+Runs entirely locally without a server — [download `index.html`](https://github.com/Grueneinsel/Arbonotate/releases/latest) and open it in your browser.
 
 ---
 
