@@ -33,6 +33,7 @@ const tagsetInput       = document.getElementById("tagsetInput");
 const tagsetDownloadBtn = document.getElementById("tagsetDownloadBtn");
 const tagsetMeta        = document.getElementById("tagsetMeta");
 
+const ttsBtn        = document.getElementById("ttsBtn");
 const autoAdvanceCb = document.getElementById("autoAdvanceCb");
 const confirmAllBtn = document.getElementById("confirmAllBtn");
 const flagDiffsBtn  = document.getElementById("flagDiffsBtn");
@@ -378,6 +379,7 @@ function renderSentence(){
   // Stop any running TTS when the displayed sentence changes.
   stopTts();
   const ok = state.docs.length >= 1 && state.maxSents > 0;
+  if(ttsBtn)        ttsBtn.disabled        = !ok;
   if(confirmAllBtn) confirmAllBtn.disabled = !ok;
   if(flagDiffsBtn)  flagDiffsBtn.disabled  = !ok;
   if(unflagAllBtn)  unflagAllBtn.disabled  = !ok;
@@ -1132,6 +1134,39 @@ function _buildDemoMenu(){
   return wrap;
 }
 
+
+// ── TTS (Browser Text-To-Speech) ───────────────────────────────────────────────
+
+let _ttsActive = false;
+
+function speakSentence(){
+  if(!window.speechSynthesis){ _showToast(t('tts.noSupport'), 'error'); return; }
+  if(_ttsActive){ stopTts(); return; }
+  const s0 = state.docs[0]?.sentences?.[state.currentSent];
+  if(!s0) return;
+  const text = s0.text || s0.tokens.map(tk => tk.form).join(' ');
+  const lang = (typeof getLang === 'function' && getLang() === 'en') ? 'en-US' : 'de-DE';
+  const utt  = new SpeechSynthesisUtterance(text);
+  utt.lang   = lang;
+  utt.onend  = utt.onerror = () => { _ttsActive = false; _updateTtsBtn(); };
+  _ttsActive = true;
+  _updateTtsBtn();
+  window.speechSynthesis.speak(utt);
+}
+
+function stopTts(){
+  if(window.speechSynthesis) window.speechSynthesis.cancel();
+  _ttsActive = false;
+  _updateTtsBtn();
+}
+
+function _updateTtsBtn(){
+  if(!ttsBtn) return;
+  ttsBtn.textContent = _ttsActive ? t('tts.stop') : t('tts.speak');
+  ttsBtn.classList.toggle('ttsActive', _ttsActive);
+}
+
+if(ttsBtn) ttsBtn.addEventListener('click', speakSentence);
 
 // ── Auto-advance after confirm ─────────────────────────────────────────────────
 

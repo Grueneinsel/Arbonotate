@@ -286,7 +286,7 @@ function closeTour() {
   document.getElementById('tourTip')?.remove();
   _tourRoot = null;
   document.body.style.overflow = '';
-  document.removeEventListener('keydown', _tourEscHandler);
+  document.removeEventListener('keydown', _tourEscHandler, { capture: true });
   _tourRemoveProject();
   _tourIdx = -1;
 }
@@ -328,7 +328,7 @@ function _tourBuildDOM() {
 
   // _tourRoot is just a sentinel — we use IDs to find the elements
   _tourRoot = overlay;
-  document.addEventListener('keydown', _tourEscHandler);
+  document.addEventListener('keydown', _tourEscHandler, { capture: true });
 }
 
 function _tourEscHandler(e) {
@@ -337,6 +337,8 @@ function _tourEscHandler(e) {
   // doesn't change while a step is being displayed.
   const tag = e.target?.tagName;
   if(tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+  // Allow Enter/Space to activate tour navigation buttons
+  if((e.key === 'Enter' || e.key === ' ') && e.target?.closest?.('.tourBtns')) return;
   e.stopImmediatePropagation();
   e.preventDefault();
 }
