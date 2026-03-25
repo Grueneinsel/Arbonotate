@@ -333,6 +333,7 @@ function autoAssignToProjects(parsedDocs){
         if(!state.docs.some(d => d.key === doc.key)) state.docs.push(doc);
       }
       recomputeMaxSents();
+      _invalidateStatsCache();
       state.currentSent = 0;
       renderFiles();
       renderSentSelect();

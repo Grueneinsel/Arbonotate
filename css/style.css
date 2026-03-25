@@ -1022,7 +1022,7 @@ html[data-theme="light"] .treeSingleBtn:hover{ background:#b8dcf0; }
 }
 
 /* ── Gerendertes Markdown ── */
-.helpContent{ line-height:1.6; overflow-wrap:break-word; word-break:break-word; max-width:100%; }
+.helpContent{ line-height:1.6; overflow-wrap:anywhere; word-break:break-word; max-width:100%; min-width:0; }
 .helpContent .helpH{ margin:0 0 8px; }
 .helpContent h1.helpH{ font-size:20px; font-weight:800; color:var(--text); }
 .helpContent h2.helpH{ font-size:12px; font-weight:700; color:var(--accent); margin-top:26px; text-transform:uppercase; letter-spacing:.4px; }
@@ -1169,18 +1169,6 @@ html[data-theme="light"] .globalResetBtn:hover{ background:rgba(200,50,50,0.1) !
 .helpHintBtn:hover{ opacity:1; border-color:var(--accent); color:var(--accent); }
 
 /* ── TTS button ── */
-.ttsBtn{
-  border-color:#1a3a2a; background:#0b1e15; color:#6dce8a;
-}
-.ttsBtn:hover:not(:disabled){ border-color:#3de89a; background:#0f2a1a; }
-.ttsActive{
-  border-color:#3de89a !important; background:#0f2a1a !important;
-  color:#3de89a !important; animation: ttsPulse 1.2s ease-in-out infinite;
-}
-@keyframes ttsPulse{
-  0%,100%{ box-shadow:0 0 0 0 #3de89a33 }
-  50%    { box-shadow:0 0 0 6px #3de89a00 }
-}
 
 /* ── Auto-advance checkbox row ── */
 .autoAdvanceRow{

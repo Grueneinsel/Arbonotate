@@ -332,7 +332,13 @@ function _tourBuildDOM() {
 }
 
 function _tourEscHandler(e) {
-  if (e.key === 'Escape') closeTour();
+  if (e.key === 'Escape'){ closeTour(); return; }
+  // Block all other keyboard shortcuts during the tour so the app state
+  // doesn't change while a step is being displayed.
+  const tag = e.target?.tagName;
+  if(tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+  e.stopImmediatePropagation();
+  e.preventDefault();
 }
 
 // ── Step rendering ────────────────────────────────────────────────────────────
