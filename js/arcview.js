@@ -129,37 +129,26 @@ window.addEventListener('pointerup', e => {
   const r  = drag._svgRect ?? drag.svg.getBoundingClientRect();
   const mx = e.clientX - r.left;
   const my = e.clientY - r.top;
-  // Root drag: dragging FROM root zone DOWN onto a token → set that token as root
-  if (drag.isRootDrag) {
-    const ni = _arcNearest(mx, my, drag.centers, drag.wordY, drag.cellH);
-    if (ni !== null && drag.onSetHead) {
-      const tok = drag.toks[ni];
-      if (tok.head !== 0) drag.onSetHead(tok.id, 0);
-      if (drag.onSetDeprel) {
-        _arcShowDeprelPopup(e.clientX, e.clientY, tok.id, tok.deprel ?? 'root', drag.onSetDeprel);
-      }
-    }
-    return;
-  }
-  // Check for ROOT drop zone: pointer released inside the labeled ROOT strip at the top
-  const rootZoneBoundary = drag.rootZoneH > 0 ? drag.rootZoneH + 6 : drag.wordY - drag.rootH;
-  if (my < rootZoneBoundary && drag.onSetHead) {
-    const curHead = drag.toks[drag.tokIdx]?.head;
-    if (curHead !== 0) drag.onSetHead(drag.depId, 0);
-    // Always show deprel popup so the user can set/change the root relation label
-    if (drag.onSetDeprel) {
-      const curDeprel = drag.toks[drag.tokIdx].deprel ?? 'root';
-      _arcShowDeprelPopup(e.clientX, e.clientY, drag.depId, curDeprel, drag.onSetDeprel);
-    }
-    return;
-  }
   const ni = _arcNearest(mx, my, drag.centers, drag.wordY, drag.cellH);
+  if (ni === 0 && drag.depId !== 0 && drag.onSetHead) {
+    // Drop on ROOT box (from a real token) → set drag.depId as root (head=0)
+    if (drag.toks[drag.tokIdx]?.head !== 0) drag.onSetHead(drag.depId, 0);
+    if (drag.onSetDeprel) {
+      _arcShowDeprelPopup(e.clientX, e.clientY, drag.depId,
+        drag.toks[drag.tokIdx]?.deprel ?? 'root', drag.onSetDeprel);
+    }
+    return;
+  }
   if (ni !== null && drag.toks[ni].id !== drag.depId) {
     // Arrow direction: head → dependent.
     // Dragged-FROM token (drag.depId) = head, dropped-ON token (toks[ni]) = dependent.
     const newDepId  = drag.toks[ni].id;
     const newHeadId = drag.depId;
-    if (_arcWouldCycle(newDepId, newHeadId, drag.toks)) {
+    // A direct reversal: the proposed head currently has the proposed dep as its own head.
+    // Allow it — the onSetHead callback will also clear the old reverse arc automatically.
+    const srcHead = drag.toks[drag.tokIdx]?.head;
+    const isReversal = srcHead === newDepId;
+    if (!isReversal && _arcWouldCycle(newDepId, newHeadId, drag.toks)) {
       // Reject the drop: shake-flash the target token and give haptic buzz
       navigator.vibrate?.([40, 20, 40]);
       _showToast(t('arc.cycle'), 'error');
@@ -177,7 +166,8 @@ window.addEventListener('pointerup', e => {
       }
       return;
     }
-    drag.onSetHead(newDepId, newHeadId);
+    // For reversals pass newHeadId as breakOldDepId so the callback can clear the reverse arc
+    drag.onSetHead(newDepId, newHeadId, isReversal ? newHeadId : undefined);
     // Show deprel listbox immediately after assigning new head
     if (drag.onSetDeprel) {
       const currentDeprel = drag.toks[ni].deprel ?? '_';
@@ -193,9 +183,8 @@ function _arcBeginDrag(e) {
   const NS = 'http://www.w3.org/2000/svg';
   const mk = (tag, a) => { const n = document.createElementNS(NS, tag); for (const [k,v] of Object.entries(a||{})) n.setAttribute(k,String(v)); return n; };
   const r  = pd.svg.getBoundingClientRect();
-  // Root drag starts from pointer position; token drag starts from token center
-  const sx = pd.isRootDrag ? (pd.startX - r.left) : pd.centers[pd.tokIdx];
-  const sy = pd.isRootDrag ? (pd.startY - r.top)  : pd.wordY + pd.cellH / 2;
+  const sx = pd.centers[pd.tokIdx];
+  const sy = pd.wordY + pd.cellH / 2;
   const mx = e.clientX - r.left;
   const my = e.clientY - r.top;
   const line = mk('line', { x1:sx, y1:sy, x2:mx, y2:my,
@@ -210,12 +199,9 @@ function _arcBeginDrag(e) {
     const el = pd.svg.querySelector(`[data-arctokid="${t.id}"]`);
     if (el) _tokElCache.set(t.id, el);
   }
-  // Highlight source token (skipped for root drag — no source token)
-  let srcEl = null;
-  if (!pd.isRootDrag) {
-    srcEl = _tokElCache.get(pd.toks[pd.tokIdx].id);
-    if (srcEl) srcEl.style.fill = 'rgba(255,200,50,0.35)';
-  }
+  // Highlight source token (skip for ROOT drag — ROOT box has its own distinct style)
+  const srcEl = pd.tokIdx === 0 ? null : (_tokElCache.get(pd.toks[pd.tokIdx].id) ?? null);
+  if (srcEl) srcEl.style.fill = 'rgba(255,200,50,0.35)';
   // Short haptic pulse on touch devices to confirm drag start
   if (pd.isTouch) navigator.vibrate?.(12);
   _arcDrag = { ...pd, line, dot, _hovId:null, _hovEl:null, _hovBad:false, _tokElCache, _srcEl:srcEl, _svgRect:null };
@@ -234,55 +220,34 @@ function _arcNearest(mx, my, centers, wordY, cellH) {
 }
 
 // Highlight the drop target token during a drag (blue = valid, red = would cycle).
-// Also highlights the ROOT zone when the pointer is above the arc area (token drag only).
+// Dropping on the ROOT box (index 0) is always valid (green).
 function _arcHighlightDrop(mx, my) {
-  // Root zone highlight — only for token→root drag, not root→token drag
-  if (!_arcDrag.isRootDrag) {
-    const rootZoneBoundary = _arcDrag.rootZoneH > 0 ? _arcDrag.rootZoneH + 6 : _arcDrag.wordY - _arcDrag.rootH;
-    const inRootZone = my < rootZoneBoundary;
-    const rz = _arcDrag.svg._arcRootZone;
-    if (rz) {
-      const curHead = _arcDrag.toks[_arcDrag.tokIdx]?.head;
-      if (inRootZone && curHead !== 0) {
-        rz.setAttribute('fill', 'rgba(61,232,154,0.22)');
-        rz.setAttribute('stroke', 'var(--ok)');
-        rz.setAttribute('opacity', '1');
-      } else {
-        rz.setAttribute('fill', 'rgba(61,232,154,0.05)');
-        rz.setAttribute('stroke', 'var(--ok)');
-        rz.setAttribute('opacity', '0.55');
-      }
-    }
-    if (inRootZone) {
-      // Only clear the token hover highlight, not the root zone (we just set it above)
-      if (_arcDrag._hovEl) { _arcDrag._hovEl.style.fill = 'transparent'; _arcDrag._hovEl = null; }
-      _arcDrag._hovId = null; _arcDrag._hovBad = false;
-      return;
-    }
-  }
   const ni  = _arcNearest(mx, my, _arcDrag.centers, _arcDrag.wordY, _arcDrag.cellH);
   const nid = (ni !== null && _arcDrag.toks[ni].id !== _arcDrag.depId) ? _arcDrag.toks[ni].id : null;
   if (nid === _arcDrag._hovId) return;
   _arcClearHighlight(_arcDrag);
   _arcDrag._hovId = nid;
   if (nid !== null && _arcDrag.svg.isConnected) {
-    // Use pre-built element cache instead of querySelector on every frame
     const el = _arcDrag._tokElCache?.get(nid) ?? _arcDrag.svg.querySelector(`[data-arctokid="${nid}"]`);
     if (el) {
-      const bad = _arcWouldCycle(nid, _arcDrag.depId, _arcDrag.toks);
-      if (bad) {
-        el.classList.add('arcBadHover');
-        el.style.fill = '';
+      if (nid === 0) {
+        // ROOT box is always a valid drop target
+        el.style.fill = 'rgba(61,232,154,0.30)';
+        _arcDrag._hovBad = false;
       } else {
-        el.style.fill = 'rgba(74,158,255,0.30)';
+        // Reversals (direct 2-cycle) are allowed — the old reverse arc is auto-cleared
+        const srcHead = _arcDrag.toks[_arcDrag.tokIdx]?.head;
+        const bad = srcHead !== nid && _arcWouldCycle(nid, _arcDrag.depId, _arcDrag.toks);
+        if (bad) { el.classList.add('arcBadHover'); el.style.fill = ''; }
+        else     { el.style.fill = 'rgba(74,158,255,0.30)'; }
+        _arcDrag._hovBad = bad;
       }
-      _arcDrag._hovEl  = el;
-      _arcDrag._hovBad = bad;
+      _arcDrag._hovEl = el;
     }
   }
 }
 
-// Clear any active drop-target highlight (token and root zone).
+// Clear any active drop-target highlight.
 function _arcClearHighlight(drag) {
   if (drag._hovEl) {
     drag._hovEl.classList.remove('arcBadHover');
@@ -291,25 +256,22 @@ function _arcClearHighlight(drag) {
   }
   drag._hovId  = null;
   drag._hovBad = false;
-  // Restore root zone to default idle appearance (always visible, just dimmer)
-  const rz = drag.svg._arcRootZone;
-  if (rz) {
-    rz.setAttribute('fill', 'rgba(61,232,154,0.05)');
-    rz.setAttribute('stroke', 'var(--ok)');
-    rz.setAttribute('opacity', '0.55');
-  }
 }
 
 // ── Cycle detection ───────────────────────────────────────────────────────────
-// Returns true if making depId point to newHeadId would create a cycle.
-// Uses path tracing from newHeadId upward through the current token heads.
+// Returns true if setting depId.head = newHeadId would introduce a new cycle.
+// Traces the head chain starting from newHeadId in the graph AFTER the change.
+// Only flags cycles that pass through the new edge (pre-existing cycles are ignored).
 function _arcWouldCycle(depId, newHeadId, toks) {
-  if (depId === newHeadId) return true;
   const idToHead = new Map(toks.map(t => [t.id, t.head]));
-  const seen = new Set([depId]);
+  idToHead.set(depId, newHeadId); // apply the proposed change
+  // Starting from newHeadId, follow head pointers. If we reach depId, the new
+  // edge closes a cycle. Stop at null/0 (root) or if we loop without hitting depId.
+  const seen = new Set();
   let cur = newHeadId;
   while (cur != null && cur !== 0) {
-    if (seen.has(cur)) return true;
+    if (cur === depId) return true;
+    if (seen.has(cur)) return false; // existing cycle not involving the new edge
     seen.add(cur);
     cur = idToHead.get(cur) ?? null;
   }
@@ -379,8 +341,10 @@ function _arcShowDeprelPopup(anchorX, anchorY, depId, currentDeprel, onSetDeprel
 // Pass onSetHead/onDeleteArc/onSetDeprel to make the diagram editable.
 function buildArcDiagram(tokMap, { onSetHead = null, onDeleteArc = null, onSetDeprel = null, scrollToTok = null, edgeColors = null } = {}) {
   const NS      = 'http://www.w3.org/2000/svg';
-  const toks    = Array.from(tokMap.values()).sort((a, b) => a.id - b.id);
-  if (!toks.length) return null;
+  const realToks = Array.from(tokMap.values()).sort((a, b) => a.id - b.id);
+  if (!realToks.length) return null;
+  // Prepend virtual ROOT token so it appears as position 0 in the word row
+  const toks = [{ id: 0, form: 'ROOT', head: null }, ...realToks];
 
   const editable  = !!onSetHead;
   const _touch    = window.matchMedia('(pointer: coarse)').matches;
@@ -393,8 +357,7 @@ function buildArcDiagram(tokMap, { onSetHead = null, onDeleteArc = null, onSetDe
   const MIN_W     = _touch ? 66 : 52;  // minimum word box width
   const ARC_U     = 36;   // px per token-distance unit (controls arc height scaling)
   const ARC_MX    = 210;  // maximum arc height cap
-  const ROOT_H    = 30;   // height of the vertical root arrow
-  const ROOT_ZONE = editable ? 36 : 0; // always reserve a visible ROOT drop zone for editable diagrams
+  const ROOT_ZONE = 0; // ROOT is now shown as token 0 in the word row
   const PTOP      = ROOT_ZONE + 6; // top SVG padding (includes root zone height)
   const PBOT      = 8;    // bottom SVG padding
   const FONT_M = "'JetBrains Mono', ui-monospace, Consolas, monospace";
@@ -412,25 +375,20 @@ function buildArcDiagram(tokMap, { onSetHead = null, onDeleteArc = null, onSetDe
   // Build edge descriptors from token head fields
   const idxOf = new Map(toks.map((t, i) => [t.id, i]));
   const edges  = [];
-  for (let i = 0; i < toks.length; i++) {
+  // Start at 1: ROOT (index 0) has no head, real tokens start at index 1
+  for (let i = 1; i < toks.length; i++) {
     const t = toks[i];
     if (t.head == null) continue;
-    if (t.head === 0) {
-      edges.push({ dep:i, head:-1, label:t.deprel??'_', isRoot:true,  h:0 });
-    } else {
-      const hi = idxOf.get(t.head);
-      if (hi == null) continue;
-      // Arc height scales with token distance, capped at ARC_MX
-      edges.push({ dep:i, head:hi, label:t.deprel??'_', isRoot:false,
-        h: Math.min(ARC_U * Math.abs(hi - i), ARC_MX) });
-    }
+    const hi = idxOf.get(t.head);
+    if (hi == null) continue;
+    // Arc height scales with token distance, capped at ARC_MX
+    edges.push({ dep:i, head:hi, label:t.deprel??'_',
+      h: Math.min(ARC_U * Math.abs(hi - i), ARC_MX) });
   }
   // Draw shorter arcs first so longer arcs appear behind them
   edges.sort((a, b) => a.h - b.h);
 
-  const maxArcH = Math.max(0, ...edges.filter(e => !e.isRoot).map(e => e.h));
-  // Always reserve ROOT_H space in editable diagrams so root arrows always have room to draw
-  const arcArea = Math.max(maxArcH, (editable || edges.some(e => e.isRoot)) ? ROOT_H : 0);
+  const arcArea = Math.max(0, ...edges.map(e => e.h));
   const wordY   = PTOP + arcArea + 14;
   const svgH    = wordY + CELL_H + PBOT;
 
@@ -459,65 +417,7 @@ function buildArcDiagram(tokMap, { onSetHead = null, onDeleteArc = null, onSetDe
     const depId  = toks[e.dep].id;
     const arcColor = edgeColors?.get(depId) ?? 'var(--ok)';
 
-    if (e.isRoot) {
-      // Vertical root arrow — always green regardless of edgeColors
-      const rootColor = 'var(--ok)';
-      const dx = centers[e.dep];
-      const ty = wordY - ROOT_H;
-      g.appendChild(mk('line', { x1:dx, y1:ty+4, x2:dx, y2:wordY-8,
-        stroke:rootColor, 'stroke-width':1.8 }));
-      g.appendChild(mk('polygon', {
-        points:`${dx-5},${wordY-14} ${dx+5},${wordY-14} ${dx},${wordY-3}`,
-        fill:rootColor }));
-      svg.appendChild(g);
-
-      // Root label — separate group for top-layer rendering
-      const lw = mc.measureText(e.label).width;
-      const labelG = mk('g');
-      if (editable && onSetDeprel) labelG.style.cssText = 'cursor:pointer;';
-      labelG.appendChild(mk('rect', { x:dx+6, y:ty+2, width:lw+8, height:13, rx:3, fill:'var(--card)' }));
-      const lt = mk('text', { x:dx+10, y:ty+12, 'font-size':10, fill:'var(--ok)', 'font-weight':700 });
-      lt.textContent = e.label;
-      labelG.appendChild(lt);
-      if (editable && onSetDeprel) {
-        labelG.addEventListener('click', ev => {
-          ev.stopPropagation();
-          const svgR = svg.getBoundingClientRect();
-          _arcShowDeprelPopup(svgR.left + dx + 14 + lw, svgR.top + ty + 2, depId, e.label, onSetDeprel);
-        });
-      }
-
-      // Root ✕ delete button (shown on hover; always visible on touch devices)
-      let rootBtnG = null;
-      if (editable && onDeleteArc) {
-        rootBtnG = mk('g');
-        const _rInit = _touch ? 'opacity:0.7; pointer-events:all;' : 'opacity:0; pointer-events:none;';
-        rootBtnG.style.cssText = `cursor:pointer; ${_rInit} transition:opacity .12s;`;
-        const bx = dx + lw + 22;
-        const by = ty + 7;
-        // Transparent hit-area circle (large touch target)
-        rootBtnG.appendChild(mk('circle', { cx:bx, cy:by, r:18, fill:'transparent' }));
-        rootBtnG.appendChild(mk('circle', { cx:bx, cy:by, r:7, fill:'var(--bad)', opacity:0.9 }));
-        const rxt = mk('text', { x:bx, y:by+4, 'text-anchor':'middle',
-          'font-size':11, 'font-weight':900, fill:'#fff', 'pointer-events':'none' });
-        rxt.textContent = '×';
-        rootBtnG.appendChild(rxt);
-        rootBtnG.addEventListener('click', ev => { ev.stopPropagation(); onDeleteArc(depId); });
-        let rootHideTimer = null;
-        const rootShow = () => { clearTimeout(rootHideTimer); rootBtnG.style.opacity='1'; rootBtnG.style.pointerEvents=''; };
-        const rootHide = () => { rootHideTimer = setTimeout(() => { rootBtnG.style.opacity='0'; rootBtnG.style.pointerEvents='none'; }, 300); };
-        g.addEventListener('pointerenter', rootShow);
-        g.addEventListener('pointerleave', rootHide);
-        labelG.addEventListener('pointerenter', rootShow);
-        labelG.addEventListener('pointerleave', rootHide);
-        rootBtnG.addEventListener('pointerenter', () => clearTimeout(rootHideTimer));
-        rootBtnG.addEventListener('pointerleave', rootHide);
-      }
-
-      edgeLabelGroups.push(labelG);
-      if (rootBtnG) edgeLabelGroups.push(rootBtnG);
-
-    } else {
+    {
       const x1   = centers[e.dep];
       const x2   = centers[e.head];
       const apex = wordY - e.h;
@@ -624,6 +524,56 @@ function buildArcDiagram(tokMap, { onSetHead = null, onDeleteArc = null, onSetDe
     const bw  = cellW[i];
     const bx  = cxi - bw / 2;
 
+    if (i === 0) {
+      // ── ROOT box: dashed green border, draggable in edit mode ────────────
+      svg.appendChild(mk('rect', { x:bx, y:wordY, width:bw, height:CELL_H,
+        rx:6, fill:'rgba(61,232,154,0.06)', stroke:'var(--ok)', 'stroke-width':1.5,
+        'stroke-dasharray':'5,3' }));
+      const fmT = mk('text', { x:cxi, y:wordY+CELL_H/2+5,
+        'text-anchor':'middle', 'font-size':FONT_SZ, 'font-weight':700,
+        fill:'var(--ok)', 'font-family':FONT_M, 'letter-spacing':'1px' });
+      fmT.textContent = 'ROOT';
+      svg.appendChild(fmT);
+      if (editable && onSetHead) {
+        // Both drag-from ROOT (to assign root) and drop-on ROOT (to receive arcs)
+        const ov = mk('rect', { x:bx, y:wordY, width:bw, height:CELL_H,
+          rx:6, fill:'transparent', cursor:'grab' });
+        ov.dataset.arctokid = '0';
+        ov.style.touchAction = 'pan-y';
+        ov.addEventListener('pointerenter', () => { if (!_arcDrag) ov.style.fill = 'rgba(61,232,154,0.12)'; });
+        ov.addEventListener('pointerleave', () => { ov.style.fill = 'transparent'; });
+        ov.addEventListener('pointerdown', ev => {
+          if (ev.pointerType === 'mouse' && ev.button !== 0) return;
+          const isTouch = ev.pointerType !== 'mouse';
+          const tokData = {
+            startX: ev.clientX, startY: ev.clientY,
+            pointerId: ev.pointerId,
+            isTouch,
+            tokIdx: 0, depId: 0,
+            svg, centers, wordY, cellH: CELL_H, toks,
+            onSetHead, onSetDeprel, onScrollTok: null,
+            _hovId: null, _hovEl: null, _hovBad: false,
+          };
+          if (isTouch) {
+            ov.setPointerCapture(ev.pointerId);
+            _arcPreHold = { ...tokData, overlayEl: ov };
+            _arcHoldTimer = setTimeout(() => {
+              if (!_arcPreHold) return;
+              const ph = _arcPreHold; _arcPreHold = null;
+              navigator.vibrate?.(15);
+              _arcPreDrag = ph;
+            }, _ARC_HOLD_MS);
+          } else {
+            ev.preventDefault();
+            ov.setPointerCapture(ev.pointerId);
+            _arcPreDrag = tokData;
+          }
+        });
+        svg.appendChild(ov);
+      }
+      continue;
+    }
+
     svg.appendChild(mk('rect', { x:bx, y:wordY, width:bw, height:CELL_H,
       rx:6, fill:'var(--card)', stroke:'var(--line2)', 'stroke-width':1 }));
     // Token ID in small text at top-left corner of the box
@@ -658,7 +608,7 @@ function buildArcDiagram(tokMap, { onSetHead = null, onDeleteArc = null, onSetDe
           pointerId: ev.pointerId,
           isTouch,
           tokIdx: i, depId: t.id,
-          svg, centers, wordY, cellH: CELL_H, rootH: ROOT_H, rootZoneH: ROOT_ZONE, toks,
+          svg, centers, wordY, cellH: CELL_H, toks,
           onSetHead, onSetDeprel, onScrollTok: scrollToTok,
           _hovId: null, _hovEl: null, _hovBad: false,
         };
@@ -698,59 +648,6 @@ function buildArcDiagram(tokMap, { onSetHead = null, onDeleteArc = null, onSetDe
   // ── Render arc labels + buttons on top of all arc paths ───────────────────
   // Appended after token boxes so they are always visible above overlapping paths.
   for (const lg of edgeLabelGroups) svg.appendChild(lg);
-
-  // ── ROOT drop zone (editable only) ────────────────────────────────────────
-  // A labeled dashed rectangle at the very top of the SVG.
-  // Always visible so users know they can drag a token here to make it a root.
-  // Highlights green when a drag enters the zone; dropping sets head=0 (root).
-  if (editable && onSetHead) {
-    const rz = mk('rect', {
-      x: GAP, y: 2, width: svgW - GAP * 2, height: ROOT_ZONE - 4,
-      rx: 5, fill: 'rgba(61,232,154,0.05)', stroke: 'var(--ok)',
-      'stroke-dasharray': '5,3', 'stroke-width': 1.2,
-      'pointer-events': 'fill', opacity: 0.55 });
-    rz.style.cursor = 'grab';
-    svg.appendChild(rz);
-
-    const rzLabel = mk('text', {
-      x: svgW / 2, y: 2 + (ROOT_ZONE - 4) / 2 + 4,
-      'text-anchor': 'middle', 'font-size': 10, fill: 'var(--ok)',
-      'font-weight': 700, 'letter-spacing': '1px',
-      'pointer-events': 'none', opacity: 0.65 });
-    rzLabel.textContent = 'ROOT';
-    svg.appendChild(rzLabel);
-
-    svg._arcRootZone  = rz;
-    svg._arcRootLabel = rzLabel;
-
-    // Allow dragging FROM the ROOT zone down onto a token to make it root
-    rz.addEventListener('pointerdown', ev => {
-      if (ev.pointerType === 'mouse' && ev.button !== 0) return;
-      const isTouch = ev.pointerType !== 'mouse';
-      const tokData = {
-        startX: ev.clientX, startY: ev.clientY,
-        pointerId: ev.pointerId,
-        isTouch, isRootDrag: true,
-        tokIdx: null, depId: null,
-        svg, centers, wordY, cellH: CELL_H, rootH: ROOT_H, rootZoneH: ROOT_ZONE, toks,
-        onSetHead, onSetDeprel, onScrollTok: null,
-        _hovId: null, _hovEl: null, _hovBad: false,
-      };
-      rz.setPointerCapture(ev.pointerId);
-      if (isTouch) {
-        _arcPreHold = { ...tokData, overlayEl: rz };
-        _arcHoldTimer = setTimeout(() => {
-          if (!_arcPreHold) return;
-          const ph = _arcPreHold; _arcPreHold = null;
-          navigator.vibrate?.(15);
-          _arcPreDrag = ph;
-        }, _ARC_HOLD_MS);
-      } else {
-        ev.preventDefault();
-        _arcPreDrag = tokData;
-      }
-    });
-  }
 
   const wrap = document.createElement('div');
   wrap.className = 'arcDiagramWrap';

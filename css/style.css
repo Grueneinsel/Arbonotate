@@ -883,6 +883,9 @@ tr.keyFocus > td:first-child{ border-left:2px solid var(--accent) }
   background: rgba(0,0,0,.12);
   touch-action: auto;
 }
+.arcDiagramWrap::-webkit-scrollbar{ height:6px; }
+.arcDiagramWrap::-webkit-scrollbar-track{ background:transparent; }
+.arcDiagramWrap::-webkit-scrollbar-thumb{ background:var(--line2); border-radius:3px; }
 html[data-theme="light"] .arcDiagramWrap{ background: rgba(0,0,0,.03); }
 
 /* Single-token adoption button (distinct from subtree button) */
@@ -1168,17 +1171,18 @@ html[data-theme="light"] .globalResetBtn:hover{ background:rgba(200,50,50,0.1) !
 }
 .helpHintBtn:hover{ opacity:1; border-color:var(--accent); color:var(--accent); }
 
-/* ── TTS button ── */
-.ttsBtn{ border-color:#1a3a2a; background:#0b1e15; color:#6dce8a; }
-.ttsBtn:hover:not(:disabled){ border-color:#3de89a; background:#0f2a1a; }
-.ttsActive{
-  border-color:#3de89a !important; background:#0f2a1a !important;
-  color:#3de89a !important; animation: ttsPulse 1.2s ease-in-out infinite;
+/* Sentence nav buttons — inline in heading and below tree */
+.treeNavInline{
+  display:inline-flex; gap:4px; align-items:center;
+  margin-left:10px; vertical-align:middle;
 }
-@keyframes ttsPulse{
-  0%,100%{ box-shadow:0 0 0 0 #3de89a33 }
-  50%    { box-shadow:0 0 0 6px #3de89a00 }
+.treeNavInline button{ padding:1px 8px; font-size:13px; line-height:1.4; }
+.treeNavBelow{
+  display:flex; gap:6px; justify-content:center;
+  margin-top:10px;
 }
+.treeNavBelow button{ padding:2px 18px; font-size:15px; }
+
 
 /* ── Auto-advance checkbox row ── */
 .autoAdvanceRow{

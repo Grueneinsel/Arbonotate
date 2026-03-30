@@ -2,6 +2,7 @@
 
 // ── Tree helpers ───────────────────────────────────────────────────────────────
 
+
 // Return the sentence text string from the first document that has it.
 function getSentenceTextFallback(sentIndex){
   for(const d of state.docs){
@@ -380,22 +381,33 @@ function renderPreview(){
     tokenList,
     arcMap: goldMap,
     arcEdgeColors: goldArcColors,
-    arcOnSetHead: (depId, newHeadId) => {
+    arcOnSetHead: (depId, newHeadId, breakOldDepId) => {
       pushUndo();
+      // Reversal: clear the old reverse arc before setting the new one
+      if (breakOldDepId !== undefined) {
+        setCustomField(sentIndex, breakOldDepId, 'head',   -1);
+        setCustomField(sentIndex, breakOldDepId, 'deprel', null);
+      }
       setCustomField(sentIndex, depId, 'head', newHeadId);
+      if (newHeadId === 0) {
+        // Single-root constraint: find all effective gold roots (from source + custom)
+        // and clear any that aren't the token we just made root.
+        const { docMaps, idList } = buildDocMapsAndIds();
+        const gm = buildGoldTokenMap(sentIndex, idList, docMaps);
+        for (const [id, tok] of gm.entries()) {
+          if (id !== depId && tok.head === 0) {
+            setCustomField(sentIndex, id, 'head',   -1);
+            setCustomField(sentIndex, id, 'deprel', null);
+          }
+        }
+      }
       renderSentenceKeepScroll();
     },
     arcOnDeleteArc: (depId) => {
       pushUndo();
-      const rawEntry = state.custom[sentIndex]?.[depId];
-      const hasCustomHead = rawEntry?.head != null;
-      if (hasCustomHead) {
-        setCustomField(sentIndex, depId, 'head',   null);
-        setCustomField(sentIndex, depId, 'deprel', null);
-      } else {
-        setCustomField(sentIndex, depId, 'head',   0);
-        setCustomField(sentIndex, depId, 'deprel', 'root');
-      }
+      // -1 = sentinel for "explicitly no arc" (token floats unattached in gold)
+      setCustomField(sentIndex, depId, 'head',   -1);
+      setCustomField(sentIndex, depId, 'deprel', null);
       renderSentenceKeepScroll();
     },
     arcOnSetDeprel: (depId, deprel) => {
@@ -434,8 +446,13 @@ function renderPreview(){
       // Arc editing: enabled when project is unlocked; writes directly to the file's token data
       // (not state.custom) so each file section is independent.
       ...(state.unlocked ? {
-        arcOnSetHead: (depId, newHeadId) => {
+        arcOnSetHead: (depId, newHeadId, breakOldDepId) => {
           pushUndo();
+          // Reversal: clear the old reverse arc in the file
+          if (breakOldDepId !== undefined) {
+            const tok2 = state.docs[i].sentences[sentIndex]?.tokens.find(t => t.id === breakOldDepId);
+            if (tok2) { tok2.head = null; tok2.deprel = '_'; }
+          }
           const tok = state.docs[i].sentences[sentIndex]?.tokens.find(t => t.id === depId);
           if(tok) tok.head = newHeadId;
           renderSentenceKeepScroll();

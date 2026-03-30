@@ -38,7 +38,8 @@ function buildGoldTokenMap(sentIndex, idList, docMaps){
     const t    = docMaps[pick]?.get(id) || base;
     const tok  = { id, form: base.form };
     // Primary dep (always head + deprel for backward compat)
-    tok.head   = ce?.head   ?? t.head   ?? null;
+    // head = -1 is the sentinel for "explicitly no arc" (distinct from null = use source)
+    tok.head   = ce?.head === -1 ? null : (ce?.head ?? t.head ?? null);
     tok.deprel = ce?.deprel ?? t.deprel ?? null;
     // Dynamic label columns
     for(const col of LABEL_COLS){

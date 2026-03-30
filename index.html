@@ -111,7 +111,6 @@
         <select id="sentSelect" disabled></select>
         <button id="nextBtn" disabled data-i18n-aria-label="nav.next">→</button>
         <button id="confirmBtn" class="confirmBtn" disabled>✓ Bestätigen</button>
-        <button id="ttsBtn" class="ttsBtn" disabled data-i18n="tts.speak">🔊 Vorlesen</button>
         <label class="autoAdvanceRow">
           <input type="checkbox" id="autoAdvanceCb"> <span data-i18n="sent.autoAdvance">Auto-weiter</span>
         </label>
@@ -142,6 +141,10 @@
     <section class="card">
       <h2 data-i18n="sec.tree">3) Baumansicht <button class="helpHintBtn" data-i18n-title="help.hintTitle" onclick="openHelpSection('sec.tree')">?</button></h2>
       <div id="treeGrid" class="treeGrid"></div>
+      <div class="treeNavBelow">
+        <button onclick="_navigateSent(-1)" data-i18n="nav.prevBtn">← Vorheriger Satz</button>
+        <button onclick="_navigateSent(1)"  data-i18n="nav.nextBtn">Nächster Satz →</button>
+      </div>
       <div class="muted small" style="margin-top:8px">
         <span data-i18n="legend.label">Legende:</span>
         <span class="legendOk"  data-i18n="legend.ok">✅ gleich</span> &nbsp;|&nbsp;
