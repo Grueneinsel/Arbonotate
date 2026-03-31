@@ -311,13 +311,50 @@ document.addEventListener("dragleave", () => {
   dragCounter--;
   if(dragCounter <= 0){ dragCounter = 0; dropOverlay.classList.remove("active"); }
 });
-document.addEventListener("drop", (e) => {
+document.addEventListener("drop", async (e) => {
   e.preventDefault();
   dragCounter = 0;
   dropOverlay.classList.remove("active");
-  const allFiles = Array.from(e.dataTransfer.files);
-  _dispatchFiles(allFiles);
+  // Use DataTransferItem API to support dropped folders (recursive)
+  const items = e.dataTransfer?.items ? Array.from(e.dataTransfer.items) : null;
+  if (items && items.some(i => i.kind === 'file' && typeof i.webkitGetAsEntry === 'function')) {
+    const files = await _collectFilesFromItems(items);
+    if (files.length) _dispatchFiles(files);
+  } else {
+    _dispatchFiles(Array.from(e.dataTransfer.files));
+  }
 });
+
+// Recursively collect File objects from DataTransferItems (supports dropped folders).
+// Files are sorted by their full path so the order is deterministic.
+async function _collectFilesFromItems(items) {
+  const VALID = /\.(conllu|conll|txt|json)$/i;
+  const entries = items
+    .filter(i => i.kind === 'file')
+    .map(i => i.webkitGetAsEntry?.())
+    .filter(Boolean);
+
+  const files = [];
+  async function readEntry(entry) {
+    if (entry.isFile) {
+      if (VALID.test(entry.name)) {
+        await new Promise(res => entry.file(f => { files.push({ file: f, path: entry.fullPath }); res(); }, res));
+      }
+    } else if (entry.isDirectory) {
+      const reader = entry.createReader();
+      // readEntries only returns up to 100 results per call — loop until empty
+      let batch;
+      do {
+        batch = await new Promise((res, rej) => reader.readEntries(res, rej));
+        for (const child of batch) await readEntry(child);
+      } while (batch.length > 0);
+    }
+  }
+
+  for (const entry of entries) await readEntry(entry);
+  files.sort((a, b) => a.path.localeCompare(b.path));
+  return files.map(f => f.file);
+}
 
 // ── UI: Column toggle ──────────────────────────────────────────────────────────
 

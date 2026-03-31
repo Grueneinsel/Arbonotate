@@ -364,8 +364,9 @@ function buildArcDiagram(tokMap, { onSetHead = null, onDeleteArc = null, onSetDe
   const PTOP    = 6;
   const PBOT    = 8;
   const FONT_M  = "'JetBrains Mono', ui-monospace, Consolas, monospace";
-  const ROW_GAP = 18;  // vertical gap between rows
-  const MIN_ARC = 20;  // minimum arc-area height per row
+  const ROW_GAP_MIN = 10;  // minimum vertical gap between rows (no cross-row arcs)
+  const MIN_ARC    = 20;  // minimum arc-area height per row
+  const LBL_GAP_H  = 16;  // height per label slot in the inter-row gap
 
   // Measure text widths via an offscreen canvas for accurate box sizing
   const mc = document.createElement('canvas').getContext('2d');
@@ -429,13 +430,28 @@ function buildArcDiagram(tokMap, { onSetHead = null, onDeleteArc = null, onSetDe
     return Math.max(intraH, MIN_ARC);
   });
 
-  // Stack rows: compute wordY (y of token box row) for each row
+  // Per-gap: count how many cross-row arcs pass through gap r (between row r and r+1).
+  // Each arc gets a slot index in the gap closest to its head (= where label is drawn).
+  const gapCrossCount = new Array(nRows - 1).fill(0);
+  const edgeGapSlot   = new Map(); // edge → { gap: r, slot: i }
+  for (const e of crossEdges) {
+    const labelGap = Math.min(e.rowHead, e.rowDep); // gap just below the upper row
+    const slot = gapCrossCount[labelGap];
+    gapCrossCount[labelGap]++;
+    edgeGapSlot.set(e, { gap: labelGap, slot });
+  }
+  // Gap height = minimum + one slot per label
+  const gapH = gapCrossCount.map(n => ROW_GAP_MIN + n * LBL_GAP_H);
+
+  // Stack rows using variable gap heights
   const rowWordY = new Array(nRows);
   let yo = PTOP;
   for (let r = 0; r < nRows; r++) {
     rowWordY[r] = yo + arcAreaH[r] + 14;
-    yo += arcAreaH[r] + 14 + CELL_H + (r < nRows - 1 ? ROW_GAP : 0);
+    yo += arcAreaH[r] + 14 + CELL_H + (r < nRows - 1 ? gapH[r] : 0);
   }
+  // gapTopY[r] = y where the gap below row r starts
+  const gapTopY = Array.from({ length: nRows - 1 }, (_, r) => rowWordY[r] + CELL_H);
   const svgH = yo + PBOT;
 
   // Per-token flat arrays for the drag system
@@ -451,9 +467,10 @@ function buildArcDiagram(tokMap, { onSetHead = null, onDeleteArc = null, onSetDe
   svg.style.cssText = 'display:block; overflow:visible; cursor:default; touch-action:pan-y; min-width:100%;';
 
   // ── Row separator lines ────────────────────────────────────────────────────
-  for (let r = 1; r < nRows; r++) {
+  for (let r = 0; r < nRows - 1; r++) {
+    const sepY = gapTopY[r] + gapH[r] / 2;
     svg.appendChild(mk('line', {
-      x1: 0, y1: rowWordY[r - 1] + CELL_H + ROW_GAP / 2, x2: svgW, y2: rowWordY[r - 1] + CELL_H + ROW_GAP / 2,
+      x1: 0, y1: sepY, x2: svgW, y2: sepY,
       stroke: 'var(--line2)', 'stroke-width': 0.5, 'stroke-dasharray': '4,4', 'pointer-events': 'none',
     }));
   }
@@ -472,15 +489,12 @@ function buildArcDiagram(tokMap, { onSetHead = null, onDeleteArc = null, onSetDe
     if (!_labelSlots.has(row)) _labelSlots.set(row, []);
     const slots = _labelSlots.get(row);
     const x0 = x - w / 2 - 6, x1 = x + w / 2 + 6;
-    // Find lowest y (highest on screen = most negative) that doesn't overlap
-    // Existing slots are stored as y (top of label). We try slots from innermost outward.
-    const taken = slots.filter(s => s.x1 > x0 && s.x0 < x1).map(s => s.y).sort((a, b) => b - a);
-    let y = taken.length ? taken[0] - LBL_H : null;
-    if (y !== null) {
-      slots.push({ x0, x1, y });
-      return y;
-    }
-    return null; // will use default curveApex
+    // Sort ascending: smallest y = highest on screen = topmost existing label
+    const taken = slots.filter(s => s.x1 > x0 && s.x0 < x1).map(s => s.y).sort((a, b) => a - b);
+    // Place new label above the topmost existing overlapping label
+    const y = taken.length ? taken[0] - LBL_H : null;
+    if (y !== null) slots.push({ x0, x1, y });
+    return y; // null means no overlap found; caller uses natural position
   }
 
   for (const e of allEdges) {
@@ -496,12 +510,14 @@ function buildArcDiagram(tokMap, { onSetHead = null, onDeleteArc = null, onSetDe
       const mid       = (x1 + x2) / 2;
       const lw        = mc.measureText(e.label).width;
 
-      // Push label up if it overlaps another label in the same arc-area row
+      // Clamp natural position so label never overlaps token boxes
+      curveApex = Math.min(curveApex, wY - LBL_H - 4);
+      // Bump up if an existing label occupies the same x-range (returns new y or null)
       const bumped = _placeLabel(e.rowDep, mid, lw);
       if (bumped !== null) curveApex = bumped;
-      else _labelSlots.get(e.rowDep)?.push({ x0: mid - lw/2 - 6, x1: mid + lw/2 + 6, y: curveApex });
-      // Clamp: label must not overlap the token boxes (stay above wY - CELL_H / 2)
-      curveApex = Math.min(curveApex, wY - 16);
+      // Register this label's final position
+      if (!_labelSlots.has(e.rowDep)) _labelSlots.set(e.rowDep, []);
+      _labelSlots.get(e.rowDep).push({ x0: mid - lw/2 - 6, x1: mid + lw/2 + 6, y: curveApex });
 
       const g = mk('g');
       // Fat invisible stroke for hover/click detection along the arc
@@ -583,21 +599,20 @@ function buildArcDiagram(tokMap, { onSetHead = null, onDeleteArc = null, onSetDe
       // intermediate rows).
       const x_h  = flatCenters[e.head];
       const x_d  = flatCenters[e.dep];
-      const rowH = e.rowHead < e.rowDep ? e.rowHead : e.rowDep; // upper row
       const y_h  = rowWordY[e.rowHead];
       const y_d  = rowWordY[e.rowDep];
       const peak = ARC_U;
       // S-curve: rise above head, curve to dep, descend to dep
       const pathD = `M ${x_h} ${y_h} C ${x_h} ${y_h - peak} ${x_d} ${y_d - peak} ${x_d} ${y_d}`;
-      // Place label in the inter-row gap between the two rows it spans
-      const gapCenterY = rowWordY[rowH] + CELL_H + ROW_GAP / 2;
-      // x at t=0.5 of the Bezier
-      const lx = (x_h + x_d) / 2;
-      const lw = mc.measureText(e.label).width;
-      const mid = lx;
-      // Anchor label in gap; offset slightly per arc to avoid stacking
-      const crossIdx = crossEdges.indexOf(e);
-      const ly = gapCenterY - 6 + (crossIdx % 2) * 13;
+      // Place label in the gap closest to the head, in its pre-assigned slot.
+      const lw  = mc.measureText(e.label).width;
+      const { gap, slot } = edgeGapSlot.get(e);
+      // Slots fill from bottom of gap upward so innermost arc gets the slot nearest the token row
+      const ly  = gapTopY[gap] + gapH[gap] - (slot + 1) * LBL_GAP_H + LBL_GAP_H / 2 + 3;
+      // x: midpoint of the arc at y=ly (linear interpolation between head and dep x)
+      const totalDy = Math.abs(y_d - y_h) || 1;
+      const lyFrac  = Math.abs(ly - y_h) / totalDy;
+      const mid     = x_h + (x_d - x_h) * lyFrac;
 
       const g = mk('g');
       g.appendChild(mk('path', {
