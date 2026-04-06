@@ -184,6 +184,19 @@ function getSubtreeIds(rootId, tokMap){
   return ids;
 }
 
+// Return true if a single token differs between goldMap and otherMap
+// in head, deprel, upos, or xpos.
+function hasTokenDiff(tokId, goldMap, otherMap){
+  const g = goldMap.get(tokId);
+  const o = otherMap.get(tokId);
+  if(!g || !o) return true;
+  if((g.head   ?? null) !== (o.head   ?? null)) return true;
+  if((g.deprel ?? null) !== (o.deprel ?? null)) return true;
+  if((g.upos   ?? null) !== (o.upos   ?? null)) return true;
+  if((g.xpos   ?? null) !== (o.xpos   ?? null)) return true;
+  return false;
+}
+
 // Return true if the union subtree of rootId contains any token that differs
 // between goldMap and otherMap in head, deprel, upos, or xpos.
 function hasSubtreeDiff(rootId, goldMap, otherMap){
@@ -220,7 +233,7 @@ function hasSubtreeDiff(rootId, goldMap, otherMap){
  *   opts.arcEdgeColors                 — Map<depId, cssColorVar> for arc coloring
  */
 function buildTreeSection(title, sub, text, opts = {}){
-  const { onAdoptSubtree, subtreeDiffCheck, onAdoptToken,
+  const { onAdoptSubtree, subtreeDiffCheck, onAdoptToken, tokenDiffCheck,
           arcMap, arcOnSetHead, arcOnDeleteArc, arcOnSetDeprel, arcEdgeColors } = opts;
 
   const section = document.createElement("div");
@@ -254,6 +267,16 @@ function buildTreeSection(title, sub, text, opts = {}){
       const txt = document.createElement("span");
       txt.textContent = line;
       wrapper.appendChild(txt);
+
+      // Single-token adopt button for the root relationship — shown when this token differs
+      if(onAdoptToken && tokenDiffCheck && tokenDiffCheck(rootId)){
+        const btn = document.createElement("button");
+        btn.textContent = t('tree.adoptToken');
+        btn.className = "treeSingleBtn";
+        btn.title = t('tree.adoptTokenTitle', { id: rootId });
+        btn.addEventListener("click", (e) => { e.stopPropagation(); onAdoptToken(rootId); });
+        wrapper.appendChild(btn);
+      }
 
       // "→ Gold" subtree adoption button — only shown when subtree has differences
       if(onAdoptSubtree && (!subtreeDiffCheck || subtreeDiffCheck(rootId))){
@@ -487,6 +510,7 @@ function renderPreview(){
         renderSentenceKeepScroll();
       },
       subtreeDiffCheck: (rootId) => hasSubtreeDiff(rootId, goldMap, otherMap),
+      tokenDiffCheck:   (tokId)  => hasTokenDiff(tokId, goldMap, otherMap),
       onAdoptToken: (tokId) => {
         pushUndo();
         // Wipe ALL custom overrides for this token so the adopted doc's values
