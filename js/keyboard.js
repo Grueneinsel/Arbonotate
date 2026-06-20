@@ -16,12 +16,16 @@
   let _focusIdx  = -1;     // keyboard-highlighted index in _filtered
   let _closing   = false;  // guard: prevents focusin re-opening during close
 
-  // Returns true when el is a label/deprel select we should handle.
+  // Returns true when el is a select that should get the custom combobox.
+  // Catch-all: every <select> EXCEPT navigation / management / numeric-head selects,
+  // and the arc-diagram deprel listbox (which has its own inline search input).
   function _isLabel(el){
     if(!el || el.tagName !== 'SELECT') return false;
-    return el.classList.contains('posInlineSelect')
-        || el.classList.contains('conlluStructSelect')
-        || (el.closest?.('.goldPopup') && !el.id.match(/^[gf]pHead/));
+    if(el.id === 'sentSelect')                  return false; // sentence navigation
+    if(el.classList.contains('moveToProjectSel')) return false; // file → project
+    if(el.classList.contains('arcDeprelSel'))    return false; // arc popup has own search
+    if(el.id && /^[gf]pHead/.test(el.id))       return false; // numeric HEAD token selects
+    return true;
   }
 
   // Build the overlay DOM once.

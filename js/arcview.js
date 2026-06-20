@@ -305,19 +305,48 @@ function _arcShowDeprelPopup(anchorX, anchorY, depId, currentDeprel, onSetDeprel
       .map(d => `<option value="${d}">${d}</option>`).join('');
 
   const _popupTouch = window.matchMedia('(pointer: coarse)').matches;
+
+  // Search input
+  const arcSearch = document.createElement('input');
+  arcSearch.type = 'text';
+  arcSearch.placeholder = '🔍 …';
+  arcSearch.className = 'arcDeprelSearch';
+  arcSearch.style.cssText = `display:block; width:100%; box-sizing:border-box; margin-bottom:3px; padding:4px 6px; border:1px solid var(--accent); border-radius:4px; background:var(--bg-control); color:var(--text); font-size:${_popupTouch ? 15 : 12}px; font-family:inherit; outline:none;`;
+
   const sel = document.createElement('select');
   sel.size = _popupTouch ? 10 : 12;
+  sel.className = 'arcDeprelSel';
   sel.innerHTML = optsHtml;
   sel.value = currentDeprel;
-  sel.style.cssText = `display:block; border:none; outline:none; background:var(--bg); color:var(--text); font-size:${_popupTouch ? 16 : 12}px; font-family:inherit; cursor:pointer; min-width:${_popupTouch ? 150 : 110}px;`;
+  sel.style.cssText = `display:block; border:none; outline:none; background:var(--bg); color:var(--text); font-size:${_popupTouch ? 16 : 12}px; font-family:inherit; cursor:pointer; min-width:${_popupTouch ? 150 : 110}px; width:100%;`;
+
+  // Filter listbox options as the user types
+  arcSearch.addEventListener('input', () => {
+    const q = arcSearch.value.toLowerCase().trim();
+    let first = null;
+    Array.from(sel.options).forEach(o => {
+      const match = !q || o.value.toLowerCase().startsWith(q);
+      o.style.display = match ? '' : 'none';
+      if(match && !first) first = o;
+    });
+    if(first) sel.value = first.value;
+  });
 
   const close = () => popup.remove();
+
+  arcSearch.addEventListener('keydown', ev => {
+    if(ev.key === 'Escape')    { close(); return; }
+    if(ev.key === 'Enter')     { onSetDeprel(depId, sel.value); close(); return; }
+    if(ev.key === 'ArrowDown') { ev.preventDefault(); sel.focus(); }
+  });
+
   sel.addEventListener('change', () => { onSetDeprel(depId, sel.value); close(); });
   sel.addEventListener('keydown', ev => {
     if (ev.key === 'Escape') close();
     if (ev.key === 'Enter')  { onSetDeprel(depId, sel.value); close(); }
   });
 
+  popup.appendChild(arcSearch);
   popup.appendChild(sel);
   document.body.appendChild(popup);
 
@@ -327,7 +356,7 @@ function _arcShowDeprelPopup(anchorX, anchorY, depId, currentDeprel, onSetDeprel
     if (r.bottom > window.innerHeight) popup.style.top  = `${anchorY - r.height}px`;
     const curOpt = sel.querySelector('option:checked');
     if (curOpt) curOpt.scrollIntoView({ block: 'nearest' });
-    sel.focus();
+    arcSearch.focus();
   });
 
   setTimeout(() => {
