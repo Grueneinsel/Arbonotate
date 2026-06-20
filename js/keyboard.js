@@ -169,10 +169,12 @@
     _lastKey = '';
   });
 
-  // Close when clicking outside
+  // Close when clicking outside (but NOT when clicking the select that opened us — that
+  // mousedown already fired our capture handler above; closing here would re-close instantly)
   document.addEventListener('mousedown', e => {
     if(!_overlay || _overlay.hidden) return;
     if(_overlay.contains(e.target)) return;
+    if(_sel && e.target === _sel) return; // same event that opened us — skip
     _close();
   });
 
