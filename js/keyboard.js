@@ -1,5 +1,106 @@
 // Keyboard navigation and shortcut handler for sentence/token navigation and editing.
 
+// ── Typeahead for label/deprel selects ────────────────────────────────────────
+// When any label select (UPOS, XPOS, DEPREL, …) is focused and the user types,
+// this accumulates the keystrokes into a search buffer, jumps to the first
+// matching option, and auto-confirms when only one option remains.
+
+let _taBuf      = '';          // current search string
+let _taClearTmr = null;        // auto-clear timer handle
+let _taBadgeEl  = null;        // floating visual indicator DOM element
+
+function _taGetBadge(){
+  if(!_taBadgeEl){
+    _taBadgeEl = document.createElement('div');
+    _taBadgeEl.className = 'taSearchBadge';
+    _taBadgeEl.hidden = true;
+    document.body.appendChild(_taBadgeEl);
+  }
+  return _taBadgeEl;
+}
+
+function _taPositionBadge(sel){
+  const rect = sel.getBoundingClientRect();
+  _taBadgeEl.style.top  = Math.max(4, rect.top - 34) + 'px';
+  _taBadgeEl.style.left = rect.left + 'px';
+}
+
+function _taApply(sel){
+  const badge = _taGetBadge();
+  if(!_taBuf){ badge.hidden = true; return; }
+
+  const buf  = _taBuf.toLowerCase();
+  const opts = Array.from(sel.options).filter(o => o.value && o.value.toLowerCase().startsWith(buf));
+
+  _taPositionBadge(sel);
+  badge.hidden = false;
+
+  if(opts.length === 0){
+    badge.className   = 'taSearchBadge taNoMatch';
+    badge.textContent = `✕ "${_taBuf}"`;
+    clearTimeout(_taClearTmr);
+    _taClearTmr = setTimeout(() => { _taBuf = ''; badge.hidden = true; }, 700);
+  } else if(opts.length === 1){
+    // Unique match → auto-select and commit
+    sel.value = opts[0].value;
+    sel.dispatchEvent(new Event('change', { bubbles: true }));
+    badge.className   = 'taSearchBadge taMatch';
+    badge.textContent = `✓ ${opts[0].value}`;
+    _taBuf = '';
+    clearTimeout(_taClearTmr);
+    _taClearTmr = setTimeout(() => { badge.hidden = true; }, 900);
+  } else {
+    // Multiple matches → jump to first, show count
+    sel.value = opts[0].value;
+    badge.className   = 'taSearchBadge taMulti';
+    badge.textContent = `🔍 ${_taBuf} · ${opts.length}`;
+  }
+}
+
+// Capture-phase listener: fires before all bubble handlers and native select behavior.
+// Handles any SELECT that contains label/deprel options.
+document.addEventListener('keydown', (e) => {
+  const sel = document.activeElement;
+  if(!sel || sel.tagName !== 'SELECT') return;
+  if(e.ctrlKey || e.metaKey || e.altKey) return;
+
+  // Only intercept label/deprel selects (not HEAD token-ID selects)
+  const isLabelSel =
+    sel.classList.contains('posInlineSelect')    ||
+    sel.classList.contains('conlluStructSelect') ||
+    (sel.closest?.('.goldPopup') && !sel.id.match(/^[gf]pHead/));
+  if(!isLabelSel) return;
+
+  const k = e.key;
+
+  if(k === 'Backspace' && _taBuf){
+    e.preventDefault(); e.stopPropagation();
+    _taBuf = _taBuf.slice(0, -1);
+    _taApply(sel);
+    return;
+  }
+
+  // Only single printable chars (no space — spaces don't appear in deprel labels)
+  if(k.length !== 1 || k === ' ') return;
+
+  e.preventDefault();
+  e.stopPropagation();          // prevents keyboard.js bubble handler + native select jump
+  _taBuf += k;
+  clearTimeout(_taClearTmr);
+  _taClearTmr = setTimeout(() => { _taBuf = ''; _taGetBadge().hidden = true; }, 2000);
+  _taApply(sel);
+}, true /* capture phase */);
+
+// Clear buffer when select loses focus
+document.addEventListener('focusout', (e) => {
+  if(e.target.tagName !== 'SELECT') return;
+  _taBuf = '';
+  clearTimeout(_taClearTmr);
+  if(_taBadgeEl) _taBadgeEl.hidden = true;
+});
+
+// ── End of typeahead ──────────────────────────────────────────────────────────
+
 let keyFocusTokId = null; // token ID currently highlighted by keyboard focus (null = none)
 
 // Highlight the given token row in the table and sync the sentence-text token highlight.

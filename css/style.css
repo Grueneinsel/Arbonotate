@@ -1732,3 +1732,24 @@ td:hover .fileEditBtn { display: inline-block; }
 
 /* Sentence list overscroll */
 .sentListPanel { overscroll-behavior: contain; }
+
+/* ── Typeahead search badge (label selects) ── */
+.taSearchBadge{
+  position:fixed; z-index:9500; pointer-events:none;
+  padding:3px 9px; border-radius:6px;
+  font-size:12px; font-family:var(--mono); font-weight:700;
+  border:1px solid var(--line2); background:var(--card2); color:var(--text);
+  box-shadow:0 2px 10px var(--shadow); white-space:nowrap;
+  transform:translateY(-4px);
+  transition: border-color .1s, color .1s;
+}
+.taSearchBadge[hidden]{ display:none; }
+.taMatch  { border-color:var(--ok);  color:var(--ok);  }
+.taNoMatch{ border-color:var(--bad); color:var(--bad); }
+.taMulti  { border-color:var(--warn);color:var(--warn);}
+html[data-theme="light"] .taMatch  { color:var(--ok);  }
+html[data-theme="light"] .taNoMatch{ color:var(--bad); }
+html[data-theme="light"] .taMulti  { color:var(--warn);}
+
+/* ── Word wrap in sentence text ── */
+.sentText{ white-space: normal; word-break: break-word; overflow-wrap: anywhere; }
