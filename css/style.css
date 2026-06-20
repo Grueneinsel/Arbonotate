@@ -284,7 +284,7 @@ button:not(:disabled):active,
 
 /* ── Layout ──────────────────────────────────────────────────────────────────── */
 .srOnly{ position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
-.wrap{ max-width:none; margin:0; padding:14px; display:grid; gap:10px }
+.wrap{ max-width:none; margin:0; padding:14px; display:grid; grid-template-columns:1fr; gap:10px }
 .card{
   background:var(--card);
   border:1px solid var(--line);
@@ -802,8 +802,9 @@ tr.keyFocus > td:first-child{ border-left:2px solid var(--accent) }
 }
 .treeHead{
   padding:7px 12px; border-bottom:1px solid var(--line);
-  display:flex; gap:8px; align-items:center; justify-content:space-between;
+  display:flex; gap:8px; align-items:center;
   background:var(--bg-tree-head);
+  position:sticky; left:0; z-index:5;
 }
 .treeHead .title{ font-weight:800; font-size:12px }
 .treeHead .sub{ color:var(--muted); font-size:11px }

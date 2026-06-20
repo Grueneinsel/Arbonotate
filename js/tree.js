@@ -248,12 +248,13 @@ function buildTreeSection(title, sub, text, opts = {}){
     </div>
   `;
 
-  // Collapse toggle button
+  // Collapse toggle button — placed BEFORE the title so it stays visible when the tree
+  // is wider than the viewport and the user scrolls right (treeHead is sticky left:0).
   const collapseBtn = document.createElement("button");
   collapseBtn.className = "treeCollapseBtn";
   collapseBtn.textContent = "▼";
   collapseBtn.title = "Abschnitt ein-/ausklappen";
-  head.appendChild(collapseBtn);
+  head.insertBefore(collapseBtn, head.firstChild);
   section.appendChild(head);
 
   const pre = document.createElement("pre");
