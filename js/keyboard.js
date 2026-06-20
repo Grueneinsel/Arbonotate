@@ -5,9 +5,8 @@
 // this accumulates the keystrokes into a search buffer, jumps to the first
 // matching option, and auto-confirms when only one option remains.
 
-let _taBuf      = '';          // current search string
-let _taClearTmr = null;        // auto-clear timer handle
-let _taBadgeEl  = null;        // floating visual indicator DOM element
+let _taBuf    = '';    // current search string
+let _taBadgeEl = null; // floating visual indicator DOM element
 
 function _taGetBadge(){
   if(!_taBadgeEl){
@@ -21,8 +20,17 @@ function _taGetBadge(){
 
 function _taPositionBadge(sel){
   const rect = sel.getBoundingClientRect();
-  _taBadgeEl.style.top  = Math.max(4, rect.top - 34) + 'px';
+  // Show badge below the select so it's always in view
+  const top = rect.bottom + 4;
+  _taBadgeEl.style.top  = top + 'px';
   _taBadgeEl.style.left = rect.left + 'px';
+}
+
+function _taClear(sel){
+  _taBuf = '';
+  if(_taBadgeEl) _taBadgeEl.hidden = true;
+  // Restore native select to show the current actual value
+  if(sel) sel.dispatchEvent(new Event('change', { bubbles: true }));
 }
 
 function _taApply(sel){
@@ -36,24 +44,21 @@ function _taApply(sel){
   badge.hidden = false;
 
   if(opts.length === 0){
+    // No match: show error, keep badge until next keystroke clears buffer
     badge.className   = 'taSearchBadge taNoMatch';
-    badge.textContent = `✕ "${_taBuf}"`;
-    clearTimeout(_taClearTmr);
-    _taClearTmr = setTimeout(() => { _taBuf = ''; badge.hidden = true; }, 700);
+    badge.textContent = `✕  "${_taBuf}"`;
   } else if(opts.length === 1){
-    // Unique match → auto-select and commit
+    // Unique match → auto-select and commit; badge stays until blur/Escape
     sel.value = opts[0].value;
     sel.dispatchEvent(new Event('change', { bubbles: true }));
     badge.className   = 'taSearchBadge taMatch';
-    badge.textContent = `✓ ${opts[0].value}`;
+    badge.textContent = `✓  ${opts[0].value}`;
     _taBuf = '';
-    clearTimeout(_taClearTmr);
-    _taClearTmr = setTimeout(() => { badge.hidden = true; }, 900);
   } else {
-    // Multiple matches → jump to first, show count
+    // Multiple matches → preview first, show count; badge stays
     sel.value = opts[0].value;
     badge.className   = 'taSearchBadge taMulti';
-    badge.textContent = `🔍 ${_taBuf} · ${opts.length}`;
+    badge.textContent = `🔍  ${_taBuf}  ·  ${opts.length} Treffer`;
   }
 }
 
@@ -73,7 +78,15 @@ document.addEventListener('keydown', (e) => {
 
   const k = e.key;
 
-  if(k === 'Backspace' && _taBuf){
+  if(k === 'Escape'){
+    if(!_taBuf && !(_taBadgeEl && !_taBadgeEl.hidden)) return; // nothing to clear
+    e.preventDefault(); e.stopPropagation();
+    _taClear(null);
+    return;
+  }
+
+  if(k === 'Backspace'){
+    if(!_taBuf) return;
     e.preventDefault(); e.stopPropagation();
     _taBuf = _taBuf.slice(0, -1);
     _taApply(sel);
@@ -84,18 +97,17 @@ document.addEventListener('keydown', (e) => {
   if(k.length !== 1 || k === ' ') return;
 
   e.preventDefault();
-  e.stopPropagation();          // prevents keyboard.js bubble handler + native select jump
+  e.stopPropagation(); // prevents keyboard.js bubble handler + native select jump
+  // On no-match state: reset buffer before new char
+  if(_taBadgeEl && _taBadgeEl.classList.contains('taNoMatch')) _taBuf = '';
   _taBuf += k;
-  clearTimeout(_taClearTmr);
-  _taClearTmr = setTimeout(() => { _taBuf = ''; _taGetBadge().hidden = true; }, 2000);
   _taApply(sel);
 }, true /* capture phase */);
 
-// Clear buffer when select loses focus
+// Clear buffer and badge when select loses focus
 document.addEventListener('focusout', (e) => {
   if(e.target.tagName !== 'SELECT') return;
   _taBuf = '';
-  clearTimeout(_taClearTmr);
   if(_taBadgeEl) _taBadgeEl.hidden = true;
 });
 

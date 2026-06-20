@@ -1736,20 +1736,18 @@ td:hover .fileEditBtn { display: inline-block; }
 /* ── Typeahead search badge (label selects) ── */
 .taSearchBadge{
   position:fixed; z-index:9500; pointer-events:none;
-  padding:3px 9px; border-radius:6px;
-  font-size:12px; font-family:var(--mono); font-weight:700;
-  border:1px solid var(--line2); background:var(--card2); color:var(--text);
-  box-shadow:0 2px 10px var(--shadow); white-space:nowrap;
-  transform:translateY(-4px);
-  transition: border-color .1s, color .1s;
+  padding:5px 12px; border-radius:8px;
+  font-size:14px; font-family:var(--mono); font-weight:700; letter-spacing:.02em;
+  border:2px solid var(--line2); background:var(--card); color:var(--text);
+  box-shadow:0 4px 16px var(--shadow); white-space:nowrap;
 }
 .taSearchBadge[hidden]{ display:none; }
-.taMatch  { border-color:var(--ok);  color:var(--ok);  }
-.taNoMatch{ border-color:var(--bad); color:var(--bad); }
-.taMulti  { border-color:var(--warn);color:var(--warn);}
-html[data-theme="light"] .taMatch  { color:var(--ok);  }
-html[data-theme="light"] .taNoMatch{ color:var(--bad); }
-html[data-theme="light"] .taMulti  { color:var(--warn);}
+.taMatch  { border-color:var(--ok);  color:var(--ok);  background:#0d2420; }
+.taNoMatch{ border-color:var(--bad); color:var(--bad); background:#200d0d; }
+.taMulti  { border-color:var(--warn);color:var(--warn);background:#1a1500; }
+html[data-theme="light"] .taMatch  { color:var(--ok);   background:#e0f8ec; }
+html[data-theme="light"] .taNoMatch{ color:var(--bad);  background:#fce8e8; }
+html[data-theme="light"] .taMulti  { color:var(--warn); background:#fff8e0; }
 
 /* ── Word wrap in sentence text ── */
 .sentText{ white-space: normal; word-break: break-word; overflow-wrap: anywhere; }
