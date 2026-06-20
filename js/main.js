@@ -1314,3 +1314,15 @@ renderDevModeBar();
 window.addEventListener('load', () => {
   _devModeRestoreSession();
 }, { once: true });
+
+// Re-render trees and arc diagrams when the window is resized, since treePre widths
+// and SVG arc positions are computed at render time and need to be recalculated.
+(function(){
+  let _resizeTimer = null;
+  window.addEventListener('resize', () => {
+    clearTimeout(_resizeTimer);
+    _resizeTimer = setTimeout(() => {
+      if(state.docs.length > 0) renderSentence();
+    }, 200);
+  });
+})();
