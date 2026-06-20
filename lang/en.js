@@ -178,10 +178,10 @@ window.LANG_EN = {
   'label.empty': '(empty)',
 
   // Tree view
-  'tree.toGold':           '→ Gold',
-  'tree.toGoldTitle':      'Adopt subtree from token {id} as Gold',
-  'tree.adoptToken':       '→',
-  'tree.adoptTokenTitle':  'Adopt this token as Gold (token {id})',
+  'tree.toGold':           '⑂',
+  'tree.toGoldTitle':      'Adopt subtree rooted at token {id} as Gold',
+  'tree.adoptToken':       'T',
+  'tree.adoptTokenTitle':  'Adopt token {id} as Gold',
   'tree.jumpTitle':        'Jump to row: token {id}',
   'tree.rootJumpTitle':    'Jump to row: token {id} (root)',
   'tree.fileDefault':      'File {n}',

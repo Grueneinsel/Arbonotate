@@ -247,6 +247,13 @@ function buildTreeSection(title, sub, text, opts = {}){
       ${sub ? `<div class="sub">${escapeHtml(sub)}</div>` : ""}
     </div>
   `;
+
+  // Collapse toggle button
+  const collapseBtn = document.createElement("button");
+  collapseBtn.className = "treeCollapseBtn";
+  collapseBtn.textContent = "▼";
+  collapseBtn.title = "Abschnitt ein-/ausklappen";
+  head.appendChild(collapseBtn);
   section.appendChild(head);
 
   const pre = document.createElement("pre");
@@ -317,13 +324,23 @@ function buildTreeSection(title, sub, text, opts = {}){
       txt.textContent = line + "\n";
       wrapper.appendChild(txt);
 
-      // Single-token adoption button — only on diff lines, only for file diff trees
+      // Single-token adoption button — only on diff lines
       if(hasDiff && onAdoptToken){
         const btn = document.createElement("button");
         btn.textContent = t('tree.adoptToken');
         btn.className = "treeSingleBtn";
         btn.title = t('tree.adoptTokenTitle', { id: tokId });
         btn.addEventListener("click", (e) => { e.stopPropagation(); onAdoptToken(tokId); });
+        wrapper.appendChild(btn);
+      }
+
+      // Subtree adoption button — also available on non-root lines
+      if(hasDiff && onAdoptSubtree && (!subtreeDiffCheck || subtreeDiffCheck(tokId))){
+        const btn = document.createElement("button");
+        btn.textContent = t('tree.toGold');
+        btn.className = "treeSubtreeBtn";
+        btn.title = t('tree.toGoldTitle', { id: tokId });
+        btn.addEventListener("click", (e) => { e.stopPropagation(); onAdoptSubtree(tokId); });
         wrapper.appendChild(btn);
       }
 
@@ -357,6 +374,15 @@ function buildTreeSection(title, sub, text, opts = {}){
   }
 
   section.appendChild(body);
+
+  // Wire up collapse toggle
+  collapseBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    const collapsed = body.hidden;
+    body.hidden = !collapsed;
+    collapseBtn.textContent = collapsed ? "▼" : "▶";
+  });
+
   return section;
 }
 

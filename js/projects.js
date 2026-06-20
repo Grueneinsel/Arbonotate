@@ -14,7 +14,8 @@ function _emptyProject(name){
     flags:       {},   // serialised: { sentIdx: tokId[] }
     currentSent: 0,
     maxSents:    0,
-    hiddenCols:  [],   // serialised Set (array of ints)
+    hiddenCols:      [],   // serialised Set (array of ints)
+    hiddenLabelCols: [],   // serialised Set (array of col key strings)
     undoStack:   [],
     redoStack:   [],
     labels:      null, // null → use DEFAULT_LABELS; object → project-specific tagset
@@ -56,7 +57,8 @@ function _saveActiveProject(){
     flags:       _serializeFlags(state.flags),
     currentSent: state.currentSent,
     maxSents:    state.maxSents,
-    hiddenCols:  Array.from(state.hiddenCols),
+    hiddenCols:      Array.from(state.hiddenCols),
+    hiddenLabelCols: Array.from(state.hiddenLabelCols),
     undoStack:   undo,
     redoStack:   redo,
     labels:      JSON.parse(JSON.stringify(LABELS)),
@@ -77,7 +79,8 @@ function _loadActiveProject(){
   state.flags       = _deserializeFlags(p.flags || {});
   state.currentSent = p.currentSent || 0;
   state.maxSents    = p.maxSents    || 0;
-  state.hiddenCols  = new Set(p.hiddenCols || []);
+  state.hiddenCols      = new Set(p.hiddenCols      || []);
+  state.hiddenLabelCols = new Set(p.hiddenLabelCols || []);
   state.unlocked    = p.unlocked    || false;
   loadUndoState({ undo: p.undoStack || [], redo: p.redoStack || [] });
   // Restore project-specific tagset (fall back to default when null)

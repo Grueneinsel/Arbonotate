@@ -290,6 +290,7 @@ button:not(:disabled):active,
   border:1px solid var(--line);
   border-radius:14px;
   padding:14px;
+  min-width:0;
 }
 h2{ margin:0 0 10px 0; font-size:13px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.5px }
 
@@ -786,7 +787,8 @@ tr.keyFocus > td:first-child{ border-left:2px solid var(--accent) }
   border:1px solid var(--line);
   border-radius:12px;
   background:var(--card2);
-  overflow:hidden;
+  overflow-x:auto;
+  overflow-y:hidden;
 }
 .treeBlockStacked{
   display:flex;
@@ -812,6 +814,18 @@ tr.keyFocus > td:first-child{ border-left:2px solid var(--accent) }
   border-radius:6px; flex-shrink:0; font-weight:700;
 }
 .treeSubtreeBtn:hover{ border-color:#ffb94e; background:#ffb94e }
+/* Collapse toggle button in treeHead */
+.treeCollapseBtn{
+  display:inline-flex; align-items:center; justify-content:center;
+  width:20px; height:20px; padding:0;
+  font-size:10px; line-height:1;
+  border:1px solid var(--line2); border-radius:4px;
+  background:var(--bg-control); color:var(--muted);
+  cursor:pointer; flex-shrink:0; transition:color .1s, border-color .1s;
+}
+.treeCollapseBtn:hover{ border-color:var(--accent); color:var(--accent); }
+.treeSectionBody[hidden]{ display:none !important; }
+
 /* Side-by-side body: embedding tree (left) + arc diagram (right) */
 .treeSectionBody{
   display:flex;

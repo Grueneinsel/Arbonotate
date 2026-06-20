@@ -178,10 +178,10 @@ window.LANG_DE = {
   'label.empty': '(leer)',
 
   // Baumansicht
-  'tree.toGold':            '→ Gold',
+  'tree.toGold':            '⑂',
   'tree.toGoldTitle':       'Teilbaum ab Token {id} als Gold übernehmen',
-  'tree.adoptToken':        '→',
-  'tree.adoptTokenTitle':   'Dieses Token als Gold übernehmen (Token {id})',
+  'tree.adoptToken':        'T',
+  'tree.adoptTokenTitle':   'Token {id} als Gold übernehmen',
   'tree.jumpTitle':         'Zur Zeile springen: Token {id}',
   'tree.rootJumpTitle':     'Zur Zeile springen: Token {id} (Wurzel)',
   'tree.fileDefault':       'Datei {n}',

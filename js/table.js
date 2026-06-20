@@ -81,9 +81,11 @@ function renderCompareTable(){
   // (so the user can see raw-file data alongside the edited GOLD column)
   const showFileCols = state.docs.length >= 2 || anyUnlocked;
 
+  const visLabelCols = LABEL_COLS.filter(col => !state.hiddenLabelCols.has(col.key));
+
   let html = "<thead><tr>";
   html += `<th>${t('col.id')}</th><th>${t('col.form')}</th>`;
-  for(const col of LABEL_COLS) html += `<th>${escapeHtml(col.name)}</th>`;
+  for(const col of visLabelCols) html += `<th>${escapeHtml(col.name)}</th>`;
   if(anyUnlocked){
     html += `<th>${escapeHtml(t('popup.head'))}</th><th>${escapeHtml(t('popup.deprel'))}</th>`;
   }
@@ -130,7 +132,7 @@ function renderCompareTable(){
     html += `<td>${escapeHtml(form)}</td>`;
 
     // Dynamic label columns — inline editable dropdown or text input
-    for(const col of LABEL_COLS){
+    for(const col of visLabelCols){
       const goldColVal   = goldTok?.[col.key] ?? "_";
       const customColVal = ce?.[col.key] ?? null;
       const colDiff      = allVals.some(v => v !== null && v[col.key] !== goldColVal);
@@ -154,7 +156,7 @@ function renderCompareTable(){
       ? (customExists ? '<span class="srcTag srcCustom">C</span>'
           : `<span class="srcTag srcDoc">D${getDocChoice(sentIndex,id)+1}</span>`)
       : '';
-    const posLineHtml = LABEL_COLS.map(col => escapeHtml(goldTok?.[col.key] ?? "_")).join('·');
+    const posLineHtml = visLabelCols.map(col => escapeHtml(goldTok?.[col.key] ?? "_")).join('·');
     html += `<td data-col="gold" class="goldCell goldEditable" title="${escapeHtml(t('popup.editTitle'))}">${goldSrc} ${escapeHtml(goldVal)}` +
       `<div class="posLine">${posLineHtml}</div></td>`;
 
@@ -173,7 +175,7 @@ function renderCompareTable(){
           const hdOk      = goldTok && v.hd === goldVal;
           const labelsOk  = LABEL_COLS.every(col => !goldTok || v[col.key] === (goldTok[col.key] ?? "_"));
           const clsCmp    = goldTok ? (hdOk && labelsOk ? "same" : "diff") : "";
-          const labelSpans = LABEL_COLS.map(col => {
+          const labelSpans = visLabelCols.map(col => {
             const gv = goldTok?.[col.key] ?? "_";
             const ok = goldTok && v[col.key] === gv;
             return `<span class="${ok ? '' : 'fDiff'}">${escapeHtml(v[col.key] ?? "_")}</span>`;
@@ -196,7 +198,7 @@ function renderCompareTable(){
   for(const tr of cmpTable.querySelectorAll("tr[data-id]")){
     const id = parseInt(tr.dataset.id, 10);
     const gt = goldMap.get(id);
-    for(const col of LABEL_COLS){
+    for(const col of visLabelCols){
       _setPosEl(tr, col.key, gt?.[col.key] ?? "_");
     }
     if(anyUnlocked){

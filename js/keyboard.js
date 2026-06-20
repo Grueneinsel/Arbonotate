@@ -124,6 +124,7 @@ document.addEventListener("keydown", (e) => {
     // n = forward, N = backward; wraps around.
     case "n":
     case "N": {
+      if(isInlinePos) break; // let browser jump to matching option in select
       if(state.maxSents === 0) break;
       e.preventDefault();
       const forward = e.key === "n";
@@ -168,6 +169,7 @@ document.addEventListener("keydown", (e) => {
     // f = forward, F = backward; wraps around.
     case "f":
     case "F": {
+      if(isInlinePos) break; // let browser jump to matching option in select
       if(state.maxSents === 0) break;
       e.preventDefault();
       const forward = e.key === "f";
@@ -187,6 +189,7 @@ document.addEventListener("keydown", (e) => {
 
     // ── Copy current sentence as CoNLL-U to clipboard ─────────────────────────
     case "c":
+      if(isInlinePos) break; // let browser handle letter navigation in select
       // Don't intercept Ctrl+C or when the user has text selected
       if(e.ctrlKey || e.metaKey) break;
       if(window.getSelection()?.toString().trim()) break;
@@ -196,11 +199,13 @@ document.addEventListener("keydown", (e) => {
 
     // ── Export shortcuts ──────────────────────────────────────────────────────
     case "e":
+      if(isInlinePos) break; // let browser handle letter navigation in select
       e.preventDefault();
       exportGoldConllu();
       break;
 
     case "E":
+      if(isInlinePos) break; // let browser handle letter navigation in select
       e.preventDefault();
       exportTreesTxt();
       break;

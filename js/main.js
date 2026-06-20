@@ -361,27 +361,59 @@ async function _collectFilesFromItems(items) {
 
 // ── UI: Column toggle ──────────────────────────────────────────────────────────
 
-// Rebuild the column visibility toggle bar (shown when ≥2 documents are loaded, or project is unlocked).
+// Rebuild the column visibility toggle bar (label cols always shown when files loaded;
+// file cols shown when ≥2 docs or project is unlocked).
 function renderColToggleBar(){
   colToggleBar.innerHTML = "";
-  if(state.docs.length < 2 && !state.unlocked){ return; }
+  const hasFileCols  = state.docs.length >= 2 || state.unlocked;
+  const hasLabelCols = LABEL_COLS.length > 0 && state.docs.length >= 1;
+  if(!hasFileCols && !hasLabelCols) return;
+
   const label = document.createElement("span");
   label.className = "muted small";
   label.textContent = t('cols.label');
   colToggleBar.appendChild(label);
 
-  state.docs.forEach((d, idx) => {
-    const btn = document.createElement("button");
-    btn.className = "colToggle" + (state.hiddenCols.has(idx) ? " colHidden" : " colVisible");
-    btn.textContent = d.name;
-    btn.addEventListener("click", () => {
-      if(state.hiddenCols.has(idx)) state.hiddenCols.delete(idx);
-      else state.hiddenCols.add(idx);
-      renderColToggleBar();
-      renderCompareTable();
+  // Label column toggles (UPOS, XPOS, …)
+  if(hasLabelCols){
+    LABEL_COLS.forEach(col => {
+      const btn = document.createElement("button");
+      btn.className = "colToggle" + (state.hiddenLabelCols.has(col.key) ? " colHidden" : " colVisible");
+      btn.textContent = col.name;
+      btn.addEventListener("click", () => {
+        if(state.hiddenLabelCols.has(col.key)) state.hiddenLabelCols.delete(col.key);
+        else state.hiddenLabelCols.add(col.key);
+        renderColToggleBar();
+        renderCompareTable();
+      });
+      colToggleBar.appendChild(btn);
     });
-    colToggleBar.appendChild(btn);
-  });
+  }
+
+  // Separator between label cols and file cols
+  if(hasLabelCols && hasFileCols){
+    const sep = document.createElement("span");
+    sep.className = "muted small";
+    sep.textContent = "·";
+    sep.style.opacity = ".4";
+    colToggleBar.appendChild(sep);
+  }
+
+  // File column toggles (per-document columns)
+  if(hasFileCols){
+    state.docs.forEach((d, idx) => {
+      const btn = document.createElement("button");
+      btn.className = "colToggle" + (state.hiddenCols.has(idx) ? " colHidden" : " colVisible");
+      btn.textContent = d.name;
+      btn.addEventListener("click", () => {
+        if(state.hiddenCols.has(idx)) state.hiddenCols.delete(idx);
+        else state.hiddenCols.add(idx);
+        renderColToggleBar();
+        renderCompareTable();
+      });
+      colToggleBar.appendChild(btn);
+    });
+  }
 }
 
 // ── Project lock ───────────────────────────────────────────────────────────────
