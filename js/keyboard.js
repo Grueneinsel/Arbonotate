@@ -1,117 +1,184 @@
 // Keyboard navigation and shortcut handler for sentence/token navigation and editing.
 
-// ── Typeahead for label/deprel selects ────────────────────────────────────────
-// When any label select (UPOS, XPOS, DEPREL, …) is focused and the user types,
-// this accumulates the keystrokes into a search buffer, jumps to the first
-// matching option, and auto-confirms when only one option remains.
+// ── Custom combobox for label / deprel selects ───────────────────────────────
+// Replaces the native browser dropdown for all label selects so that the user
+// can type to filter options and auto-confirm when exactly one option matches.
+// Works regardless of whether the user clicks or Tabs into the select.
 
-let _taBuf    = '';    // current search string
-let _taBadgeEl = null; // floating visual indicator DOM element
+(function(){
+  // Shared state
+  let _sel       = null;   // currently targeted native <select>
+  let _overlay   = null;   // the combobox overlay element
+  let _inp       = null;   // text input inside overlay
+  let _list      = null;   // options list inside overlay
+  let _allOpts   = [];     // all option values for the current select
+  let _filtered  = [];     // filtered options matching current input
+  let _focusIdx  = -1;     // keyboard-highlighted index in _filtered
+  let _closing   = false;  // guard: prevents focusin re-opening during close
 
-function _taGetBadge(){
-  if(!_taBadgeEl){
-    _taBadgeEl = document.createElement('div');
-    _taBadgeEl.className = 'taSearchBadge';
-    _taBadgeEl.hidden = true;
-    document.body.appendChild(_taBadgeEl);
-  }
-  return _taBadgeEl;
-}
-
-function _taPositionBadge(sel){
-  const rect = sel.getBoundingClientRect();
-  // Show badge below the select so it's always in view
-  const top = rect.bottom + 4;
-  _taBadgeEl.style.top  = top + 'px';
-  _taBadgeEl.style.left = rect.left + 'px';
-}
-
-function _taClear(sel){
-  _taBuf = '';
-  if(_taBadgeEl) _taBadgeEl.hidden = true;
-  // Restore native select to show the current actual value
-  if(sel) sel.dispatchEvent(new Event('change', { bubbles: true }));
-}
-
-function _taApply(sel){
-  const badge = _taGetBadge();
-  if(!_taBuf){ badge.hidden = true; return; }
-
-  const buf  = _taBuf.toLowerCase();
-  const opts = Array.from(sel.options).filter(o => o.value && o.value.toLowerCase().startsWith(buf));
-
-  _taPositionBadge(sel);
-  badge.hidden = false;
-
-  if(opts.length === 0){
-    // No match: show error, keep badge until next keystroke clears buffer
-    badge.className   = 'taSearchBadge taNoMatch';
-    badge.textContent = `✕  "${_taBuf}"`;
-  } else if(opts.length === 1){
-    // Unique match → auto-select and commit; badge stays until blur/Escape
-    sel.value = opts[0].value;
-    sel.dispatchEvent(new Event('change', { bubbles: true }));
-    badge.className   = 'taSearchBadge taMatch';
-    badge.textContent = `✓  ${opts[0].value}`;
-    _taBuf = '';
-  } else {
-    // Multiple matches → preview first, show count; badge stays
-    sel.value = opts[0].value;
-    badge.className   = 'taSearchBadge taMulti';
-    badge.textContent = `🔍  ${_taBuf}  ·  ${opts.length} Treffer`;
-  }
-}
-
-// Capture-phase listener: fires before all bubble handlers and native select behavior.
-// Handles any SELECT that contains label/deprel options.
-document.addEventListener('keydown', (e) => {
-  const sel = document.activeElement;
-  if(!sel || sel.tagName !== 'SELECT') return;
-  if(e.ctrlKey || e.metaKey || e.altKey) return;
-
-  // Only intercept label/deprel selects (not HEAD token-ID selects)
-  const isLabelSel =
-    sel.classList.contains('posInlineSelect')    ||
-    sel.classList.contains('conlluStructSelect') ||
-    (sel.closest?.('.goldPopup') && !sel.id.match(/^[gf]pHead/));
-  if(!isLabelSel) return;
-
-  const k = e.key;
-
-  if(k === 'Escape'){
-    if(!_taBuf && !(_taBadgeEl && !_taBadgeEl.hidden)) return; // nothing to clear
-    e.preventDefault(); e.stopPropagation();
-    _taClear(null);
-    return;
+  // Returns true when el is a label/deprel select we should handle.
+  function _isLabel(el){
+    if(!el || el.tagName !== 'SELECT') return false;
+    return el.classList.contains('posInlineSelect')
+        || el.classList.contains('conlluStructSelect')
+        || (el.closest?.('.goldPopup') && !el.id.match(/^[gf]pHead/));
   }
 
-  if(k === 'Backspace'){
-    if(!_taBuf) return;
-    e.preventDefault(); e.stopPropagation();
-    _taBuf = _taBuf.slice(0, -1);
-    _taApply(sel);
-    return;
+  // Build the overlay DOM once.
+  function _build(){
+    _overlay = document.createElement('div');
+    _overlay.className = 'cbOverlay';
+    _overlay.hidden = true;
+
+    _inp = document.createElement('input');
+    _inp.type = 'text';
+    _inp.className = 'cbInput';
+    _inp.spellcheck = false;
+    _inp.autocomplete = 'off';
+    _inp.placeholder = '🔍 …';
+    _overlay.appendChild(_inp);
+
+    _list = document.createElement('div');
+    _list.className = 'cbList';
+    _overlay.appendChild(_list);
+
+    document.body.appendChild(_overlay);
+
+    _inp.addEventListener('input', _filter);
+
+    _inp.addEventListener('keydown', e => {
+      if(e.key === 'Escape')    { e.preventDefault(); e.stopPropagation(); _close(); return; }
+      if(e.key === 'Enter')     { e.preventDefault(); e.stopPropagation(); _commit(); return; }
+      if(e.key === 'ArrowDown') { e.preventDefault(); _move(1);  return; }
+      if(e.key === 'ArrowUp')   { e.preventDefault(); _move(-1); return; }
+      if(e.key === 'Tab')       { _commit(); }  // let Tab continue naturally after commit
+    });
+
+    _inp.addEventListener('blur', e => {
+      // Delay so list mousedown fires first
+      setTimeout(() => { if(!_overlay.hidden) _close(); }, 80);
+    });
+
+    _list.addEventListener('mousedown', e => {
+      const opt = e.target.closest('.cbOpt');
+      if(opt){ e.preventDefault(); _pick(opt.dataset.v); }
+    });
   }
 
-  // Only single printable chars (no space — spaces don't appear in deprel labels)
-  if(k.length !== 1 || k === ' ') return;
+  function _open(sel){
+    if(!_overlay) _build();
+    _sel = sel;
+    _allOpts = Array.from(sel.options).filter(o => o.value).map(o => o.value);
 
-  e.preventDefault();
-  e.stopPropagation(); // prevents keyboard.js bubble handler + native select jump
-  // On no-match state: reset buffer before new char
-  if(_taBadgeEl && _taBadgeEl.classList.contains('taNoMatch')) _taBuf = '';
-  _taBuf += k;
-  _taApply(sel);
-}, true /* capture phase */);
+    const rect = sel.getBoundingClientRect();
+    const estH = 220;
+    const top  = (rect.bottom + 2 + estH > window.innerHeight - 4)
+                   ? Math.max(4, rect.top - estH - 2)
+                   : rect.bottom + 2;
+    _overlay.style.top      = top + 'px';
+    _overlay.style.left     = rect.left + 'px';
+    _overlay.style.minWidth = Math.max(rect.width, 120) + 'px';
+    _overlay.hidden = false;
 
-// Clear buffer and badge when select loses focus
-document.addEventListener('focusout', (e) => {
-  if(e.target.tagName !== 'SELECT') return;
-  _taBuf = '';
-  if(_taBadgeEl) _taBadgeEl.hidden = true;
-});
+    _inp.value = '';
+    _filter();
+    requestAnimationFrame(() => { _inp.focus(); _inp.select(); });
+  }
 
-// ── End of typeahead ──────────────────────────────────────────────────────────
+  function _filter(){
+    const q = _inp.value.toLowerCase().trim();
+    _filtered  = q ? _allOpts.filter(v => v.toLowerCase().startsWith(q)) : _allOpts.slice();
+    _focusIdx  = _filtered.length > 0 ? 0 : -1;
+    _render();
+  }
+
+  function _render(){
+    _list.innerHTML = '';
+    if(_filtered.length === 0){
+      const d = document.createElement('div');
+      d.className = 'cbNoMatch';
+      d.textContent = `"${_inp.value}" — kein Treffer`;
+      _list.appendChild(d);
+      return;
+    }
+    _filtered.forEach((v, i) => {
+      const d = document.createElement('div');
+      d.className = 'cbOpt' + (i === _focusIdx ? ' cbOptFocus' : '');
+      d.dataset.v = v;
+      // Highlight matching prefix
+      const q = _inp.value.length;
+      d.innerHTML = q
+        ? `<b>${escapeHtml(v.slice(0, q))}</b>${escapeHtml(v.slice(q))}`
+        : escapeHtml(v);
+      _list.appendChild(d);
+    });
+    _list.querySelector('.cbOptFocus')?.scrollIntoView({ block: 'nearest' });
+  }
+
+  function _move(dir){
+    _focusIdx = Math.max(0, Math.min(_filtered.length - 1, _focusIdx + dir));
+    _render();
+  }
+
+  function _commit(){
+    if(_focusIdx >= 0 && _filtered[_focusIdx]) _pick(_filtered[_focusIdx]);
+    else if(_filtered.length === 1)            _pick(_filtered[0]);
+    else                                        _close();
+  }
+
+  function _pick(value){
+    if(_sel){
+      // Inject extra option if the value isn't in the list (free-text fallback)
+      if(!Array.from(_sel.options).some(o => o.value === value)){
+        const o = document.createElement('option');
+        o.value = value; o.textContent = value; o.dataset.extra = '1';
+        _sel.insertBefore(o, _sel.firstChild);
+      }
+      _sel.value = value;
+      _sel.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+    _close();
+  }
+
+  function _close(){
+    if(!_overlay || _overlay.hidden) return;
+    _overlay.hidden = true;
+    _closing = true;
+    const s = _sel; _sel = null;
+    if(s && document.contains(s)) s.focus();
+    setTimeout(() => { _closing = false; }, 60);
+  }
+
+  // Intercept mouse clicks on label selects — prevent native dropdown, open ours.
+  document.addEventListener('mousedown', e => {
+    if(!_isLabel(e.target)) return;
+    e.preventDefault();   // stop native dropdown from opening
+    if(_overlay && !_overlay.hidden && _sel === e.target) { _close(); return; }
+    _open(e.target);
+  }, true);
+
+  // Open on Tab-focus (keyboard navigation into the select).
+  let _lastKey = '';
+  document.addEventListener('keydown', e => { _lastKey = e.key; }, true);
+
+  document.addEventListener('focusin', e => {
+    if(!_isLabel(e.target)) return;
+    if(_closing) return;
+    if(_overlay && !_overlay.hidden) return;
+    if(_lastKey === 'Tab') _open(e.target);
+    _lastKey = '';
+  });
+
+  // Close when clicking outside
+  document.addEventListener('mousedown', e => {
+    if(!_overlay || _overlay.hidden) return;
+    if(_overlay.contains(e.target)) return;
+    _close();
+  });
+
+})();
+
+// ── End of custom combobox ────────────────────────────────────────────────────
 
 let keyFocusTokId = null; // token ID currently highlighted by keyboard focus (null = none)
 
