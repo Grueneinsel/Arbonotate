@@ -9,23 +9,39 @@
 
 // ── Tagset für Projekt 2 (Penn POS + UD-Deprels) ─────────────────────────────
 // UPOS = Universal POS tags; XPOS = Penn Treebank POS tags
+// Neues Format: __cols__ (Label-Spalten) + __dep_cols__ (Dependenz-Spalten).
 const _PENN_LABELS = {
-  "Core arguments":      ["nsubj", "obj", "iobj", "csubj", "ccomp", "xcomp"],
-  "Non-core dependents": ["obl", "vocative", "expl", "dislocated"],
-  "Modifiers":           ["advcl", "advmod", "amod", "det", "case", "mark", "nmod", "nummod", "acl", "appos"],
-  "Function Words":      ["aux", "cop"],
-  "Other":               ["conj", "cc", "compound", "flat", "fixed", "list", "parataxis", "punct", "root", "dep"],
-  "__upos__": ["ADJ", "ADP", "ADV", "AUX", "CCONJ", "DET", "INTJ", "NOUN", "NUM", "PART", "PRON", "PROPN", "PUNCT", "SCONJ", "SYM", "VERB", "X"],
-  "__xpos__": [
-    "NN", "NNS", "NNP", "NNPS",
-    "VB", "VBD", "VBZ", "VBP", "VBG", "VBN",
-    "JJ", "JJR", "JJS",
-    "RB", "RBR", "RBS",
-    "DT", "PDT", "IN", "TO", "CC", "CD",
-    "MD", "PRP", "PRP$", "WDT", "WP", "WP$", "WRB",
-    "EX", "RP", "UH", "SYM", "FW", "LS", "POS",
-    "``", "''", ".", ",", ":", "-LRB-", "-RRB-"
-  ]
+  "__cols__": [
+    {
+      key: "upos", name: "UPOS",
+      values: ["ADJ", "ADP", "ADV", "AUX", "CCONJ", "DET", "INTJ", "NOUN", "NUM", "PART", "PRON", "PROPN", "PUNCT", "SCONJ", "SYM", "VERB", "X"],
+    },
+    {
+      key: "xpos", name: "XPOS (Penn)",
+      values: [
+        "NN", "NNS", "NNP", "NNPS",
+        "VB", "VBD", "VBZ", "VBP", "VBG", "VBN",
+        "JJ", "JJR", "JJS",
+        "RB", "RBR", "RBS",
+        "DT", "PDT", "IN", "TO", "CC", "CD",
+        "MD", "PRP", "PRP$", "WDT", "WP", "WP$", "WRB",
+        "EX", "RP", "UH", "SYM", "FW", "LS", "POS",
+        "``", "''", ".", ",", ":", "-LRB-", "-RRB-",
+      ],
+    },
+  ],
+  "__dep_cols__": [
+    {
+      key: "dep", name: "DepRel",
+      groups: {
+        "Core arguments":      ["nsubj", "obj", "iobj", "csubj", "ccomp", "xcomp"],
+        "Non-core dependents": ["obl", "vocative", "expl", "dislocated"],
+        "Modifiers":           ["advcl", "advmod", "amod", "det", "case", "mark", "nmod", "nummod", "acl", "appos"],
+        "Function Words":      ["aux", "cop"],
+        "Other":               ["conj", "cc", "compound", "flat", "fixed", "list", "parataxis", "punct", "root", "dep"],
+      },
+    },
+  ],
 };
 
 // ── CoNLL-U Inhalte ────────────────────────────────────────────────────────────
@@ -132,9 +148,10 @@ const _EN_FILE_A = [
   "",
 ].join("\n");
 
-// Annotator B: abweichende Annotationen
-//   S1: Token 2 XPOS JJ→JJR (falsche Komparativform), Token 6 deprel case→prep,
-//       Token 9 head 5→6 + deprel obl→dobj (Fehler: hängt an Präposition)
+// Annotator B: abweichende Annotationen (jeweils ein gültiger, aber abweichender Baum)
+//   S1: Token 2 XPOS JJ→JJR (falsche Komparativform),
+//       Token 6 "over" head 9→5 + deprel case→prep (hängt am Verb statt am Nomen),
+//       Token 9 "dog" head 5→6 + deprel obl→dobj (hängt an der Präposition)
 //   S2: garden-path Lesart — Token 1 UPOS NOUN→VERB, XPOS NN→VB, deprel nsubj→root,
 //       Token 2 UPOS VERB→NOUN, XPOS VBZ→NNS, deprel root→nsubj
 const _EN_FILE_B = [
@@ -145,7 +162,7 @@ const _EN_FILE_B = [
   "3\tbrown\tbrown\tADJ\tJJ\t_\t4\tamod\t_\t_",
   "4\tfox\tfox\tNOUN\tNN\t_\t5\tnsubj\t_\t_",
   "5\tjumps\tjump\tVERB\tVBZ\t_\t0\troot\t_\t_",
-  "6\tover\tover\tADP\tIN\t_\t9\tprep\t_\t_",      // deprel case→prep
+  "6\tover\tover\tADP\tIN\t_\t5\tprep\t_\t_",      // head 9→5 + deprel case→prep
   "7\tthe\tthe\tDET\tDT\t_\t9\tdet\t_\t_",
   "8\tlazy\tlazy\tADJ\tJJ\t_\t9\tamod\t_\t_",
   "9\tdog\tdog\tNOUN\tNN\t_\t6\tdobj\t_\t_",        // head 5→6 + deprel obl→dobj
