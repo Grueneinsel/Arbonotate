@@ -1768,3 +1768,20 @@ td:hover .fileEditBtn { display: inline-block; }
 
 /* ── Word wrap in sentence text ── */
 .sentText{ white-space: normal; word-break: break-word; overflow-wrap: anywhere; }
+
+/* ── Mobile: stack tree-pre above arc diagram instead of side-by-side ── */
+@media (max-width:640px){
+  .treeSectionBody{
+    flex-direction: column;
+  }
+  .treeSectionBody .treePre{
+    border-right: none;
+    border-bottom: 1px solid var(--line);
+    /* override the JS-computed fixed width so it stretches to full container width */
+    width: auto !important;
+    overflow-x: auto;
+  }
+  .treeSectionBody .arcDiagramWrap{
+    width: 100%;
+  }
+}

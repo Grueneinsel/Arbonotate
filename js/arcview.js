@@ -32,8 +32,8 @@ function _arcProcessMove(e) {
     const dy = e.clientY - _arcPreHold.startY;
     if (Math.hypot(dx, dy) > _ARC_HOLD_CANCEL) {
       clearTimeout(_arcHoldTimer); _arcHoldTimer = null;
-      // Release capture so the browser can resume scroll handling
-      try { _arcPreHold.overlayEl.releasePointerCapture(_arcPreHold.pointerId); } catch {}
+      // Pointer capture is not held during the pre-hold phase (intentionally),
+      // so no releasePointerCapture needed — browser scroll can proceed freely.
       _arcPreHold = null;
     }
     return; // Don't process as drag yet regardless
@@ -65,7 +65,7 @@ function _arcProcessMove(e) {
 
 // Global pointermove: capture the latest event and schedule one rAF update per frame.
 window.addEventListener('pointermove', e => {
-  if (!_arcPreDrag && !_arcDrag) return;
+  if (!_arcPreHold && !_arcPreDrag && !_arcDrag) return;
   _arcLastMoveE = e;
   if (_arcRafId !== null) return; // already scheduled
   _arcRafId = requestAnimationFrame(() => {
@@ -407,8 +407,13 @@ function buildArcDiagram(tokMap, { onSetHead = null, onDeleteArc = null, onSetDe
   // Short sentences (≤ 20 real tokens) stay on a single row.
   // Longer sentences: wrap at WRAP_AT tokens per row, size based on viewport.
   const n = realToks.length;
-  // Estimate available panel width (arc diagram panel is ~58% of viewport)
-  const panelEst = Math.max(400, Math.floor(window.innerWidth * 0.58));
+  // Estimate available panel width.
+  // On narrow viewports (mobile) the tree and arc stack vertically so the arc gets ~90% width;
+  // on wider screens the arc sits to the right of the text tree at ~58% of viewport.
+  const _mobileStack = window.innerWidth <= 640;
+  const panelEst = _mobileStack
+    ? Math.max(300, Math.floor(window.innerWidth * 0.92))
+    : Math.max(400, Math.floor(window.innerWidth * 0.58));
   const WRAP_AT = n <= 20 ? toks.length
     : Math.min(25, Math.max(10, Math.floor((panelEst - GAP) / (MIN_W + GAP))));
 
@@ -493,7 +498,7 @@ function buildArcDiagram(tokMap, { onSetHead = null, onDeleteArc = null, onSetDe
   };
 
   const svg = mk('svg', { width: svgW, height: svgH });
-  svg.style.cssText = 'display:block; overflow:visible; cursor:default; touch-action:pan-y; min-width:100%;';
+  svg.style.cssText = 'display:block; overflow:visible; cursor:default; touch-action:pan-x pan-y; min-width:100%;';
 
   // ── Row separator lines ────────────────────────────────────────────────────
   for (let r = 0; r < nRows - 1; r++) {
@@ -735,7 +740,7 @@ function buildArcDiagram(tokMap, { onSetHead = null, onDeleteArc = null, onSetDe
         const ov = mk('rect', { x:bx, y:wY, width:bw, height:CELL_H,
           rx:6, fill:'transparent', cursor:'grab' });
         ov.dataset.arctokid = '0';
-        ov.style.touchAction = 'pan-y';
+        ov.style.touchAction = 'pan-x pan-y';
         ov.addEventListener('pointerenter', () => { if (!_arcDrag) ov.style.fill = 'rgba(61,232,154,0.12)'; });
         ov.addEventListener('pointerleave', () => { ov.style.fill = 'transparent'; });
         ov.addEventListener('pointerdown', ev => {
@@ -750,12 +755,14 @@ function buildArcDiagram(tokMap, { onSetHead = null, onDeleteArc = null, onSetDe
             _hovId: null, _hovEl: null, _hovBad: false,
           };
           if (isTouch) {
-            ov.setPointerCapture(ev.pointerId);
+            // Don't capture immediately — let the browser handle scroll gestures during the hold
+            // period. Capture is set inside the timer once drag intent is confirmed (230 ms still).
             _arcPreHold = { ...tokData, overlayEl: ov };
             _arcHoldTimer = setTimeout(() => {
               if (!_arcPreHold) return;
               const ph = _arcPreHold; _arcPreHold = null;
               navigator.vibrate?.(15);
+              try { ph.overlayEl.setPointerCapture(ph.pointerId); } catch {}
               _arcPreDrag = ph;
             }, _ARC_HOLD_MS);
           } else {
@@ -787,7 +794,7 @@ function buildArcDiagram(tokMap, { onSetHead = null, onDeleteArc = null, onSetDe
       cursor: editable ? 'grab' : (scrollToTok ? 'pointer' : 'default') });
     overlay.dataset.arctokid = t.id;
     if (editable) {
-      overlay.style.touchAction = 'pan-y';
+      overlay.style.touchAction = 'pan-x pan-y';
       overlay.addEventListener('pointerdown', ev => {
         if (ev.pointerType === 'mouse' && ev.button !== 0) return;
         const isTouch = ev.pointerType !== 'mouse';
@@ -800,13 +807,15 @@ function buildArcDiagram(tokMap, { onSetHead = null, onDeleteArc = null, onSetDe
           _hovId: null, _hovEl: null, _hovBad: false,
         };
         if (isTouch) {
-          overlay.setPointerCapture(ev.pointerId);
+          // Don't capture immediately — let the browser handle scroll gestures during the hold
+          // period. Capture is set inside the timer once drag intent is confirmed (230 ms still).
           _arcPreHold = { ...tokData, overlayEl: overlay };
           _arcHoldTimer = setTimeout(() => {
             if (!_arcPreHold) return;
             const ph = _arcPreHold; _arcPreHold = null;
             ph.overlayEl.style.fill = 'rgba(255,200,50,0.35)';
             navigator.vibrate?.(15);
+            try { ph.overlayEl.setPointerCapture(ph.pointerId); } catch {}
             _arcPreDrag = ph;
           }, _ARC_HOLD_MS);
         } else {
