@@ -557,8 +557,9 @@ function renderPreview(){
   treeGrid.appendChild(wrap);
 
   // ── Align treePre widths so arc diagrams start at the same x position ─────
+  // Skip on narrow viewports — the stacked (column) mobile layout uses auto width.
   const pres = Array.from(wrap.querySelectorAll('.treeSectionBody .treePre'));
-  if(pres.length > 1){
+  if(pres.length > 1 && !window.matchMedia('(max-width:640px)').matches){
     const maxW = Math.max(...pres.map(p => p.scrollWidth));
     for(const p of pres) p.style.width = maxW + 'px';
   }
