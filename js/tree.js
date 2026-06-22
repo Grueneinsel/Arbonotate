@@ -178,6 +178,7 @@ function getSubtreeIds(rootId, tokMap){
   const stack = [rootId];
   while(stack.length){
     const id = stack.pop();
+    if(ids.has(id)) continue;   // guard against cyclic head references (e.g. 6→9→6)
     ids.add(id);
     for(const c of (children.get(id) || [])) stack.push(c);
   }
