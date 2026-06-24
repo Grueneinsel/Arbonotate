@@ -185,6 +185,18 @@ function getSubtreeIds(rootId, tokMap){
   return ids;
 }
 
+// Return true if tokId is a branch point — i.e. has at least one dependent in
+// either map. Used to decide where to offer the subtree-adopt (⑂) button.
+function tokenHasChildren(tokId, goldMap, otherMap){
+  for(const m of [goldMap, otherMap]){
+    if(!m) continue;
+    for(const tok of m.values()){
+      if(tok.head === tokId) return true;
+    }
+  }
+  return false;
+}
+
 // Return true if a single token differs between goldMap and otherMap
 // in head, deprel, upos, or xpos.
 function hasTokenDiff(tokId, goldMap, otherMap){
@@ -234,7 +246,7 @@ function hasSubtreeDiff(rootId, goldMap, otherMap){
  *   opts.arcEdgeColors                 — Map<depId, cssColorVar> for arc coloring
  */
 function buildTreeSection(title, sub, text, opts = {}){
-  const { onAdoptSubtree, subtreeDiffCheck, onAdoptToken, tokenDiffCheck,
+  const { onAdoptSubtree, subtreeDiffCheck, subtreeHasChildren, onAdoptToken, tokenDiffCheck,
           arcMap, arcOnSetHead, arcOnDeleteArc, arcOnSetDeprel, arcEdgeColors } = opts;
 
   const section = document.createElement("div");
@@ -287,8 +299,10 @@ function buildTreeSection(title, sub, text, opts = {}){
         wrapper.appendChild(btn);
       }
 
-      // "→ Gold" subtree adoption button — only shown when subtree has differences
-      if(onAdoptSubtree && (!subtreeDiffCheck || subtreeDiffCheck(rootId))){
+      // "→ Gold" subtree adoption button — shown when the subtree (rooted here, a
+      // branch point) contains differences anywhere below.
+      const rootIsBranch = !subtreeHasChildren || subtreeHasChildren(rootId);
+      if(onAdoptSubtree && rootIsBranch && (!subtreeDiffCheck || subtreeDiffCheck(rootId))){
         const btn = document.createElement("button");
         btn.textContent = t('tree.toGold');
         btn.className = "treeSubtreeBtn";
@@ -336,8 +350,10 @@ function buildTreeSection(title, sub, text, opts = {}){
         wrapper.appendChild(btn);
       }
 
-      // Subtree adoption button — also available on non-root lines
-      if(hasDiff && onAdoptSubtree && (!subtreeDiffCheck || subtreeDiffCheck(tokId))){
+      // Subtree adoption button — shown at every branch point (a node with children)
+      // whose subtree contains a difference somewhere, even if the node itself matches.
+      const isBranch = !subtreeHasChildren || subtreeHasChildren(tokId);
+      if(onAdoptSubtree && isBranch && (!subtreeDiffCheck || subtreeDiffCheck(tokId))){
         const btn = document.createElement("button");
         btn.textContent = t('tree.toGold');
         btn.className = "treeSubtreeBtn";
@@ -537,8 +553,9 @@ function renderPreview(){
           delete state.custom[sentIndex];
         renderSentenceKeepScroll();
       },
-      subtreeDiffCheck: (rootId) => hasSubtreeDiff(rootId, goldMap, otherMap),
-      tokenDiffCheck:   (tokId)  => hasTokenDiff(tokId, goldMap, otherMap),
+      subtreeDiffCheck:   (rootId) => hasSubtreeDiff(rootId, goldMap, otherMap),
+      subtreeHasChildren: (tokId)  => tokenHasChildren(tokId, goldMap, otherMap),
+      tokenDiffCheck:     (tokId)  => hasTokenDiff(tokId, goldMap, otherMap),
       onAdoptToken: (tokId) => {
         pushUndo();
         // Wipe ALL custom overrides for this token so the adopted doc's values
