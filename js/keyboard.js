@@ -217,16 +217,22 @@ document.addEventListener("keydown", (e) => {
   const inInput = !isInlinePos && active &&
     (active.tagName === "INPUT" || active.tagName === "SELECT" || active.tagName === "TEXTAREA");
 
-  // Ctrl+Z → Undo, Ctrl+Y / Ctrl+Shift+Z → Redo (always, even inside inputs)
-  if((e.ctrlKey || e.metaKey) && e.key === "z"){
-    e.preventDefault();
-    undo();
-    return;
-  }
-  if((e.ctrlKey || e.metaKey) && (e.key === "y" || (e.key === "Z" && e.shiftKey))){
-    e.preventDefault();
-    redo();
-    return;
+  // Ctrl+Z → Undo, Ctrl+Y / Ctrl+Shift+Z → Redo.
+  // Inside a TEXTAREA (note, CoNLL-U editor, tagset) defer to the browser's native
+  // text undo/redo so the user can revert their typing; everywhere else (table, arc
+  // diagram, selects) drive the app's annotation undo. e.key is lower-cased so the
+  // shortcut also works with Caps Lock on.
+  if(e.ctrlKey || e.metaKey){
+    const k = e.key.toLowerCase();
+    const inTextarea = active && active.tagName === "TEXTAREA";
+    if(k === "z" && !e.shiftKey){
+      if(inTextarea) return;          // native text undo
+      e.preventDefault(); undo(); return;
+    }
+    if(k === "y" || (k === "z" && e.shiftKey)){
+      if(inTextarea) return;          // native text redo
+      e.preventDefault(); redo(); return;
+    }
   }
 
   // ? → toggle help modal (always, even inside inputs)
@@ -427,6 +433,7 @@ document.addEventListener("keydown", (e) => {
       // Skip if a custom override already exists for this token
       if(getCustomEntry(state.currentSent, keyFocusTokId)) break;
       e.preventDefault();
+      pushUndo();   // make the gold-source pick undoable, like the click/popup paths
       setDocChoice(state.currentSent, keyFocusTokId, docIdx);
       renderSentence();
       setKeyFocus(keyFocusTokId);
