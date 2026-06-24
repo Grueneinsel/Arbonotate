@@ -26,6 +26,7 @@ const state = {
   goldPick: {},        // goldPick[sent][tokId] = docIdx
   hiddenCols: new Set(),
   hiddenLabelCols: new Set(), // Set<col.key> — hidden label columns in compare table
+  hiddenSpecialCols: new Set(), // Set<'id'|'form'|'gold'> — hidden structural columns
   confirmed: new Set(), // confirmed sentence indices
   notes: {},           // notes[sentIndex] = string
   flags: {},           // flags[sentIndex] = Set<tokId> — flagged for attention

@@ -183,6 +183,8 @@ function resetProject(){
   state.notes       = {};
   state.flags       = {};
   state.hiddenCols  = new Set();
+  state.hiddenLabelCols   = new Set();
+  state.hiddenSpecialCols = new Set();
   state.confirmed   = new Set();
   state.currentSent = 0;
   state.maxSents    = 0;
@@ -205,6 +207,8 @@ function resetAll(){
   state.notes       = {};
   state.flags       = {};
   state.hiddenCols  = new Set();
+  state.hiddenLabelCols   = new Set();
+  state.hiddenSpecialCols = new Set();
   state.confirmed   = new Set();
   state.currentSent = 0;
   state.maxSents    = 0;

@@ -365,53 +365,57 @@ async function _collectFilesFromItems(items) {
 // file cols shown when ≥2 docs or project is unlocked).
 function renderColToggleBar(){
   colToggleBar.innerHTML = "";
+  const hasTable     = state.docs.length >= 1;
   const hasFileCols  = state.docs.length >= 2 || state.unlocked;
-  const hasLabelCols = LABEL_COLS.length > 0 && state.docs.length >= 1;
-  if(!hasFileCols && !hasLabelCols) return;
+  const hasLabelCols = LABEL_COLS.length > 0 && hasTable;
+  if(!hasTable) return;
+
+  // Build a single toggle button that flips membership of `key` in `set`,
+  // then re-renders the bar and table.
+  const makeToggle = (isHidden, name, onClick) => {
+    const btn = document.createElement("button");
+    btn.className = "colToggle" + (isHidden ? " colHidden" : " colVisible");
+    btn.textContent = name;
+    btn.addEventListener("click", () => {
+      onClick();
+      renderColToggleBar();
+      renderCompareTable();
+    });
+    colToggleBar.appendChild(btn);
+  };
+  const toggleIn = (set, key) => { if(set.has(key)) set.delete(key); else set.add(key); };
+  const addSep = () => {
+    const sep = document.createElement("span");
+    sep.className = "muted small";
+    sep.textContent = "·";
+    sep.style.opacity = ".4";
+    colToggleBar.appendChild(sep);
+  };
 
   const label = document.createElement("span");
   label.className = "muted small";
   label.textContent = t('cols.label');
   colToggleBar.appendChild(label);
 
+  // Structural columns: ID, FORM (before the label cols, mirroring table order)
+  makeToggle(state.hiddenSpecialCols.has('id'),   t('col.id'),   () => toggleIn(state.hiddenSpecialCols, 'id'));
+  makeToggle(state.hiddenSpecialCols.has('form'), t('col.form'), () => toggleIn(state.hiddenSpecialCols, 'form'));
+
   // Label column toggles (UPOS, XPOS, …)
   if(hasLabelCols){
     LABEL_COLS.forEach(col => {
-      const btn = document.createElement("button");
-      btn.className = "colToggle" + (state.hiddenLabelCols.has(col.key) ? " colHidden" : " colVisible");
-      btn.textContent = col.name;
-      btn.addEventListener("click", () => {
-        if(state.hiddenLabelCols.has(col.key)) state.hiddenLabelCols.delete(col.key);
-        else state.hiddenLabelCols.add(col.key);
-        renderColToggleBar();
-        renderCompareTable();
-      });
-      colToggleBar.appendChild(btn);
+      makeToggle(state.hiddenLabelCols.has(col.key), col.name, () => toggleIn(state.hiddenLabelCols, col.key));
     });
   }
 
-  // Separator between label cols and file cols
-  if(hasLabelCols && hasFileCols){
-    const sep = document.createElement("span");
-    sep.className = "muted small";
-    sep.textContent = "·";
-    sep.style.opacity = ".4";
-    colToggleBar.appendChild(sep);
-  }
+  // GOLD column (after the label cols, mirroring table order)
+  makeToggle(state.hiddenSpecialCols.has('gold'), t('col.gold'), () => toggleIn(state.hiddenSpecialCols, 'gold'));
 
   // File column toggles (per-document columns)
   if(hasFileCols){
+    addSep();
     state.docs.forEach((d, idx) => {
-      const btn = document.createElement("button");
-      btn.className = "colToggle" + (state.hiddenCols.has(idx) ? " colHidden" : " colVisible");
-      btn.textContent = d.name;
-      btn.addEventListener("click", () => {
-        if(state.hiddenCols.has(idx)) state.hiddenCols.delete(idx);
-        else state.hiddenCols.add(idx);
-        renderColToggleBar();
-        renderCompareTable();
-      });
-      colToggleBar.appendChild(btn);
+      makeToggle(state.hiddenCols.has(idx), d.name, () => toggleIn(state.hiddenCols, idx));
     });
   }
 }
@@ -1293,6 +1297,43 @@ function _autoLoadLastSession(){
   if(typeof _tryAutoSaveRestoreAuto === 'function') _tryAutoSaveRestoreAuto();
 }
 
+// Inject a ▼ collapse toggle into every section header so each card can be folded
+// down to just its title. The button is added as an h2 child, so applyI18n (which
+// only rewrites the leading text node) preserves it across language switches.
+// Collapse state is persisted per section in localStorage.
+const _CARD_COLLAPSE_KEY = 'card-collapsed';
+function _initCardCollapse(){
+  let saved = {};
+  try { saved = JSON.parse(localStorage.getItem(_CARD_COLLAPSE_KEY) || '{}'); } catch(_){}
+  const sections = document.querySelectorAll('main.wrap > section.card');
+  sections.forEach((sec, i) => {
+    const h2 = sec.querySelector(':scope > h2');
+    if(!h2 || h2.querySelector('.cardCollapseBtn')) return;
+    // Stable key: prefer section id, then the h2's (or its title span's) i18n key.
+    const key = sec.id
+      || h2.dataset.i18n
+      || h2.querySelector('[data-i18n]')?.dataset.i18n
+      || ('card' + i);
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'cardCollapseBtn';
+    btn.title = t('card.collapse');
+    const apply = (collapsed) => {
+      sec.classList.toggle('cardCollapsed', collapsed);
+      btn.textContent = collapsed ? '▶' : '▼';
+      btn.setAttribute('aria-expanded', String(!collapsed));
+    };
+    btn.addEventListener('click', () => {
+      const collapsed = !sec.classList.contains('cardCollapsed');
+      apply(collapsed);
+      saved[key] = collapsed;
+      try { localStorage.setItem(_CARD_COLLAPSE_KEY, JSON.stringify(saved)); } catch(_){}
+    });
+    h2.insertBefore(btn, h2.firstChild);
+    apply(!!saved[key]);
+  });
+}
+
 // ── Init ───────────────────────────────────────────────────────────────────────
 buildDeprelOptionsCache();
 DEFAULT_LABELS = JSON.parse(JSON.stringify(LABELS)); // snapshot before any project overrides
@@ -1306,6 +1347,7 @@ renderConlluEditor(true);
 // Auto-load session synchronously before first paint to avoid layout shift (CLS)
 _autoLoadLastSession();
 _updateSectionVisibility();
+_initCardCollapse();
 // ?dev in URL → force-enable dev mode (persisted to localStorage)
 if(new URLSearchParams(location.search).has('dev')){
   localStorage.setItem(_DEV_MODE_KEY, '1');

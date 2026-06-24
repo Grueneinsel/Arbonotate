@@ -82,14 +82,18 @@ function renderCompareTable(){
   const showFileCols = state.docs.length >= 2 || anyUnlocked;
 
   const visLabelCols = LABEL_COLS.filter(col => !state.hiddenLabelCols.has(col.key));
+  const showId   = !state.hiddenSpecialCols.has('id');
+  const showForm = !state.hiddenSpecialCols.has('form');
+  const showGold = !state.hiddenSpecialCols.has('gold');
 
   let html = "<thead><tr>";
-  html += `<th>${t('col.id')}</th><th>${t('col.form')}</th>`;
+  if(showId)   html += `<th>${t('col.id')}</th>`;
+  if(showForm) html += `<th>${t('col.form')}</th>`;
   for(const col of visLabelCols) html += `<th>${escapeHtml(col.name)}</th>`;
   if(anyUnlocked){
     html += `<th>${escapeHtml(t('popup.head'))}</th><th>${escapeHtml(t('popup.deprel'))}</th>`;
   }
-  html += `<th>${t('col.gold')}</th>`;
+  if(showGold) html += `<th>${t('col.gold')}</th>`;
   if(showFileCols){
     for(let i=0; i<state.docs.length; i++){
       if(state.hiddenCols.has(i)) continue;
@@ -128,8 +132,8 @@ function renderCompareTable(){
     let rowCls = hasDiff ? 'rowDiff' : '';
     if(isFlagged) rowCls += ' rowFlagged';
     html += `<tr data-id="${id}" class="${rowCls.trim()}">`;
-    html += `<td>${id}<button class="flagBtn${isFlagged ? ' flagBtnActive' : ''}" title="${escapeHtml(t('flag.toggle'))}">!</button></td>`;
-    html += `<td>${escapeHtml(form)}</td>`;
+    if(showId)   html += `<td>${id}<button class="flagBtn${isFlagged ? ' flagBtnActive' : ''}" title="${escapeHtml(t('flag.toggle'))}">!</button></td>`;
+    if(showForm) html += `<td>${escapeHtml(form)}</td>`;
 
     // Dynamic label columns — inline editable dropdown or text input
     for(const col of visLabelCols){
@@ -157,8 +161,10 @@ function renderCompareTable(){
           : `<span class="srcTag srcDoc">D${getDocChoice(sentIndex,id)+1}</span>`)
       : '';
     const posLineHtml = visLabelCols.map(col => escapeHtml(goldTok?.[col.key] ?? "_")).join('·');
-    html += `<td data-col="gold" class="goldCell goldEditable" title="${escapeHtml(t('popup.editTitle'))}">${goldSrc} ${escapeHtml(goldVal)}` +
-      `<div class="posLine">${posLineHtml}</div></td>`;
+    if(showGold){
+      html += `<td data-col="gold" class="goldCell goldEditable" title="${escapeHtml(t('popup.editTitle'))}">${goldSrc} ${escapeHtml(goldVal)}` +
+        `<div class="posLine">${posLineHtml}</div></td>`;
+    }
 
     // Per-file columns — rendered when 2+ docs loaded, or any file is unlocked
     if(showFileCols){
