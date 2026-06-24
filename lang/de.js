@@ -59,6 +59,7 @@ window.LANG_DE = {
 
   // Spalten-Toggle
   'cols.label': 'Spalten: ',
+  'card.collapse': 'Abschnitt ein-/ausklappen',
 
   // Custom
   'custom.initBtn': 'Custom aus „{name}"',

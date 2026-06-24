@@ -59,6 +59,7 @@ window.LANG_EN = {
 
   // Columns toggle
   'cols.label': 'Columns: ',
+  'card.collapse': 'Collapse / expand section',
 
   // Custom
   'custom.initBtn': 'Custom from "{name}"',

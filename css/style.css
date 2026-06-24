@@ -294,6 +294,19 @@ button:not(:disabled):active,
 }
 h2{ margin:0 0 10px 0; font-size:13px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.5px }
 
+/* ── Collapsible section headers (▼) ── */
+.cardCollapseBtn{
+  display:inline-flex; align-items:center; justify-content:center;
+  width:20px; height:20px; padding:0; margin-right:7px;
+  font-size:10px; line-height:1; vertical-align:middle;
+  border:1px solid var(--line2); border-radius:4px;
+  background:var(--bg-control); color:var(--muted);
+  cursor:pointer; flex-shrink:0; transition:color .1s, border-color .1s;
+}
+.cardCollapseBtn:hover{ border-color:var(--accent); color:var(--accent); }
+.card.cardCollapsed > *:not(h2){ display:none !important; }
+.card.cardCollapsed > h2{ margin-bottom:0; }
+
 .muted{ color:var(--muted) }
 .small{ font-size:11px }
 .row{ display:flex; gap:8px; align-items:center; flex-wrap:wrap }
