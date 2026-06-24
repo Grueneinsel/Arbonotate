@@ -205,6 +205,104 @@ const _EDIT_FILE = [
   "",
 ].join("\n");
 
+// ── Projekt 4: Extremes Teilbaum-Beispiel ───────────────────────────────────
+// Sehr tief verschachtelte Bäume (rechtsverzweigende Relativsätze + PP-Kette).
+// Annotator B setzt Unterschiede tief im Baum, damit der ⑂-Teilbaum-Button auf
+// JEDER darüberliegenden Verzweigung erscheint — der ganze Pfad zur Wurzel.
+//
+// Satz 1 — Relativsatz-Kette (acl), Tiefe ~6:
+//   2(saw) → 4(man) → 6(knows) → 8(woman) → 10(owns) → 12(dog) → 14(chased) → 16(cat)
+const _DEEP_A = [
+  "# sent_id = deep-1",
+  "# text = I saw the man who knows the woman that owns the dog which chased the cat .",
+  "1\tI\tI\tPRON\tPRP\t_\t2\tnsubj\t_\t_",
+  "2\tsaw\tsee\tVERB\tVBD\t_\t0\troot\t_\t_",
+  "3\tthe\tthe\tDET\tDT\t_\t4\tdet\t_\t_",
+  "4\tman\tman\tNOUN\tNN\t_\t2\tobj\t_\t_",
+  "5\twho\twho\tPRON\tWP\t_\t6\tnsubj\t_\t_",
+  "6\tknows\tknow\tVERB\tVBZ\t_\t4\tacl\t_\t_",
+  "7\tthe\tthe\tDET\tDT\t_\t8\tdet\t_\t_",
+  "8\twoman\twoman\tNOUN\tNN\t_\t6\tobj\t_\t_",
+  "9\tthat\tthat\tPRON\tWDT\t_\t10\tnsubj\t_\t_",
+  "10\towns\town\tVERB\tVBZ\t_\t8\tacl\t_\t_",
+  "11\tthe\tthe\tDET\tDT\t_\t12\tdet\t_\t_",
+  "12\tdog\tdog\tNOUN\tNN\t_\t10\tobj\t_\t_",
+  "13\twhich\twhich\tPRON\tWDT\t_\t14\tnsubj\t_\t_",
+  "14\tchased\tchase\tVERB\tVBD\t_\t12\tacl\t_\t_",
+  "15\tthe\tthe\tDET\tDT\t_\t16\tdet\t_\t_",
+  "16\tcat\tcat\tNOUN\tNN\t_\t14\tobj\t_\t_",
+  "17\t.\t.\tPUNCT\t.\t_\t2\tpunct\t_\t_",
+  "",
+  // Satz 2 — PP-/nmod-Kette, Tiefe ~5:
+  //   3(sat) → 6(mat) → 9(table) → 12(chair) → 15(wall)
+  "# sent_id = deep-2",
+  "# text = The cat sat on the mat under the table beside the chair near the wall .",
+  "1\tThe\tthe\tDET\tDT\t_\t2\tdet\t_\t_",
+  "2\tcat\tcat\tNOUN\tNN\t_\t3\tnsubj\t_\t_",
+  "3\tsat\tsit\tVERB\tVBD\t_\t0\troot\t_\t_",
+  "4\ton\ton\tADP\tIN\t_\t6\tcase\t_\t_",
+  "5\tthe\tthe\tDET\tDT\t_\t6\tdet\t_\t_",
+  "6\tmat\tmat\tNOUN\tNN\t_\t3\tobl\t_\t_",
+  "7\tunder\tunder\tADP\tIN\t_\t9\tcase\t_\t_",
+  "8\tthe\tthe\tDET\tDT\t_\t9\tdet\t_\t_",
+  "9\ttable\ttable\tNOUN\tNN\t_\t6\tnmod\t_\t_",
+  "10\tbeside\tbeside\tADP\tIN\t_\t12\tcase\t_\t_",
+  "11\tthe\tthe\tDET\tDT\t_\t12\tdet\t_\t_",
+  "12\tchair\tchair\tNOUN\tNN\t_\t9\tnmod\t_\t_",
+  "13\tnear\tnear\tADP\tIN\t_\t15\tcase\t_\t_",
+  "14\tthe\tthe\tDET\tDT\t_\t15\tdet\t_\t_",
+  "15\twall\twall\tNOUN\tNN\t_\t12\tnmod\t_\t_",
+  "16\t.\t.\tPUNCT\t.\t_\t3\tpunct\t_\t_",
+  "",
+].join("\n");
+
+// Annotator B: Unterschiede bewusst TIEF im Baum platziert.
+//   S1: 6 XPOS VBZ→VBD, 10 deprel acl→ccomp, 13 head 14→12 (tief),
+//       16 UPOS NOUN→PROPN + deprel obj→nmod (tiefste Stelle)
+//   S2: 4 deprel case→mark, 9 XPOS NN→NNS, 12 head 9→6,
+//       15 head 12→3 + deprel nmod→obl (tiefste Stelle)
+const _DEEP_B = [
+  "# sent_id = deep-1",
+  "# text = I saw the man who knows the woman that owns the dog which chased the cat .",
+  "1\tI\tI\tPRON\tPRP\t_\t2\tnsubj\t_\t_",
+  "2\tsaw\tsee\tVERB\tVBD\t_\t0\troot\t_\t_",
+  "3\tthe\tthe\tDET\tDT\t_\t4\tdet\t_\t_",
+  "4\tman\tman\tNOUN\tNN\t_\t2\tobj\t_\t_",
+  "5\twho\twho\tPRON\tWP\t_\t6\tnsubj\t_\t_",
+  "6\tknows\tknow\tVERB\tVBD\t_\t4\tacl\t_\t_",        // XPOS VBZ→VBD
+  "7\tthe\tthe\tDET\tDT\t_\t8\tdet\t_\t_",
+  "8\twoman\twoman\tNOUN\tNN\t_\t6\tobj\t_\t_",
+  "9\tthat\tthat\tPRON\tWDT\t_\t10\tnsubj\t_\t_",
+  "10\towns\town\tVERB\tVBZ\t_\t8\tccomp\t_\t_",        // deprel acl→ccomp
+  "11\tthe\tthe\tDET\tDT\t_\t12\tdet\t_\t_",
+  "12\tdog\tdog\tNOUN\tNN\t_\t10\tobj\t_\t_",
+  "13\twhich\twhich\tPRON\tWDT\t_\t12\tnsubj\t_\t_",    // head 14→12
+  "14\tchased\tchase\tVERB\tVBD\t_\t12\tacl\t_\t_",
+  "15\tthe\tthe\tDET\tDT\t_\t16\tdet\t_\t_",
+  "16\tcat\tcat\tPROPN\tNN\t_\t14\tnmod\t_\t_",          // UPOS NOUN→PROPN + deprel obj→nmod
+  "17\t.\t.\tPUNCT\t.\t_\t2\tpunct\t_\t_",
+  "",
+  "# sent_id = deep-2",
+  "# text = The cat sat on the mat under the table beside the chair near the wall .",
+  "1\tThe\tthe\tDET\tDT\t_\t2\tdet\t_\t_",
+  "2\tcat\tcat\tNOUN\tNN\t_\t3\tnsubj\t_\t_",
+  "3\tsat\tsit\tVERB\tVBD\t_\t0\troot\t_\t_",
+  "4\ton\ton\tADP\tIN\t_\t6\tmark\t_\t_",                // deprel case→mark
+  "5\tthe\tthe\tDET\tDT\t_\t6\tdet\t_\t_",
+  "6\tmat\tmat\tNOUN\tNN\t_\t3\tobl\t_\t_",
+  "7\tunder\tunder\tADP\tIN\t_\t9\tcase\t_\t_",
+  "8\tthe\tthe\tDET\tDT\t_\t9\tdet\t_\t_",
+  "9\ttable\ttable\tNOUN\tNNS\t_\t6\tnmod\t_\t_",         // XPOS NN→NNS
+  "10\tbeside\tbeside\tADP\tIN\t_\t12\tcase\t_\t_",
+  "11\tthe\tthe\tDET\tDT\t_\t12\tdet\t_\t_",
+  "12\tchair\tchair\tNOUN\tNN\t_\t6\tnmod\t_\t_",         // head 9→6
+  "13\tnear\tnear\tADP\tIN\t_\t15\tcase\t_\t_",
+  "14\tthe\tthe\tDET\tDT\t_\t15\tdet\t_\t_",
+  "15\twall\twall\tNOUN\tNN\t_\t3\tobl\t_\t_",            // head 12→3 + deprel nmod→obl
+  "16\t.\t.\tPUNCT\t.\t_\t3\tpunct\t_\t_",
+  "",
+].join("\n");
+
 // ── Vollständiges Demo-Session-Objekt (v2 Multi-Projekt) ──────────────────────
 const DEMO_SESSION = JSON.stringify({
   version: 2,
@@ -239,6 +337,16 @@ const DEMO_SESSION = JSON.stringify({
       custom: {}, goldPick: {}, confirmed: [], notes: {}, flags: {},
       currentSent: 0, maxSents: 2, hiddenCols: [],
       undo: [], redo: [], labels: null, unlocked: false,
+    },
+    {
+      name: "Teilbaum — Tiefe Bäume",
+      docs: [
+        { name: "annotator_A.conllu", content: _DEEP_A },
+        { name: "annotator_B.conllu", content: _DEEP_B },
+      ],
+      custom: {}, goldPick: {}, confirmed: [], notes: {}, flags: {},
+      currentSent: 0, maxSents: 2, hiddenCols: [],
+      undo: [], redo: [], labels: _PENN_LABELS, unlocked: false,
     },
   ],
 });
