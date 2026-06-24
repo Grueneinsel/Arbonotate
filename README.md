@@ -26,6 +26,7 @@ Runs entirely locally without a server — [download `index.html`](https://githu
 | **Export** | Download Gold CoNLL-U and tree view (all sentences) |
 | **Guided Tour** | Interactive introduction with spotlight and tooltips using the English example |
 | **Keyboard shortcuts** | Full operation without mouse |
+| **Collapsible sections** | Every section header has a **▼** button that folds the card down to its title (state saved per section) |
 | **Multi-language** | German / English; add more languages via `lang/xx.js` |
 | **Tablet support** | Touch-optimised; arcs draggable, larger tap targets |
 
@@ -201,8 +202,11 @@ Differences in label columns (e.g. UPOS/XPOS) are annotated as `[COLUMN:🅶X\|�
 
 ### Interaction
 
-- **Click a line** → jumps to the corresponding row in the comparison table
-- **"→ Gold" button** at each 🌱 line → adopts the entire subtree as the Gold annotation
+Differing lines carry two "adopt to Gold" buttons:
+
+- **`T`** (single token) → adopts just that token's annotation as Gold
+- **`⑂`** (subtree) → adopts the whole subtree as Gold. It appears on **every branch node above a difference** — i.e. on each ancestor whose subtree contains a change, all the way up to the root 🌱 — so a complete branch can be merged in one click. Leaf tokens only show `T`.
+- **Click a line** (not a button) → jumps to the corresponding row in the comparison table
 
 ### Interactive Arc Diagram (Gold view)
 
@@ -264,7 +268,7 @@ Changes are saved immediately as a custom entry. **"Reset"** removes the custom 
 
 ### Show/Hide Columns
 
-Use the **column toggle bar** to show or hide individual file columns.
+Use the **column toggle bar** to show or hide **any** column individually — ID, FORM, the label columns (UPOS/XPOS/…), GOLD, and each file column. The choice is saved per project.
 
 ---
 

@@ -26,6 +26,7 @@ Läuft vollständig lokal ohne Server — [`index.html` herunterladen](https://g
 | **Export** | Gold CoNLL-U und Baumansicht (alle Sätze) herunterladen |
 | **Guided Tour** | Interaktive Einführung mit Spotlight und Tooltips anhand des englischen Beispiels |
 | **Tastaturkürzel** | Vollständige Bedienung ohne Maus |
+| **Einklappbare Abschnitte** | Jeder Abschnitts-Header hat einen **▼**-Button, der die Karte auf den Titel zusammenklappt (Zustand pro Abschnitt gespeichert) |
 | **Mehrsprachig** | Deutsch / Englisch; weitere Sprachen per `lang/xx.js` |
 | **Tablet-Unterstützung** | Touch-optimiert; Pfeile ziehbar, vergrößerte Tap-Ziele |
 
@@ -201,8 +202,11 @@ Unterschiede in Label-Spalten (z. B. UPOS/XPOS) werden als `[SPALTE:🅶X\|🅵Y
 
 ### Interaktion
 
-- **Klick auf eine Zeile** → springt zur zugehörigen Zeile in der Vergleichstabelle
-- **„→ Gold"-Button** an jeder 🌱-Zeile → übernimmt den gesamten Teilbaum als Gold-Annotation
+Abweichende Zeilen tragen zwei „nach Gold übernehmen"-Buttons:
+
+- **`T`** (einzelnes Token) → übernimmt nur die Annotation dieses Tokens als Gold
+- **`⑂`** (Teilbaum) → übernimmt den gesamten Teilbaum als Gold. Er erscheint an **jedem Verzweigungsknoten oberhalb eines Unterschieds** — also an jedem Vorgänger, dessen Teilbaum eine Änderung enthält, bis hinauf zur Wurzel 🌱 — so lässt sich ein ganzer Ast mit einem Klick zusammenführen. Blatt-Tokens zeigen nur `T`.
+- **Klick auf eine Zeile** (nicht auf einen Button) → springt zur zugehörigen Zeile in der Vergleichstabelle
 
 ### Interaktives Arc-Diagramm (Gold-Ansicht)
 
@@ -264,7 +268,7 @@ Die Anzahl der Felder passt sich automatisch an die geladene Tagset-Konfiguratio
 
 ### Spalten ein-/ausblenden
 
-Über die **Spalten-Toggle-Leiste** lassen sich Datei-Spalten ein- und ausblenden.
+Über die **Spalten-Toggle-Leiste** lässt sich **jede** Spalte einzeln ein- und ausblenden — ID, FORM, die Label-Spalten (UPOS/XPOS/…), GOLD und jede Datei-Spalte. Die Auswahl wird pro Projekt gespeichert.
 
 ---
 

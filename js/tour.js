@@ -32,11 +32,11 @@ const _TOUR_CONTENT = {
     },
     {
       title: '3) Baumansicht',
-      text: 'Abhängigkeitsbäume beider Annotatoren nebeneinander. Grün = identisch, orange/rot = Unterschied. Pfeilspitze zeigt zum Dependenten. Farbbalken neben Dateiname = Bogenfarbe.',
+      text: 'Abhängigkeitsbäume beider Annotatoren nebeneinander. Grün = identisch, orange/rot = Unterschied. Pfeilspitze zeigt zum Dependenten. Mit «T» übernimmst du ein einzelnes Token nach Gold, mit «⑂» den ganzen Teilbaum — «⑂» erscheint an jedem Verzweigungsknoten oberhalb eines Unterschieds.',
     },
     {
       title: '4) Vergleichstabelle',
-      text: 'Jede Zeile = ein Token, alle CoNLL-U-Felder sichtbar. Farbige Zellen = Unterschiede. Die erste Datei gilt als Gold-Referenz. Spalten ein-/ausblenden über die Buttons oben.',
+      text: 'Jede Zeile = ein Token, alle CoNLL-U-Felder sichtbar. Farbige Zellen = Unterschiede. Die erste Datei gilt als Gold-Referenz. Über die Buttons oben lässt sich jede Spalte einzeln ein-/ausblenden (ID, FORM, UPOS, XPOS, GOLD, Datei-Spalten).',
     },
     {
       title: 'Gold-Annotation wählen',
@@ -68,7 +68,7 @@ const _TOUR_CONTENT = {
     },
     {
       title: 'Tour abgeschlossen!',
-      text: 'Das Tour-Projekt wird jetzt entfernt und du kehrst zu deinen Daten zurück. Lade eigene .conllu-Dateien per Drag & Drop und fang an. Taste ? öffnet jederzeit die vollständige Hilfe.',
+      text: 'Das Tour-Projekt wird jetzt entfernt und du kehrst zu deinen Daten zurück. Lade eigene .conllu-Dateien per Drag & Drop und fang an. Tipp: Jeder Abschnitt lässt sich über das ▼ im Titel einklappen. Taste ? öffnet jederzeit die vollständige Hilfe.',
     },
   ],
   en: [
@@ -98,11 +98,11 @@ const _TOUR_CONTENT = {
     },
     {
       title: '3) Tree View',
-      text: 'Dependency trees of both annotators side by side. Green = identical arcs, orange/red = differences. Arrowhead points to the dependent. Colour bar by filename matches arc colour.',
+      text: 'Dependency trees of both annotators side by side. Green = identical arcs, orange/red = differences. Arrowhead points to the dependent. Use "T" to adopt a single token to Gold, "⑂" to adopt the whole subtree — "⑂" appears on every branch node above a difference.',
     },
     {
       title: '4) Comparison Table',
-      text: 'Each row is one token, all CoNLL-U fields visible. Highlighted cells show disagreements. File 1 is the default gold reference. Toggle columns with the buttons above.',
+      text: 'Each row is one token, all CoNLL-U fields visible. Highlighted cells show disagreements. File 1 is the default gold reference. The buttons above toggle any column individually (ID, FORM, UPOS, XPOS, GOLD, file columns).',
     },
     {
       title: 'Choosing Gold Annotations',
@@ -134,7 +134,7 @@ const _TOUR_CONTENT = {
     },
     {
       title: 'Tour Complete!',
-      text: 'The tour project is now removed and you return to your data. Load your own .conllu files via drag & drop and start annotating. Press ? for the full help reference.',
+      text: 'The tour project is now removed and you return to your data. Load your own .conllu files via drag & drop and start annotating. Tip: every section can be folded away via the ▼ in its title. Press ? for the full help reference.',
     },
   ],
 };
