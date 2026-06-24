@@ -2,6 +2,25 @@
 
 // ── Token insert / delete helpers ─────────────────────────────────────────────
 
+// Rebuild a sentence's "# text =" string from its current token forms so that the
+// sentence-list preview, tree headers and CoNLL-U export stay in sync after tokens
+// are added, deleted or renamed. Honours "SpaceAfter=No" in MISC and skips
+// multiword-token / empty-node rows (ids containing "-" or ".").
+function _syncSentenceText(sent){
+  if(!sent || !Array.isArray(sent.tokens)) return;
+  const real = sent.tokens.filter(tk => {
+    const id = String(tk.id);
+    return !id.includes('-') && !id.includes('.');
+  });
+  let out = '';
+  real.forEach((tk, i) => {
+    out += (tk.form ?? '');
+    const noSpace = /(^|\|)SpaceAfter=No(\||$)/.test(tk.misc || '');
+    if(i < real.length - 1 && !noSpace) out += ' ';
+  });
+  sent.text = out;
+}
+
 // Re-assign IDs 1..n to all tokens in a sentence and update HEAD references.
 // Returns the Map<oldId, newId> used for annotation remapping.
 function _renumberTokens(sent){
@@ -57,6 +76,7 @@ function _insertToken(beforeId){
     if(pos < 0) pos = s.tokens.length;
     s.tokens.splice(pos, 0, { id: 0, form: '_', lemma: '_', upos: '_', xpos: '_', feats: '_', head: null, deprel: '_', deps: '_', misc: '_' });
     const map = _renumberTokens(s);
+    _syncSentenceText(s);
     if(d === state.docs[0]){ _remapAnnotations(si, map); newId = pos + 1; }
   }
   renderSentence();
@@ -81,6 +101,7 @@ function _deleteToken(tokId){
     if(idx < 0) continue;
     s.tokens.splice(idx, 1);
     const map = _renumberTokens(s);
+    _syncSentenceText(s);
     if(d === state.docs[0]) _remapAnnotations(si, map);
   }
   renderSentence();

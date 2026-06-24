@@ -117,10 +117,11 @@ sentText.addEventListener("input", (e) => {
     if(!s) continue;
     const tok = s.tokens.find(t => t.id === tokId);
     if(tok) tok.form = newForm;
+    if(typeof _syncSentenceText === 'function') _syncSentenceText(s);
   }
   // Re-render dependent views without destroying the focused input
   clearTimeout(_formInputTimer);
-  _formInputTimer = setTimeout(() => { renderCompareTable(); renderPreview(); }, 180);
+  _formInputTimer = setTimeout(() => { renderCompareTable(); renderPreview(); renderSentManage(); }, 180);
 });
 
 // Click on a file cell in the comparison table → choose that doc as gold for the token.
@@ -856,7 +857,12 @@ function _buildConlluStructBlock(docIdx) {
     inp.spellcheck  = false;
     inp.autocomplete = 'off';
     inp.addEventListener('focus', () => pushUndo(), { once: true });
-    inp.addEventListener('input', () => { tok[fieldName] = inp.value || '_'; _schedule(); });
+    inp.addEventListener('input', () => {
+      tok[fieldName] = inp.value || '_';
+      // Keep the sentence text (# text =) in sync when a form is renamed
+      if(fieldName === 'form' && typeof _syncSentenceText === 'function') _syncSentenceText(sent);
+      _schedule();
+    });
     td.appendChild(inp);
     return td;
   };
